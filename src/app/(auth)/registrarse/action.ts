@@ -4,6 +4,7 @@ import { hash } from "@node-rs/argon2"
 import { generateIdFromEntropySize } from "lucia"
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
+import { isRedirectError } from "next/dist/client/components/redirect-error"
 
 import prisma from "@/lib/prisma"
 import { lucia } from "@/auth"
@@ -55,14 +56,19 @@ export async function signUp(
     const sessionCookie = lucia.createSessionCookie(session.id)
 
     const cookieStore = await cookies()
-    await cookieStore.set(
-      sessionCookie.name,
-      sessionCookie.value,
-      sessionCookie.attributes,
-    )
+    cookieStore.set({
+      name: sessionCookie.name,
+      value: sessionCookie.value,
+      path: sessionCookie.attributes.path || "/",
+      httpOnly: sessionCookie.attributes.httpOnly,
+      secure: sessionCookie.attributes.secure,
+      sameSite: sessionCookie.attributes.sameSite as "strict" | "lax" | "none",
+      maxAge: sessionCookie.attributes.maxAge || 0,
+    })
 
     redirect("/")
   } catch (error) {
+    if (isRedirectError(error)) throw error
     console.error(error)
     return {
       error: "Algo ocurrió mal. Por favor intenta nuevamente.",
