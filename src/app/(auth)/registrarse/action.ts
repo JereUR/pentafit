@@ -12,7 +12,7 @@ import { signUpSchema, SignUpValues } from "@/lib/validation"
 
 export async function signUp(
   credentials: SignUpValues,
-): Promise<{ error?: string } | void> {
+): Promise<{ error: string }> {
   try {
     const { lastName, firstName, email, gender, role, birthday, password } =
       signUpSchema.parse(credentials)
