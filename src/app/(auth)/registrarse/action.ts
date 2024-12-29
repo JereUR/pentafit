@@ -14,7 +14,7 @@ export async function signUp(
   credentials: SignUpValues,
 ): Promise<{ error: string }> {
   try {
-    const { lastName, firstName, email, gender, role, birthday, password } =
+    const { lastName, firstName, email, gender, birthday, password } =
       signUpSchema.parse(credentials)
 
     const passwordHash = await hash(password, {
@@ -44,7 +44,7 @@ export async function signUp(
         id: userId,
         firstName,
         lastName,
-        role,
+        role: "DEFAULT",
         gender,
         birthday,
         email,
