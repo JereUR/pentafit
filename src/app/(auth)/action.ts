@@ -1,6 +1,6 @@
 "use server"
 
-import { cookies } from "next/headers"
+import { cookies, headers } from "next/headers"
 import { redirect } from "next/navigation"
 
 import { lucia, validateRequest } from "@/auth"
@@ -28,5 +28,10 @@ export async function logout() {
     maxAge: sessionCookie.attributes.maxAge || 0,
   })
 
-  redirect("/iniciar-sesion")
+  const headersList = await headers()
+  const currentPath = headersList.get("x-invoke-path") || "/"
+
+  if (currentPath !== "/") {
+    redirect("/iniciar-sesion")
+  }
 }
