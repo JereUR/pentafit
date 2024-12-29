@@ -11,7 +11,7 @@ import { loginSchema, LoginValues } from "@/lib/validation"
 
 export async function login(
   credentials: LoginValues,
-): Promise<{ error?: string } | void> {
+): Promise<{ error: string }> {
   try {
     const { email, password } = loginSchema.parse(credentials)
 
