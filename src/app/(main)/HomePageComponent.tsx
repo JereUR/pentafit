@@ -12,8 +12,8 @@ export default function HomePageComponent() {
 
   return (
     <div className="flex flex-col min-w-full bg-gradient-to-b from-orange-50 to-white dark:from-gray-900 dark:to-gray-800">
-      <main className="flex w-full justify-center pt-20 min-h-screen">
-        <div className="container mx-auto px-4">
+      <main className="flex w-full justify-center h-screen">
+        <div className="container mx-auto px-4 my-auto">
           <BannerSection servicesRef={servicesRef} />
         </div>
       </main>
