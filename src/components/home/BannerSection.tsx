@@ -11,7 +11,7 @@ export default function BannerSection({
   servicesRef: RefObject<HTMLDivElement | null>
 }) {
   return (
-    <div className="flex flex-col justify-around items-center min-h-[85vh] py-20">
+    <div className="flex flex-col justify-around items-center min-h-[85vh] py-10">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
