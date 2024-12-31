@@ -85,7 +85,7 @@ export default function ContactForm() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8 }}
-      className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-8 my-20"
+      className="bg-card rounded-lg shadow-xl p-8 my-20"
     >
       <h2 className="text-3xl font-bold mb-6 text-gray-800 dark:text-white">Contáctanos</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
