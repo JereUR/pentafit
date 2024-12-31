@@ -1,6 +1,6 @@
 import { validateRequest } from "@/auth"
 import SessionProvider from "./SessionProvider"
-import NavBar from "./NavBar"
+import { ClientAuthCheck } from "@/components/ClientAuthCheck"
 
 export default async function Layout({
   children,
@@ -11,10 +11,11 @@ export default async function Layout({
 
   return (
     <SessionProvider value={{ user, session }}>
-      <div className="flex min-h-screen flex-col">
-        <NavBar />
-        {children}
-      </div>
+      <ClientAuthCheck user={user}>
+        <div className="flex min-h-screen flex-col">
+          {children}
+        </div>
+      </ClientAuthCheck>
     </SessionProvider>
   )
 }
