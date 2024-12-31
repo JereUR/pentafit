@@ -21,21 +21,32 @@ enum Role {
 }
 
 model User {
-  id           String    @id @default(uuid())
+  id           String       @id @default(uuid())
   firstName    String
   lastName     String
-  email        String?   @unique
+  email        String?      @unique
   birthday     String
   gender       String
   passwordHash String?
-  googleId     String?   @unique
+  googleId     String?      @unique
   avatarUrl    String?
   role         Role
   sessions     Session[]
+  resetTokens  ResetToken[]
 
   createdAt DateTime @default(now())
 
   @@map("users")
+}
+
+model ResetToken {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  token     String   @unique
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Session {
