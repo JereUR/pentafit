@@ -104,3 +104,33 @@ body {
   opacity: 0.8;
   cursor: grab;
 }
+
+/* Progress bar styles/animation */
+
+.link-progress {
+  position: relative;
+  overflow: hidden;
+}
+
+.link-progress::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: hsl(var(--primary)) !important;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s ease-in-out;
+  z-index: -1;
+}
+
+.link-progress:hover::before {
+  transform: scaleX(1);
+}
+
+.link-progress > * {
+  position: relative;
+  z-index: 1;
+}
