@@ -7,13 +7,15 @@ export const metadata: Metadata = {
 }
 
 interface PageProps {
-  params: { token: string }
+  params: Promise<{ token: string }>
 }
 
 export default async function ResetPasswordPage({ params }: PageProps) {
+  const { token } = await params
+
   return (
     <main className="flex h-screen items-center justify-center p-5">
-      <ResetPasswordForm token={params.token} />
+      <ResetPasswordForm token={token} />
     </main>
   )
 }
