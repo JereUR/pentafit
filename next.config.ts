@@ -6,6 +6,9 @@ const nextConfig: NextConfig = {
       dynamic: 30,
     },
   },
+  images: {
+    unoptimized: true,
+  },
   serverExternalPackages: ["@node-rs/argon2"],
 }
 
