@@ -14,19 +14,13 @@ interface NavContentProps {
 
 export function NavContent({ isExpanded, onExpandedChange }: NavContentProps) {
   const [openItems, setOpenItems] = useState<Record<string, boolean>>({})
-  const [isDark, setIsDark] = useState(false)
 
   const toggleSubmenu = (title: string) => {
     setOpenItems(prev => ({ ...prev, [title]: !prev[title] }))
   }
 
-  const toggleTheme = () => {
-    setIsDark(!isDark)
-    document.documentElement.classList.toggle('dark')
-  }
-
   return (
-    <>
+    <div className="flex flex-col h-full">
       <div className="flex h-20 items-center border-b md:px-4">
         <Logo isExpanded={isExpanded} />
         <Button
@@ -38,7 +32,7 @@ export function NavContent({ isExpanded, onExpandedChange }: NavContentProps) {
           {isExpanded ? <ChevronLeft /> : <ChevronRight />}
         </Button>
       </div>
-      <nav className="flex-1 space-y-1 p-2">
+      <nav className="flex-1 overflow-y-auto space-y-2 p-2">
         {navItems.map((item) => (
           <NavItemComponent
             key={item.title}
@@ -49,14 +43,10 @@ export function NavContent({ isExpanded, onExpandedChange }: NavContentProps) {
           />
         ))}
       </nav>
-      <div className="border-t p-4">
-        <ThemeToggle
-          isDark={isDark}
-          isExpanded={isExpanded}
-          onToggle={toggleTheme}
-        />
+      <div className="flex justify-center border-t p-4 mt-auto">
+        <ThemeToggle isExpanded={isExpanded} />
       </div>
-    </>
+    </div>
   )
 }
 

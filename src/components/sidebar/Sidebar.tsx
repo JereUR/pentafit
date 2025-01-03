@@ -3,7 +3,7 @@
 import { Menu } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
+import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from '@/components/ui/sheet'
 import { cn } from '@/lib/utils'
 import type { SidebarProps } from '@/types/sidebar'
 import { NavContent } from './NavContent'
@@ -13,7 +13,7 @@ export function Sidebar({ isExpanded, onExpandedChange }: SidebarProps) {
     <>
       <aside
         className={cn(
-          "fixed hidden h-full border-r bg-background lg:flex lg:flex-col",
+          "fixed hidden h-screen border-r bg-background lg:flex lg:flex-col",
           isExpanded ? "w-64" : "w-20",
           "transition-all duration-300"
         )}
@@ -24,9 +24,14 @@ export function Sidebar({ isExpanded, onExpandedChange }: SidebarProps) {
         <SheetTrigger asChild>
           <Button variant="ghost" size="icon" className="lg:hidden">
             <Menu className="h-6 w-6" />
+            <span className="sr-only">Open menu</span>
           </Button>
         </SheetTrigger>
-        <SheetContent side="left" className="w-64 p-0">
+        <SheetContent side="left" className="w-80 p-0">
+          <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
+          <SheetDescription className="sr-only">
+            Access navigation links and options
+          </SheetDescription>
           <NavContent isExpanded={true} onExpandedChange={onExpandedChange} />
         </SheetContent>
       </Sheet>
