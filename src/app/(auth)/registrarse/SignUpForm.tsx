@@ -25,7 +25,7 @@ const GENDER_OPTIONS = [
   { value: "Masculino", label: "Masculino" },
   { value: "Femenino", label: "Femenino" },
   { value: "Otros", label: "Otros" },
-] as const;
+] as const
 
 export default function SignUpForm() {
   const [error, setError] = useState<string>()

@@ -1,5 +1,4 @@
 import { Metadata } from "next"
-
 import ResetPasswordForm from "../ResetPasswordForm"
 
 export const metadata: Metadata = {
@@ -7,7 +6,11 @@ export const metadata: Metadata = {
   description: "Restablece tu contraseña.",
 }
 
-export default function ResetPasswordPage({ params }: { params: { token: string } }) {
+interface PageProps {
+  params: { token: string }
+}
+
+export default async function ResetPasswordPage({ params }: PageProps) {
   return (
     <main className="flex h-screen items-center justify-center p-5">
       <ResetPasswordForm token={params.token} />
