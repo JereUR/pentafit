@@ -44,10 +44,8 @@ const NavBar = ({ user }: { user: User | null }) => {
 }
 
 const Logo = () => (
-  <Link href='/' className='py-2 px-4 lg:py-4 lg:px-12'>
-    <Image src={logoImage} alt='Logo image' width={80} height={25} className='transition-transform duration-300 hover:scale-105 lg:w-[110px] lg:h-[35px]' />
-  </Link>
-)
+
+  <Link href='/' className='py-4 px-12'> <Image src={logoImage} alt='Logo image' width={110} height={35} className='transition-transform duration-300 hover:scale-105' /> </Link>)
 
 const Navigation = ({ user, isMobile, onItemClick }: { user: User | null, isMobile: boolean, onItemClick?: () => void }) => (
   <div className={`p-4 flex ${isMobile ? 'flex-col' : 'gap-5'} items-center`}>
