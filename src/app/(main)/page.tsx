@@ -1,11 +1,13 @@
+import { validateRequest } from "@/auth"
 import HomePageComponent from "./HomePageComponent"
 import NavBar from "@/components/home/NavBar"
 
-export default function HomePage() {
+export default async function HomePage() {
+  const { user } = await validateRequest()
 
   return (
     <>
-      <NavBar />
+      <NavBar user={user} />
       <HomePageComponent />
     </>
   )
