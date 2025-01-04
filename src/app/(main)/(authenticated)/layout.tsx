@@ -3,21 +3,24 @@
 import { useState } from 'react'
 
 import { cn } from '@/lib/utils'
-import { Sidebar } from '@/components/sidebar/Sidebar'
+import { Sidebar } from '@/components/menubar/Sidebar'
+import TopBar from '@/components/menubar/TopBar'
 
 export default function AuthenticatedLayout({ children }: { children: React.ReactNode }) {
   const [isExpanded, setIsExpanded] = useState(true)
 
   return (
-    <div className="flex h-screen bg-background">
+    <div className="relative h-screen bg-background overflow-hidden">
       <Sidebar isExpanded={isExpanded} onExpandedChange={setIsExpanded} />
-      <main className={cn(
-        "flex-1 overflow-auto transition-all duration-300",
-        isExpanded ? "lg:ml-64" : "lg:ml-16"
+      <div className={cn(
+        "flex flex-col h-full transition-all duration-300",
+        isExpanded ? "lg:ml-64" : "lg:ml-20"
       )}>
-        {children}
-      </main>
+        <TopBar />
+        <main className="flex-1 overflow-auto p-4">
+          {children}
+        </main>
+      </div>
     </div>
   )
 }
-
