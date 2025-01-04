@@ -8,9 +8,10 @@ import UserButton from '../UserButton'
 
 interface TopBarProps {
   onMenuClick: () => void
+  userName?: string
 }
 
-export default function TopBar({ onMenuClick }: TopBarProps) {
+export default function TopBar({ onMenuClick, userName }: TopBarProps) {
   const pathname = usePathname()
   let title = 'Panel de Control'
   const pathnameParts = pathname.split('/')
@@ -18,7 +19,9 @@ export default function TopBar({ onMenuClick }: TopBarProps) {
 
   const pathnameArray: string[] = []
 
-  if (pathnameParts.length > 1) {
+  if (userName) {
+    title = `Usuarios - ${userName}`
+  } else if (pathnameParts.length > 1) {
     pathnameParts.forEach((part) => {
       if (part) {
         if (part != 'panel-de-control') {
@@ -42,10 +45,9 @@ export default function TopBar({ onMenuClick }: TopBarProps) {
           {title}
         </div>
       </div>
-      <div className="flex items-center gap-5">
+      <div className="flex items-center gap-5 md:mr-10">
         <UserButton />
       </div>
     </div>
   )
 }
-
