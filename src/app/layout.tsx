@@ -2,11 +2,14 @@ import type { Metadata } from "next"
 import { Nunito } from 'next/font/google'
 import { ThemeProvider } from "next-themes"
 import { Suspense } from "react"
+import { NextSSRPlugin } from "@uploadthing/react/next-ssr-plugin"
+import { extractRouterConfig } from "uploadthing/server"
 
 import "./globals.css"
 import ReactQueryProvider from "./ReactQueryProvider"
 import { Loader2 } from 'lucide-react'
 import { Toaster } from "@/components/ui/toaster"
+import { fileRouter } from "./api/uploadthing/core"
 
 const nunito = Nunito({
   weight: ['200', '300', '400', '500', '600', '700', '800', '900', '1000'],
@@ -50,6 +53,7 @@ export default function RootLayout({
         <meta name="theme-color" content="#ffffff" />
       </head>
       <body className={nunito.className}>
+        <NextSSRPlugin routerConfig={extractRouterConfig(fileRouter)} />
         <ReactQueryProvider>
           <ThemeProvider
             attribute="class"
@@ -65,6 +69,7 @@ export default function RootLayout({
           </ThemeProvider>
         </ReactQueryProvider>
         <Toaster />
+
       </body>
     </html>
   )
