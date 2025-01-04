@@ -1,11 +1,14 @@
 import { getUserNamesById } from "@/lib/users"
 import { Metadata } from "next"
 
+type Props = {
+  params: Promise<{ id: string }>
+}
+
 export async function generateMetadata(
-  context: { params: { id: string } }
+  { params }: Props
 ): Promise<Metadata> {
-  const { params } = context
-  const { id } = params
+  const id = (await params).id
 
   try {
     const user = await getUserNamesById(id)
@@ -27,6 +30,6 @@ export async function generateMetadata(
   }
 }
 
-export default function UserPage({ params }: { params: { id: string } }) {
-  return <div>UserPage for user ID: {params.id}</div>
+export default function UserPage() {
+  return <div>UserPage</div>
 }
