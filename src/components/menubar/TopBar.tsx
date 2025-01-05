@@ -35,7 +35,7 @@ export default function TopBar({ onMenuClick, userName }: TopBarProps) {
   }
 
   return (
-    <div className='sticky top-0 z-30 flex justify-between items-center shadow-md p-4 w-full transition-all duration-300 ease-in-out bg-background'>
+    <div className='sticky top-0 z-30 flex justify-between items-center shadow-md p-5 w-full transition-all duration-300 ease-in-out bg-background'>
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" className="lg:hidden" onClick={onMenuClick}>
           <Menu className="h-6 w-6" />
