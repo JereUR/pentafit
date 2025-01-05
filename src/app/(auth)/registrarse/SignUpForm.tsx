@@ -20,12 +20,7 @@ import ErrorText from "@/components/ErrorText"
 import { signUp } from "./action"
 import { PasswordInput } from "@/components/PasswordInput"
 import LoadingButton from "@/components/LoadingButton"
-
-const GENDER_OPTIONS = [
-  { value: "Masculino", label: "Masculino" },
-  { value: "Femenino", label: "Femenino" },
-  { value: "Otros", label: "Otros" },
-] as const
+import { GENDER_OPTIONS } from "@/types/user"
 
 export default function SignUpForm() {
   const [error, setError] = useState<string>()
@@ -104,21 +99,21 @@ export default function SignUpForm() {
             </FormItem>
           )}
         />
-        <div className="grid grid-cols-2 items-start gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <FormField
             control={form.control}
             name="gender"
             render={({ field }) => (
-              <FormItem className="space-y-3">
+              <FormItem className="space-y-3 col-span-full">
                 <FormLabel>Género</FormLabel>
                 <FormControl>
                   <RadioGroup
                     onValueChange={field.onChange}
                     defaultValue={field.value}
-                    className="flex flex-col space-y-1"
+                    className="grid grid-cols-3 gap-2"
                   >
                     {GENDER_OPTIONS.map((option) => (
-                      <FormItem key={option.value} className="flex items-center space-x-3 space-y-0 ring-1 p-2 ring-primary rounded-2xl">
+                      <FormItem key={option.value} className="flex items-center space-x-2 space-y-0 ring-1 p-2 ring-primary rounded-lg">
                         <FormControl>
                           <RadioGroupItem value={option.value} />
                         </FormControl>
