@@ -21,8 +21,6 @@ export default function AuthenticatedLayout({ children }: { children: React.Reac
   const isUserPage = pathParts[1] === 'usuarios' && pathParts[2]
   const userId = isUserPage ? pathParts[2] : ''
 
-  console.log({ isUserPage })
-
   return (
     <div className="relative h-screen bg-background overflow-hidden">
       <Sidebar isExpanded={isExpanded} onExpandedChange={setIsExpanded} />
