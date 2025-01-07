@@ -21,7 +21,7 @@ const getUser = cache(async (id: string) => {
       id: true,
       firstName: true,
       lastName: true,
-      role: true,
+      membershipLevel: true,
       email: true,
       birthday: true,
       avatarUrl: true,

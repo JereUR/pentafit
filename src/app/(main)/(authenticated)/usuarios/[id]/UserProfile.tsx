@@ -45,7 +45,7 @@ export function UserProfile({ user }: { user: UserProfileData }) {
           <div className="space-y-2">
             <p><strong>Fecha de Nacimiento:</strong> {user.birthday}</p>
             <p><strong>Género:</strong> {user.gender}</p>
-            <p><strong>Rol:</strong> {user.role}</p>
+            <p><strong>Membresía:</strong> {user.membershipLevel}</p>
           </div>
           <Button className="mt-4" onClick={() => setIsEditing(true)}>
             Editar Perfil

@@ -44,7 +44,6 @@ export async function signUp(
         id: userId,
         firstName,
         lastName,
-        role: "DEFAULT",
         gender,
         birthday,
         email,

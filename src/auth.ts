@@ -5,6 +5,7 @@ import { cookies } from "next/headers"
 import { Google } from "arctic"
 
 import prisma from "./lib/prisma"
+import { MembershipLevel } from "@prisma/client"
 
 const adapter = new PrismaAdapter(prisma.session, prisma.user)
 
@@ -21,7 +22,7 @@ export const lucia = new Lucia(adapter, {
       firstName: databaseUserAttributes.firstName,
       lastName: databaseUserAttributes.lastName,
       email: databaseUserAttributes.email,
-      role: databaseUserAttributes.role,
+      membershipLevel: databaseUserAttributes.membershipLevel,
       birthday: databaseUserAttributes.birthday,
       gender: databaseUserAttributes.gender,
       avatarUrl: databaseUserAttributes.avatarUrl,
@@ -42,7 +43,7 @@ interface DatabaseUserAttributes {
   firstName: string
   lastName: string
   email: string | null
-  role: string
+  membershipLevel: MembershipLevel
   birthday: string
   gender: string
   avatarUrl: string | null
@@ -69,51 +70,31 @@ export const validateRequest = cache(
 
     const result = await lucia.validateSession(sessionId)
 
-    try {
-      if (result.session && result.session.fresh) {
-        const sessionCookie = lucia.createSessionCookie(result.session.id)
-        await cookieStore.set(
-          sessionCookie.name,
-          sessionCookie.value,
-          sessionCookie.attributes,
-        )
-      }
-
-      if (!result.session) {
-        const sessionCookie = lucia.createBlankSessionCookie()
-        await cookieStore.set(
-          sessionCookie.name,
-          sessionCookie.value,
-          sessionCookie.attributes,
-        )
-      }
-    } catch (error) {
-      console.error("Error setting cookies:", error)
-    }
-
     return result
   },
 )
 
-export const validateAdmin = cache(async (): Promise<{ admin: boolean }> => {
-  const { user: loggedInUser } = await validateRequest()
+export const validateMembership = cache(
+  async (): Promise<{ membership: MembershipLevel } | null> => {
+    const { user: loggedInUser } = await validateRequest()
 
-  if (!loggedInUser) {
-    return { admin: false }
-  }
+    if (!loggedInUser) {
+      return null
+    }
 
-  const user = await prisma.user.findFirst({
-    where: {
-      id: loggedInUser.id,
-    },
-    select: {
-      role: true,
-    },
-  })
+    const user = await prisma.user.findFirst({
+      where: {
+        id: loggedInUser.id,
+      },
+      select: {
+        membershipLevel: true,
+      },
+    })
 
-  if (!user) {
-    return { admin: false }
-  }
+    if (!user) {
+      return null
+    }
 
-  return { admin: user.role === "ADMIN" }
-})
+    return { membership: user.membershipLevel }
+  },
+)

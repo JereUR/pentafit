@@ -21,19 +21,26 @@ enum Role {
   STAFF
 }
 
+enum MembershipLevel {
+  NONE
+  STANDARD
+  PREMIUM
+  FULL
+}
+
 model User {
-  id           String       @id @default(uuid())
-  firstName    String
-  lastName     String
-  email        String?      @unique
-  birthday     String
-  gender       String
-  passwordHash String?
-  googleId     String?      @unique
-  avatarUrl    String?
-  role         Role
-  sessions     Session[]
-  resetTokens  ResetToken[]
+  id              String          @id @default(uuid())
+  firstName       String
+  lastName        String
+  email           String?         @unique
+  birthday        String
+  gender          String
+  passwordHash    String?
+  googleId        String?         @unique
+  avatarUrl       String?
+  membershipLevel MembershipLevel @default(NONE)
+  sessions        Session[]
+  resetTokens     ResetToken[]
 
   createdAt DateTime @default(now())
 

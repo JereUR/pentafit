@@ -1,4 +1,4 @@
-import { Role } from "@prisma/client"
+import { MembershipLevel } from "@prisma/client"
 
 export const GENDER_OPTIONS = [
   { value: "Masculino", label: "Masculino" },
@@ -14,5 +14,5 @@ export interface UserProfileData {
   gender: string
   birthday: string
   avatarUrl: string | null
-  role: Role
+  membershipLevel: MembershipLevel
 }
