@@ -26,6 +26,7 @@ const getUser = cache(async (id: string) => {
       birthday: true,
       avatarUrl: true,
       gender: true,
+      createdAt:true
     }
   })
 
@@ -50,14 +51,14 @@ export async function generateMetadata(
 }
 
 export default async function UserPage() {
-  const { user: loggedInUser } = await validateRequest()
+  const { user: loggedUser } = await validateRequest()
 
-  if (!loggedInUser) return null
+  if (!loggedUser) return null
 
-  const user = await getUser(loggedInUser.id)
+  const user = await getUser(loggedUser.id)
   return (
     <main className="flex w-full min-w-0 gap-5">
-      <UserProfile user={user} />
+      <UserProfile user={user} loggedUserId={loggedUser.id} />
     </main>
   )
 }

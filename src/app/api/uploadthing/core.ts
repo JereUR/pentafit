@@ -12,6 +12,7 @@ export const fileRouter = {
   })
     .middleware(async () => {
       const { user } = await validateRequest()
+      console.log("Middleware User:", user)
 
       if (!user) throw new UploadThingError("No autorizado")
 
@@ -33,10 +34,12 @@ export const fileRouter = {
         `/a/${process.env.NEXT_PUBLIC_UPLOADTHING_APP_ID}/`,
       )
 
-      await prisma.user.update({
-        where: { id: metadata.user.id },
-        data: { avatarUrl: newAvatarUrl },
-      })
+      await Promise.all([
+        prisma.user.update({
+          where: { id: metadata.user.id },
+          data: { avatarUrl: newAvatarUrl },
+        }),
+      ])
 
       return { avatarUrl: newAvatarUrl }
     }),

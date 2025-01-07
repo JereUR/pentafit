@@ -2,15 +2,20 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { EditUserForm } from './EditUserForm'
-import { UserProfileData } from '@/types/user'
-import { Pencil } from 'lucide-react'
+import { UserData } from '@/types/user'
 import avatarPlaceholder from "@/assets/avatar-placeholder.png"
 
-export function UserProfile({ user }: { user: UserProfileData }) {
+interface UserProfileProps {
+  user: UserData
+  loggedUserId: string
+}
+
+export function UserProfile({ user, loggedUserId }: UserProfileProps) {
   const [isEditing, setIsEditing] = useState(false)
 
   return (
@@ -29,13 +34,6 @@ export function UserProfile({ user }: { user: UserProfileData }) {
                 />
                 <AvatarFallback>{user.firstName[0]}{user.lastName[0]}</AvatarFallback>
               </Avatar>
-              <Button
-                size="icon"
-                className="absolute bottom-0 right-0 rounded-full bg-accent"
-                onClick={() => {/* Functionality to be added later */ }}
-              >
-                <Pencil className="h-4 w-4" />
-              </Button>
             </div>
             <div>
               <h2 className="text-2xl font-bold">{user.firstName} {user.lastName}</h2>
@@ -47,9 +45,9 @@ export function UserProfile({ user }: { user: UserProfileData }) {
             <p><strong>Género:</strong> {user.gender}</p>
             <p><strong>Membresía:</strong> {user.membershipLevel}</p>
           </div>
-          <Button className="mt-4" onClick={() => setIsEditing(true)}>
+          {user.id === loggedUserId && <Button className="mt-4" onClick={() => setIsEditing(true)}>
             Editar Perfil
-          </Button>
+          </Button>}
         </CardContent>
       </Card>
       <AnimatePresence>

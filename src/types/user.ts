@@ -1,4 +1,4 @@
-import { MembershipLevel } from "@prisma/client"
+import { Prisma } from "@prisma/client"
 
 export const GENDER_OPTIONS = [
   { value: "Masculino", label: "Masculino" },
@@ -6,13 +6,20 @@ export const GENDER_OPTIONS = [
   { value: "Otros", label: "Otros" },
 ] as const
 
-export interface UserProfileData {
-  id: string
-  firstName: string
-  lastName: string
-  email: string | null
-  gender: string
-  birthday: string
-  avatarUrl: string | null
-  membershipLevel: MembershipLevel
+export function getUserDataSelect() {
+  return {
+    id: true,
+    firstName: true,
+    lastName: true,
+    email: true,
+    gender: true,
+    birthday: true,
+    avatarUrl: true,
+    membershipLevel: true,
+    createdAt: true,
+  } satisfies Prisma.UserSelect
 }
+
+export type UserData = Prisma.UserGetPayload<{
+  select: ReturnType<typeof getUserDataSelect>
+}>
