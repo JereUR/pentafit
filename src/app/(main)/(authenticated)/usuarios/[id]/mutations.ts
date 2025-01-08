@@ -1,8 +1,8 @@
+import { useUploadThing } from "@/lib/uploadthing"
 import { useToast } from "@/hooks/use-toast"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { useRouter } from "next/navigation"
-
 import { updateUserProfile } from "./actions"
+import { useRouter } from "next/navigation"
 
 export interface UpdateUserProfileValues {
   firstName: string
@@ -15,6 +15,7 @@ export function useUpdateProfileMutation() {
   const { toast } = useToast()
   const router = useRouter()
   const queryClient = useQueryClient()
+  const { startUpload } = useUploadThing("imageUploader")
 
   const mutation = useMutation({
     mutationFn: async ({
@@ -24,9 +25,18 @@ export function useUpdateProfileMutation() {
       values: UpdateUserProfileValues
       avatar?: File
     }) => {
+      let avatarUrl: string | undefined
+
+      if (avatar) {
+        const uploadResult = await startUpload([avatar])
+        if (uploadResult && uploadResult[0]) {
+          avatarUrl = uploadResult[0].url
+        }
+      }
+
       const updatedUser = await updateUserProfile({
         ...values,
-        avatarUrl: avatar ? URL.createObjectURL(avatar) : undefined,
+        avatarUrl,
       })
       return updatedUser
     },
@@ -35,7 +45,6 @@ export function useUpdateProfileMutation() {
         title: "Perfil actualizado correctamente",
       })
       queryClient.invalidateQueries({ queryKey: ["user"] })
-
       router.refresh()
     },
     onError: (error: Error) => {
