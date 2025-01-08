@@ -9,7 +9,7 @@ import "./globals.css"
 import ReactQueryProvider from "./ReactQueryProvider"
 import { Loader2 } from 'lucide-react'
 import { Toaster } from "@/components/ui/toaster"
-import { fileRouter } from "./api/uploadthing/core"
+import { ourFileRouter } from "./api/uploadthing/core"
 
 const nunito = Nunito({
   weight: ['200', '300', '400', '500', '600', '700', '800', '900', '1000'],
@@ -53,7 +53,7 @@ export default function RootLayout({
         <meta name="theme-color" content="#ffffff" />
       </head>
       <body className={nunito.className}>
-        <NextSSRPlugin routerConfig={extractRouterConfig(fileRouter)} />
+        <NextSSRPlugin routerConfig={extractRouterConfig(ourFileRouter)} />
         <ReactQueryProvider>
           <ThemeProvider
             attribute="class"
