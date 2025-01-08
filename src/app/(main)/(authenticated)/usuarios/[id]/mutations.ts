@@ -1,16 +1,20 @@
-import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
-import { useUploadThing } from "@/lib/uploadthing"
-import { UpdateUserProfileValues } from "@/lib/validation"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { useRouter } from "next/navigation"
+
 import { updateUserProfile } from "./actions"
-import { UserData } from "@/types/user"
+
+export interface UpdateUserProfileValues {
+  firstName: string
+  lastName: string
+  birthday: string
+  gender: "Masculino" | "Femenino" | "Otros"
+}
 
 export function useUpdateProfileMutation() {
   const { toast } = useToast()
   const router = useRouter()
   const queryClient = useQueryClient()
-  const { startUpload: startAvatarUpload } = useUploadThing("userAvatar")
 
   const mutation = useMutation({
     mutationFn: async ({
@@ -20,42 +24,26 @@ export function useUpdateProfileMutation() {
       values: UpdateUserProfileValues
       avatar?: File
     }) => {
-      return Promise.all([
-        updateUserProfile(values),
-        avatar && startAvatarUpload([avatar]),
-      ])
+      const updatedUser = await updateUserProfile({
+        ...values,
+        avatarUrl: avatar ? URL.createObjectURL(avatar) : undefined,
+      })
+      return updatedUser
     },
-    onSuccess: async ([updatedUser, uploadResult]) => {
-      const newAvatarUrl = uploadResult?.[0].serverData.avatarUrl
-
-      queryClient.setQueryData<UserData[]>(["users"], (oldUsers) => {
-        if (!Array.isArray(oldUsers)) return oldUsers
-
-        return oldUsers.map((user) =>
-          user.id === updatedUser.id
-            ? {
-                ...user,
-                ...updatedUser,
-                avatarUrl: newAvatarUrl || user.avatarUrl,
-              }
-            : user,
-        )
-      })
-
+    onSuccess: () => {
       toast({
-        title: "Perfil actualizado",
-        description: "Tu perfil se ha actualizado correctamente.",
+        title: "Perfil actualizado correctamente",
       })
+      queryClient.invalidateQueries({ queryKey: ["user"] })
 
       router.refresh()
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       toast({
-        title: "Error al actualizar",
-        description: "Hubo un problema al intentar actualizar tu perfil.",
         variant: "destructive",
+        title: "Error al actualizar el perfil",
+        description: error.message,
       })
-      console.error(error)
     },
   })
 
