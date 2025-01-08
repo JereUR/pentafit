@@ -53,7 +53,7 @@ export function EditUserForm({ user, onClose }: EditUserFormProps) {
 
   async function onSubmit(values: UpdateUserProfileValues) {
     const newAvatarFile = croppedAvatar
-      ? new File([croppedAvatar], `avatar_${user.id}.webp`)
+      ? new File([croppedAvatar], `avatar_${user.id}.webp`, { type: 'image/webp' })
       : undefined
 
     mutation.mutate(
