@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { cache } from "react"
@@ -5,6 +6,7 @@ import { cache } from "react"
 import { validateRequest } from "@/auth"
 import prisma from "@/lib/prisma"
 import { UserProfile } from "./UserProfile"
+import { UserProfileSkeleton } from "@/components/skeletons/UserProfileSkeleton"
 
 interface UserPageProps {
   params: Promise<{ id: string }>
@@ -26,7 +28,7 @@ const getUser = cache(async (id: string) => {
       birthday: true,
       avatarUrl: true,
       gender: true,
-      createdAt:true
+      createdAt: true
     }
   })
 
@@ -55,10 +57,17 @@ export default async function UserPage() {
 
   if (!loggedUser) return null
 
-  const user = await getUser(loggedUser.id)
   return (
     <main className="flex w-full min-w-0 gap-5">
-      <UserProfile user={user} loggedUserId={loggedUser.id} />
+      <Suspense fallback={<UserProfileSkeleton />}>
+        <UserProfileContent userId={loggedUser.id} />
+      </Suspense>
     </main>
   )
 }
+
+async function UserProfileContent({ userId }: { userId: string }) {
+  const user = await getUser(userId)
+  return <UserProfile user={user} loggedUserId={userId} />
+}
+
