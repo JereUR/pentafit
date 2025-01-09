@@ -31,7 +31,7 @@ export default function AuthenticatedLayout({ children }: { children: React.Reac
         {isUserPage ? (
           <UserTitleWrapper userId={userId} onMenuClick={toggleMobileMenu} />
         ) : (
-          <TopBar onMenuClick={toggleMobileMenu} />
+          <TopBar onMenuClick={toggleMobileMenu} isLoading={false} />
         )}
         <main className="flex-1 overflow-auto p-4">
           {children}

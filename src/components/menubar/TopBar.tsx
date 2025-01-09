@@ -5,13 +5,15 @@ import { Menu } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import UserButton from '../UserButton'
+import TopBarSkeleton from '../skeletons/TopBarSkeleton'
 
 interface TopBarProps {
   onMenuClick: () => void
   userName?: string
+  isLoading?: boolean
 }
 
-export default function TopBar({ onMenuClick, userName }: TopBarProps) {
+export default function TopBar({ onMenuClick, userName, isLoading = false }: TopBarProps) {
   const pathname = usePathname()
   let title = 'Panel de Control'
   const pathnameParts = pathname.split('/')
@@ -32,6 +34,10 @@ export default function TopBar({ onMenuClick, userName }: TopBarProps) {
     })
 
     title = pathnameArray.join(' - ')
+  }
+
+  if (isLoading) {
+    return <TopBarSkeleton />
   }
 
   return (

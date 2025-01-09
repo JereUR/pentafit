@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import TopBar from '@/components/menubar/TopBar'
-import { Loader2 } from 'lucide-react'
 
 interface UserTitleWrapperProps {
   userId: string
@@ -11,9 +10,11 @@ interface UserTitleWrapperProps {
 
 export default function UserTitleWrapper({ userId, onMenuClick }: UserTitleWrapperProps) {
   const [userName, setUserName] = useState('')
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     async function fetchUserName() {
+      setIsLoading(true)
       try {
         const response = await fetch(`/api/user/${userId}`)
         if (response.ok) {
@@ -22,14 +23,14 @@ export default function UserTitleWrapper({ userId, onMenuClick }: UserTitleWrapp
         }
       } catch (error) {
         console.error("Error fetching user data:", error)
+      } finally {
+        setIsLoading(false)
       }
     }
 
     fetchUserName()
   }, [userId])
 
-  if (userName === '') return <Loader2 className='animate-spin p-4' />
-
-  return <TopBar userName={userName} onMenuClick={onMenuClick} />
+  return <TopBar userName={userName} onMenuClick={onMenuClick} isLoading={isLoading} />
 }
 
