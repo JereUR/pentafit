@@ -4,7 +4,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { navItems } from '@/config/nav'
 import { Logo } from './Logo'
-import { ThemeToggle } from './ThemeToggle'
+import { ThemeToggle } from '../ThemeToggle'
 import { NavItemComponent } from './NavItemComponente'
 
 interface NavContentProps {
