@@ -14,7 +14,7 @@ import { NavItem } from "@/types/sidebar"
 
 export const navItems: NavItem[] = [
   { title: "Inicio", icon: Home, href: "/panel-de-control" },
-  { title: "Negocios", icon: Building2, href: "/negocios" },
+  { title: "Establecimientos", icon: Building2, href: "/establecimientos" },
   { title: "Equipo", icon: Users, href: "/equipo" },
   { title: "Agenda", icon: Calendar, href: "/agenda" },
   { title: "Actividades", icon: ClipboardList, href: "/actividades" },
