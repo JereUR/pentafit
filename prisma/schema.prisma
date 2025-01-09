@@ -41,6 +41,7 @@ model User {
   membershipLevel MembershipLevel @default(NONE)
   sessions        Session[]
   resetTokens     ResetToken[]
+  facilities      UserFacility[]
 
   createdAt DateTime @default(now())
 
@@ -64,4 +65,49 @@ model Session {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("sessions")
+}
+
+model Facility {
+  id          String            @id @default(uuid())
+  name        String
+  description String?
+  email       String?
+  address     String?
+  phone       String?
+  instagram   String?
+  facebook    String?
+  isActive    Boolean           @default(false)
+  isWorking   Boolean           @default(false)
+  logo        String?
+  metadata    FacilityMetadata?
+  users       UserFacility[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("facilities")
+}
+
+model UserFacility {
+  userId     String
+  facilityId String
+  user       User     @relation(fields: [userId], references: [id])
+  facility   Facility @relation(fields: [facilityId], references: [id])
+
+  @@id([userId, facilityId])
+  @@map("user_facilities")
+}
+
+model FacilityMetadata {
+  id             Int      @id @default(autoincrement())
+  title          String?
+  primaryColor   String?  @default("#F97015")
+  secondaryColor String?
+  thirdColor     String?
+  slogan         String?
+  logoWeb        String?
+  facilityId     String   @unique
+  facility       Facility @relation(fields: [facilityId], references: [id])
+
+  @@map("facility_metadata")
 }
