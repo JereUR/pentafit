@@ -1,3 +1,4 @@
+import { MembershipLevel } from "@prisma/client"
 import { z } from "zod"
 
 const requiredString = z.string().trim().min(1, "Este campo es requerido")
@@ -44,10 +45,24 @@ export const loginSchema = z.object({
 export type LoginValues = z.infer<typeof loginSchema>
 
 export const updateUserProfileSchema = z.object({
-  firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().min(1, "Last name is required"),
+  firstName: z.string().min(1, "Nombre es requerido"),
+  lastName: z.string().min(1, "Apellido es requerido"),
   gender: z.enum(["Masculino", "Femenino", "Otros"]),
-  birthday: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format"),
+  birthday: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Formato invalido"),
 })
 
 export type UpdateUserProfileValues = z.infer<typeof updateUserProfileSchema>
+
+export const membershipUpdateSchema = z.object({
+  membershipLevel: z.nativeEnum(MembershipLevel),
+  cardNumber: z.string().regex(/^\d{16}$/, "Número de tarjeta inválido"),
+  holder: z
+    .string()
+    .min(1, "Nombre y apellido de titular de tarjeta requerido"),
+  expirationDate: z
+    .string()
+    .regex(/^(0[1-9]|1[0-2])\/\d{2}$/, "Fecha de expiración inválida"),
+  cvv: z.string().regex(/^\d{3,4}$/, "CVV inválido"),
+})
+
+export type MembershipUpdateValues = z.infer<typeof membershipUpdateSchema>
