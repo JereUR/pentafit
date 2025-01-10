@@ -19,7 +19,8 @@ export default function AuthenticatedLayout({ children }: { children: React.Reac
   const pathname = usePathname()
   const pathParts = pathname.split('/')
   const isUserPage = pathParts[1] === 'usuarios' && pathParts[2]
-  const userId = isUserPage ? pathParts[2] : ''
+  const isMembershipPage = pathParts[1] === 'actualizar-membresia'
+  const userId = isUserPage || isMembershipPage ? pathParts[2] : ''
 
   return (
     <div className="relative h-screen bg-background overflow-hidden">
@@ -28,8 +29,8 @@ export default function AuthenticatedLayout({ children }: { children: React.Reac
         "flex flex-col h-full transition-all duration-300",
         isExpanded ? "lg:ml-64" : "lg:ml-20"
       )}>
-        {isUserPage ? (
-          <UserTitleWrapper userId={userId} onMenuClick={toggleMobileMenu} />
+        {isUserPage || isMembershipPage ? (
+          <UserTitleWrapper userId={userId} userPage={!isMembershipPage} onMenuClick={toggleMobileMenu} />
         ) : (
           <TopBar onMenuClick={toggleMobileMenu} isLoading={false} />
         )}

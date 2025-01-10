@@ -10,10 +10,11 @@ import TopBarSkeleton from '../skeletons/TopBarSkeleton'
 interface TopBarProps {
   onMenuClick: () => void
   userName?: string
+  userPage?: boolean
   isLoading?: boolean
 }
 
-export default function TopBar({ onMenuClick, userName, isLoading = false }: TopBarProps) {
+export default function TopBar({ onMenuClick, userName, isLoading = false, userPage = false }: TopBarProps) {
   const pathname = usePathname()
   let title = 'Panel de Control'
   const pathnameParts = pathname.split('/')
@@ -21,8 +22,10 @@ export default function TopBar({ onMenuClick, userName, isLoading = false }: Top
 
   const pathnameArray: string[] = []
 
-  if (userName) {
+  if (userName && userPage) {
     title = `Usuarios - ${userName}`
+  } else if (userName && !userPage) { 
+    title = `Actualizar Membresía - ${userName}` 
   } else if (pathnameParts.length > 1) {
     pathnameParts.forEach((part) => {
       if (part) {
