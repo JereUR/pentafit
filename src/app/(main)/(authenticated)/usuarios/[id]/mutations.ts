@@ -40,11 +40,11 @@ export function useUpdateProfileMutation() {
       })
       return updatedUser
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast({
         title: "Perfil actualizado correctamente",
       })
-      queryClient.invalidateQueries({ queryKey: ["user"] })
+      queryClient.invalidateQueries({ queryKey: ["user", data.id] })
       router.refresh()
     },
     onError: (error: Error) => {
