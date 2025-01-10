@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { CalendarIcon, UserIcon, CrownIcon, Camera } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -17,6 +19,7 @@ interface UserProfileProps {
 
 export function UserProfile({ user, loggedUserId }: UserProfileProps) {
   const [isEditing, setIsEditing] = useState(false)
+  const router = useRouter()
 
   return (
     <div className="container mx-auto p-4 relative">
@@ -25,7 +28,7 @@ export function UserProfile({ user, loggedUserId }: UserProfileProps) {
           <CardTitle className="text-2xl font-bold">Mi Perfil</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center space-x-4 mb-6">
+          <div className="flex flex-col md:flex-row items-start md:items-center space-y-4 md:space-y-0 md:space-x-6 mb-6">
             <div className="relative">
               <Avatar className="w-24 h-24">
                 <AvatarImage
@@ -34,20 +37,41 @@ export function UserProfile({ user, loggedUserId }: UserProfileProps) {
                 />
                 <AvatarFallback>{user.firstName[0]}{user.lastName[0]}</AvatarFallback>
               </Avatar>
+              {user.id === loggedUserId && (
+                <Button size="icon" variant="secondary" className="absolute bottom-0 right-0 rounded-full">
+                  <Camera className="h-4 w-4" />
+                </Button>
+              )}
             </div>
-            <div>
-              <h2 className="text-2xl font-bold">{user.firstName} {user.lastName}</h2>
-              <p className="text-muted-foreground">{user.email}</p>
+            <div className="flex-grow">
+              <h2 className="text-3xl font-bold mb-1">{user.firstName} {user.lastName}</h2>
+              <p className="text-muted-foreground mb-2">{user.email}</p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="flex items-center space-x-2">
+                  <CalendarIcon className="text-muted-foreground" />
+                  <span>{user.birthday}</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <UserIcon className="text-muted-foreground" />
+                  <span>{user.gender}</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <CrownIcon className="text-muted-foreground" />
+                  <span>{user.membershipLevel}</span>
+                </div>
+              </div>
             </div>
           </div>
-          <div className="space-y-2">
-            <p><strong>Fecha de Nacimiento:</strong> {user.birthday}</p>
-            <p><strong>Género:</strong> {user.gender}</p>
-            <p><strong>Membresía:</strong> {user.membershipLevel}</p>
-          </div>
-          {user.id === loggedUserId && <Button className="mt-4" onClick={() => setIsEditing(true)}>
-            Editar Perfil
-          </Button>}
+          {user.id === loggedUserId && (
+            <div className="flex space-x-4 mt-4">
+              <Button onClick={() => setIsEditing(true)}>
+                Editar Perfil
+              </Button>
+              <Button variant="outline" onClick={() => router.push(`/actualizar-membresia/${user.id}`)}>
+                Actualizar Membresía
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
       <AnimatePresence>
