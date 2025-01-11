@@ -6,8 +6,8 @@ export const metadata: Metadata = {
 
 export default function DashboardPage() {
   return (
-    <div className="p-6">
+    <main className="flex container gap-5 p-5">
       <p>Bienvenido al Panel de Control</p>
-    </div>
+    </main>
   )
 }

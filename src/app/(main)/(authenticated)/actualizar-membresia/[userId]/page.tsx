@@ -24,9 +24,9 @@ export default async function ActualizarMembresiaPage({ params }: MembershipPage
   }
 
   return (
-    <div className="container mx-auto p-4">
+    <main className="flex container gap-5 p-5 justify-center">
       <MembershipUpdateForm user={user} />
-    </div>
+    </main>
   )
 }
 

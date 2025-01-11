@@ -58,7 +58,7 @@ export default async function UserPage() {
   if (!loggedUser) return null
 
   return (
-    <main className="flex w-full min-w-0 gap-5">
+    <main className="flex container gap-5 p-5">
       <Suspense fallback={<UserProfileSkeleton />}>
         <UserProfileContent userId={loggedUser.id} />
       </Suspense>
