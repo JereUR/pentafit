@@ -78,7 +78,7 @@ model Facility {
   facebook    String?
   isActive    Boolean           @default(false)
   isWorking   Boolean           @default(false)
-  logo        String?
+  logoUrl     String?
   metadata    FacilityMetadata?
   users       UserFacility[]
 
@@ -105,7 +105,7 @@ model FacilityMetadata {
   secondaryColor String?
   thirdColor     String?
   slogan         String?
-  logoWeb        String?
+  logoWebUrl     String?
   facilityId     String   @unique
   facility       Facility @relation(fields: [facilityId], references: [id])
 
