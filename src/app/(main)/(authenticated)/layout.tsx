@@ -32,7 +32,7 @@ export default function AuthenticatedLayout({ children }: { children: React.Reac
           isExpanded ? "lg:ml-64" : "lg:ml-20"
         )}>
           {isUserPage || isMembershipPage ? (
-            <UserTitleWrapper userId={userId} userPage={!isMembershipPage} onMenuClick={toggleMobileMenu} />
+            <UserTitleWrapper userId={userId} onMenuClick={toggleMobileMenu} />
           ) : (
             <TopBar onMenuClick={toggleMobileMenu} isLoading={false} />
           )}
