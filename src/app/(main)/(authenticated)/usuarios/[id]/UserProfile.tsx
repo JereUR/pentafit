@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { CalendarIcon, UserIcon, CrownIcon, Camera } from 'lucide-react'
+import { CalendarIcon, UserIcon, CrownIcon } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 import { Button } from "@/components/ui/button"
@@ -37,11 +37,6 @@ export function UserProfile({ user, loggedUserId }: UserProfileProps) {
                 />
                 <AvatarFallback>{user.firstName[0]}{user.lastName[0]}</AvatarFallback>
               </Avatar>
-              {user.id === loggedUserId && (
-                <Button size="icon" variant="secondary" className="absolute bottom-0 right-0 rounded-full">
-                  <Camera className="h-4 w-4" />
-                </Button>
-              )}
             </div>
             <div className="flex-grow">
               <h2 className="text-3xl font-bold mb-1">{user.firstName} {user.lastName}</h2>
