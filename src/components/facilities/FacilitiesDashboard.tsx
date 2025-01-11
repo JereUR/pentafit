@@ -12,8 +12,6 @@ export default function FacilityDashboard({ user }: { user: User }) {
     setActiveFacility
   } = useFacilities(user.id)
 
-  console.log({ facilities })
-
   if (isLoadingFacilities) return <div>Cargando establecimientos...</div>
 
   if (facilitiesError) return <div>Error al cargar establecimientos: {(facilitiesError as Error).message}</div>

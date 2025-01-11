@@ -28,8 +28,6 @@ export async function GET(
       },
     })
 
-    console.log({ facilities })
-
     if (!facilities || facilities.facilities.length === 0) {
       return NextResponse.json([])
     }
