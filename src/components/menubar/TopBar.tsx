@@ -1,45 +1,22 @@
 'use client'
 
-import { usePathname } from 'next/navigation'
 import { Menu } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import UserButton from '../UserButton'
 import TopBarSkeleton from '../skeletons/TopBarSkeleton'
+import { usePageTitle } from '@/hooks/usePageTitle'
 
 interface TopBarProps {
   onMenuClick: () => void
   userName?: string
-  userPage?: boolean
   isLoading?: boolean
 }
 
-export default function TopBar({ onMenuClick, userName, isLoading = false, userPage = false }: TopBarProps) {
-  const pathname = usePathname()
-  let title = 'Panel de Control'
-  const pathnameParts = pathname.split('/')
-  pathnameParts.shift()
+export default function TopBar({ onMenuClick, userName, isLoading = false }: TopBarProps) {
+  const { title, isLoading: isTitleLoading } = usePageTitle(userName)
 
-  const pathnameArray: string[] = []
-
-  if (userName && userPage) {
-    title = `Usuarios - ${userName}`
-  } else if (userName && !userPage) { 
-    title = `Actualizar Membresía - ${userName}` 
-  } else if (pathnameParts.length > 1) {
-    pathnameParts.forEach((part) => {
-      if (part) {
-        if (part != 'panel-de-control') {
-          const capitalizedWord = part.charAt(0).toUpperCase() + part.slice(1)
-          pathnameArray.push(capitalizedWord.replaceAll(/-/g, ' '))
-        }
-      }
-    })
-
-    title = pathnameArray.join(' - ')
-  }
-
-  if (isLoading) {
+  if (isLoading || isTitleLoading) {
     return <TopBarSkeleton />
   }
 
@@ -60,3 +37,4 @@ export default function TopBar({ onMenuClick, userName, isLoading = false, userP
     </div>
   )
 }
+
