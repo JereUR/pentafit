@@ -49,9 +49,9 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { facilityId: string } },
+  { params }: { params: Promise<{ facilityId: string }> },
 ) {
-  const { facilityId } = params
+  const facilityId = (await params).facilityId
   const body = await request.json()
 
   try {
