@@ -23,7 +23,7 @@ export default function FacilityDashboard({ user }: { user: User }) {
   if (isLoadingFacilities) return <FacilitiesDashboardSkeleton />
 
   if (facilitiesError) return (
-    <Alert variant="destructive">
+    <Alert variant="destructive" className="max-w-4xl mx-auto mt-4">
       <AlertCircle className="h-4 w-4" />
       <AlertTitle>Error</AlertTitle>
       <AlertDescription>
@@ -33,26 +33,27 @@ export default function FacilityDashboard({ user }: { user: User }) {
   )
 
   return (
-    <Card className="w-full max-w-4xl mx-auto">
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="text-3xl font-bold text-primary">Dashboard de Establecimientos</CardTitle>
-        <Button asChild>
+    <Card className="w-full max-w-4xl mx-auto mt-4">
+      <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-4 sm:space-y-0">
+        <CardTitle className="text-2xl sm:text-3xl font-bold text-primary">Mis Establecimientos</CardTitle>
+        <Button asChild className="w-full sm:w-auto">
           <Link href="/establecimientos/agregar">
             <Plus className="mr-2 h-4 w-4" /> Agregar Establecimiento
           </Link>
         </Button>
       </CardHeader>
       <CardContent>
-        <h2 className="text-2xl font-semibold mb-4 text-primary">Mis Establecimientos</h2>
         {facilities && facilities.length > 0 ? (
-          facilities.map(facility => (
-            <FacilityItem
-              key={facility.id}
-              facility={facility}
-              isWorking={facility.id === workingFacilityId}
-              onWorkingChange={() => setWorkingFacility(facility.id)}
-            />
-          ))
+          <div className="space-y-4">
+            {facilities.map(facility => (
+              <FacilityItem
+                key={facility.id}
+                facility={facility}
+                isWorking={facility.id === workingFacilityId}
+                onWorkingChange={() => setWorkingFacility(facility.id)}
+              />
+            ))}
+          </div>
         ) : (
           <Alert>
             <AlertTitle>No hay establecimientos</AlertTitle>

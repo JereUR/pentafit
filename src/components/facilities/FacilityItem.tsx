@@ -38,16 +38,16 @@ export function FacilityItem({ facility, isWorking, onWorkingChange }: FacilityI
 
   return (
     <Card className={`mb-4 ${isWorking ? 'border-primary' : ''}`}>
-      <CardHeader className="flex flex-row items-center gap-4">
-        <Avatar>
+      <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+        <Avatar className="w-16 h-16 sm:w-10 sm:h-10">
           <AvatarImage src={facility.logoUrl || (noLogoImage.src as string)} alt={facility.name} />
           <AvatarFallback>{facility.name.slice(0, 2).toUpperCase()}</AvatarFallback>
         </Avatar>
         <div className="flex-1">
-          <CardTitle>{facility.name}</CardTitle>
-          <CardDescription>{facility.description}</CardDescription>
+          <CardTitle className="text-xl sm:text-lg">{facility.name}</CardTitle>
+          <CardDescription className="mt-1 text-sm">{facility.description}</CardDescription>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2 mt-2 sm:mt-0">
           <Badge variant={facility.isActive ? "default" : "secondary"}>
             {facility.isActive ? "Active" : "Inactive"}
           </Badge>
@@ -57,22 +57,22 @@ export function FacilityItem({ facility, isWorking, onWorkingChange }: FacilityI
         </div>
       </CardHeader>
       <CardContent>
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-2">
           <Button
             onClick={onWorkingChange}
             variant={isWorking ? "default" : "outline"}
-            className="flex-1"
+            className="w-full sm:flex-1"
           >
             {isWorking ? "Seleccionado" : "Seleccionar"}
           </Button>
-          <Button asChild variant="outline">
+          <Button asChild variant="outline" className="w-full sm:w-auto">
             <Link href={`/establecimientos/editar/${facility.id}`}>
               <Edit className="mr-2 h-4 w-4" /> Editar
             </Link>
           </Button>
           <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
             <AlertDialogTrigger asChild>
-              <Button variant="destructive">
+              <Button variant="destructive" className="w-full sm:w-auto">
                 <Trash2 className="mr-2 h-4 w-4" /> Eliminar
               </Button>
             </AlertDialogTrigger>
@@ -83,9 +83,9 @@ export function FacilityItem({ facility, isWorking, onWorkingChange }: FacilityI
                   Esta acción no se puede deshacer. Esto eliminará permanentemente el establecimiento {facility.name}.
                 </AlertDialogDescription>
               </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                <AlertDialogAction onClick={handleDelete}>Eliminar</AlertDialogAction>
+              <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+                <AlertDialogCancel className="w-full sm:w-auto">Cancelar</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDelete} className="w-full sm:w-auto">Eliminar</AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
@@ -94,4 +94,3 @@ export function FacilityItem({ facility, isWorking, onWorkingChange }: FacilityI
     </Card>
   )
 }
-
