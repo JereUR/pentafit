@@ -9,7 +9,7 @@ import TopBar from '@/components/menubar/TopBar'
 import { Sheet, SheetContent, SheetTitle, SheetDescription } from '@/components/ui/sheet'
 import { NavContent } from '@/components/menubar/NavContent'
 import UserTitleWrapper from '@/components/menubar/UserTitleWrapper'
-import { ActiveFacilityProvider } from '@/contexts/ActiveFacilityContext'
+import { WorkingFacilityProvider } from '@/contexts/WorkingFacilityContext'
 
 export default function AuthenticatedLayout({ children }: { children: React.ReactNode }) {
   const [isExpanded, setIsExpanded] = useState(true)
@@ -24,7 +24,7 @@ export default function AuthenticatedLayout({ children }: { children: React.Reac
   const userId = isUserPage || isMembershipPage ? pathParts[2] : ''
 
   return (
-    <ActiveFacilityProvider>
+    <WorkingFacilityProvider>
       <div className="relative h-screen bg-background overflow-hidden">
         <Sidebar isExpanded={isExpanded} onExpandedChange={setIsExpanded} />
         <div className={cn(
@@ -50,7 +50,7 @@ export default function AuthenticatedLayout({ children }: { children: React.Reac
           </SheetContent>
         </Sheet>
       </div>
-    </ActiveFacilityProvider>
+    </WorkingFacilityProvider>
   )
 }
 
