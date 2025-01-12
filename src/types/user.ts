@@ -35,6 +35,20 @@ export function getUserDataSelect() {
     birthday: true,
     avatarUrl: true,
     membershipLevel: true,
+    facilities: {
+      select: {
+        facility: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            isActive: true,
+            isWorking: true,
+            logoUrl: true,
+          },
+        },
+      },
+    },
     createdAt: true,
   } satisfies Prisma.UserSelect
 }
