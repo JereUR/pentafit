@@ -12,9 +12,10 @@ interface NavItemProps {
   isExpanded: boolean
   isOpen: boolean
   onToggle: () => void
+  onClose: () => void
 }
 
-export function NavItemComponent({ item, isExpanded, isOpen, onToggle }: NavItemProps) {
+export function NavItemComponent({ item, isExpanded, isOpen, onToggle, onClose }: NavItemProps) {
   const pathname = usePathname()
 
   if (item.items) {
@@ -55,7 +56,13 @@ export function NavItemComponent({ item, isExpanded, isOpen, onToggle }: NavItem
                 !isExpanded && 'lg:hidden'
               )}
             >
-              <Link href={subItem.href}>{subItem.title}</Link>
+              <Link href={subItem.href} onClick={() => {
+                if (window.innerWidth < 1024) {
+                  onClose()
+                }
+              }}>
+                {subItem.title}
+              </Link>
             </Button>
           ))}
         </CollapsibleContent>
@@ -73,7 +80,11 @@ export function NavItemComponent({ item, isExpanded, isOpen, onToggle }: NavItem
         !isExpanded && 'lg:justify-center'
       )}
     >
-      <Link href={item.href!}>
+      <Link href={item.href!} onClick={() => {
+        if (window.innerWidth < 1024) {
+          onClose()
+        }
+      }}>
         <item.icon className={cn('h-5 w-5', !isExpanded && 'lg:mr-0')} />
         <span className={cn('ml-2', !isExpanded && 'lg:hidden')}>
           {item.title}

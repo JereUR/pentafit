@@ -10,9 +10,10 @@ import { NavItemComponent } from './NavItemComponente'
 interface NavContentProps {
   isExpanded: boolean
   onExpandedChange: (expanded: boolean) => void
+  onClose: () => void
 }
 
-export function NavContent({ isExpanded, onExpandedChange }: NavContentProps) {
+export function NavContent({ isExpanded, onExpandedChange, onClose }: NavContentProps) {
   const [openItems, setOpenItems] = useState<Record<string, boolean>>({})
 
   const toggleSubmenu = (title: string) => {
@@ -40,6 +41,7 @@ export function NavContent({ isExpanded, onExpandedChange }: NavContentProps) {
             isExpanded={isExpanded}
             isOpen={openItems[item.title]}
             onToggle={() => toggleSubmenu(item.title)}
+            onClose={onClose}
           />
         ))}
       </nav>
@@ -49,4 +51,3 @@ export function NavContent({ isExpanded, onExpandedChange }: NavContentProps) {
     </div>
   )
 }
-

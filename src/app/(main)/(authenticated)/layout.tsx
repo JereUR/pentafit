@@ -16,6 +16,7 @@ export default function AuthenticatedLayout({ children }: { children: React.Reac
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen)
+  const closeMobileMenu = () => setIsMobileMenuOpen(false)
 
   const pathname = usePathname()
   const pathParts = pathname.split('/')
@@ -46,11 +47,14 @@ export default function AuthenticatedLayout({ children }: { children: React.Reac
             <SheetDescription className="sr-only">
               Access navigation links and options
             </SheetDescription>
-            <NavContent isExpanded={true} onExpandedChange={setIsExpanded} />
+            <NavContent
+              isExpanded={true}
+              onExpandedChange={setIsExpanded}
+              onClose={closeMobileMenu}
+            />
           </SheetContent>
         </Sheet>
       </div>
     </WorkingFacilityProvider>
   )
 }
-
