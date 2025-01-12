@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from "next/server"
+
 import prisma from "@/lib/prisma"
+import { FacilityReduceData } from "@/types/facility"
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ userId: string }> },
-) {
+): Promise<NextResponse<FacilityReduceData[] | { error: string }>> {
   try {
     const id = (await params).userId
 
@@ -32,7 +34,15 @@ export async function GET(
       return NextResponse.json([])
     }
 
-    const simplifiedFacilities = facilities.facilities.map((f) => f.facility)
+    const simplifiedFacilities: FacilityReduceData[] =
+      facilities.facilities.map((f) => ({
+        id: f.facility.id,
+        name: f.facility.name,
+        description: f.facility.description,
+        isActive: f.facility.isActive,
+        isWorking: f.facility.isWorking,
+        logoUrl: f.facility.logoUrl,
+      }))
 
     return NextResponse.json(simplifiedFacilities)
   } catch (error) {
