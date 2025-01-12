@@ -28,6 +28,20 @@ const getUser = cache(async (id: string) => {
       birthday: true,
       avatarUrl: true,
       gender: true,
+      facilities: {
+        select: {
+          facility: {
+            select: {
+              id: true,
+              name: true,
+              description: true,
+              isActive: true,
+              isWorking: true,
+              logoUrl: true,
+            },
+          },
+        }
+      },
       createdAt: true
     }
   })
