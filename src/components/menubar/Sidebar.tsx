@@ -11,7 +11,7 @@ export function Sidebar({ isExpanded, onExpandedChange }: SidebarProps) {
       isExpanded ? "w-64" : "w-20",
       "transition-all duration-300 hidden lg:block"
     )}>
-      <NavContent isExpanded={isExpanded} onExpandedChange={onExpandedChange} />
+      <NavContent isExpanded={isExpanded} onExpandedChange={onExpandedChange} onClose={()=>{}}/>
     </aside>
   )
 }
