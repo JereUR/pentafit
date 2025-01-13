@@ -21,9 +21,29 @@ export const ourFileRouter = {
     })
     .onUploadComplete(async ({ metadata, file }) => {
       console.log("Upload complete for userId:", metadata.user.user?.id)
-
       console.log("file url", file.url)
+      return { uploadedBy: metadata.user.user?.id }
+    }),
 
+  facilityImageUploader: f({
+    image: {
+      maxFileSize: "4MB",
+      maxFileCount: 1,
+    },
+  })
+    .middleware(async () => {
+      const user = await validateRequest()
+
+      if (!user) throw new UploadThingError("Unauthorized")
+
+      return { user }
+    })
+    .onUploadComplete(async ({ metadata, file }) => {
+      console.log(
+        "Facility image upload complete for userId:",
+        metadata.user.user?.id,
+      )
+      console.log("file url", file.url)
       return { uploadedBy: metadata.user.user?.id }
     }),
 } satisfies FileRouter
