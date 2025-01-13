@@ -1,10 +1,15 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
+"use client"
 
-import { FacilityData, FacilityReduceData } from "@/types/facility"
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
+import {
+  FacilityData,
+  FacilityReduceData,
+  WorkingFacility,
+} from "@/types/facility"
 import { useWorkingFacility } from "@/contexts/WorkingFacilityContext"
 
 export function useFacilities(userId: string) {
-  const { workingFacilityId } = useWorkingFacility()
+  const { workingFacility, setWorkingFacility } = useWorkingFacility()
   const queryClient = useQueryClient()
 
   const queryKey = ["facilities", userId]
@@ -26,12 +31,13 @@ export function useFacilities(userId: string) {
     },
   })
 
-  const setWorkingFacility = (facilityId: string) => {
+  const setWorkingFacilityLocal = (facility: WorkingFacility) => {
     updateFacilityMutation.mutate({
-      id: facilityId,
+      id: facility.id,
       isWorking: true,
       userId,
     } as FacilityData)
+    setWorkingFacility(facility)
   }
 
   const setActiveFacility = (facilityId: string) => {
@@ -52,8 +58,8 @@ export function useFacilities(userId: string) {
     facilities: facilitiesQuery.data,
     isLoading: facilitiesQuery.isLoading,
     error: facilitiesQuery.error,
-    workingFacilityId,
-    setWorkingFacility,
+    workingFacility,
+    setWorkingFacility: setWorkingFacilityLocal,
     setActiveFacility,
     setInactiveFacility,
   }

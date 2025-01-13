@@ -16,7 +16,7 @@ export default function FacilityDashboard({ user }: { user: User }) {
     facilities,
     isLoading: isLoadingFacilities,
     error: facilitiesError,
-    workingFacilityId,
+    workingFacility,
     setWorkingFacility
   } = useFacilities(user.id)
 
@@ -49,8 +49,12 @@ export default function FacilityDashboard({ user }: { user: User }) {
               <FacilityItem
                 key={facility.id}
                 facility={facility}
-                isWorking={facility.id === workingFacilityId}
-                onWorkingChange={() => setWorkingFacility(facility.id)}
+                isWorking={facility.id === workingFacility?.id}
+                onWorkingChange={() => setWorkingFacility({
+                  id: facility.id,
+                  name: facility.name,
+                  logoUrl: facility.logoUrl
+                })}
               />
             ))}
           </div>

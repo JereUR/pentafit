@@ -1,19 +1,20 @@
 'use client'
 
+import { WorkingFacility } from '@/types/facility'
 import { createContext, useContext, useState } from 'react'
 
 interface WorkingFacilityContextType {
-  workingFacilityId: string | null
-  setWorkingFacilityId: (id: string | null) => void
+  workingFacility: WorkingFacility | null
+  setWorkingFacility: (facility: WorkingFacility | null) => void
 }
 
 const WorkingFacilityContext = createContext<WorkingFacilityContextType | undefined>(undefined)
 
 export function WorkingFacilityProvider({ children }: { children: React.ReactNode }) {
-  const [workingFacilityId, setWorkingFacilityId] = useState<string | null>(null)
+  const [workingFacility, setWorkingFacility] = useState<WorkingFacility | null>(null)
 
   return (
-    <WorkingFacilityContext.Provider value={{ workingFacilityId, setWorkingFacilityId }}>
+    <WorkingFacilityContext.Provider value={{ workingFacility, setWorkingFacility }}>
       {children}
     </WorkingFacilityContext.Provider>
   )

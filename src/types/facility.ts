@@ -1,3 +1,9 @@
+export interface WorkingFacility {
+  id: string
+  name: string
+  logoUrl?: string | null
+}
+
 export interface FacilityReduceData {
   id: string
   name: string
