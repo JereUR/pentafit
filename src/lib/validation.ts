@@ -66,3 +66,26 @@ export const membershipUpdateSchema = z.object({
 })
 
 export type MembershipUpdateValues = z.infer<typeof membershipUpdateSchema>
+
+export const facilitySchema = z.object({
+  name: z.string().min(1, "El nombre es requerido"),
+  description: z.string().optional(),
+  email: z.string().email("Email inválido").optional().or(z.literal("")),
+  address: z.string().optional(),
+  phone: z.string().optional(),
+  instagram: z.string().optional(),
+  facebook: z.string().optional(),
+  logoUrl: z.string().optional(),
+  metadata: z
+    .object({
+      title: z.string().optional(),
+      slogan: z.string().optional(),
+      primaryColor: z.string().optional(),
+      secondaryColor: z.string().optional(),
+      thirdColor: z.string().optional(),
+      logoWebUrl: z.string().optional(),
+    })
+    .optional(),
+})
+
+export type FacilityValues = z.infer<typeof facilitySchema>
