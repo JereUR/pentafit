@@ -1,4 +1,4 @@
-'use client'
+"use client"
 
 import { useState } from 'react'
 import Link from 'next/link'
@@ -21,6 +21,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import { useDeleteFacilityMutation } from "@/app/(main)/(authenticated)/establecimientos/mutations"
+import { useToast } from "@/hooks/use-toast"
 
 interface FacilityItemProps {
   facility: FacilityReduceData
@@ -30,10 +32,23 @@ interface FacilityItemProps {
 
 export function FacilityItem({ facility, isWorking, onWorkingChange }: FacilityItemProps) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const { mutate: deleteFacility, isPending: isDeleting } = useDeleteFacilityMutation()
+  const { toast } = useToast()
 
   const handleDelete = () => {
-    console.log(`Deleting facility: ${facility.id}`)
-    setIsDeleteDialogOpen(false)
+    deleteFacility(facility.id, {
+      onSuccess: () => {
+        setIsDeleteDialogOpen(false)
+      },
+      onError: (error) => {
+        toast({
+          variant: "destructive",
+          title: "Error al eliminar el establecimiento",
+          description: error.message,
+        })
+        setIsDeleteDialogOpen(false)
+      },
+    })
   }
 
   return (
@@ -85,7 +100,9 @@ export function FacilityItem({ facility, isWorking, onWorkingChange }: FacilityI
               </AlertDialogHeader>
               <AlertDialogFooter className="flex-col sm:flex-row gap-2">
                 <AlertDialogCancel className="w-full sm:w-auto">Cancelar</AlertDialogCancel>
-                <AlertDialogAction onClick={handleDelete} className="w-full sm:w-auto">Eliminar</AlertDialogAction>
+                <AlertDialogAction onClick={handleDelete} disabled={isDeleting} className="w-full sm:w-auto">
+                  {isDeleting ? "Eliminando..." : "Eliminar"}
+                </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
@@ -94,3 +111,4 @@ export function FacilityItem({ facility, isWorking, onWorkingChange }: FacilityI
     </Card>
   )
 }
+
