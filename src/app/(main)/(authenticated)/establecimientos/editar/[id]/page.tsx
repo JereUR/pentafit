@@ -28,12 +28,12 @@ export default async function EditFacilityPage({ params }: { params: Promise<{ i
   }
 
   return (
-    <main className="relative container py-8">
-      <Link href='/establecimientos' className='absolute top-0 left-0 border border-input rounded-md'>
-        <Button variant='ghost'>
+    <main className="md:relative container py-8">
+      <Button variant='ghost' className='mb-2 md:mb-0 md:absolute md:top-0 md:left-0 border border-input'>
+        <Link href='/establecimientos' className='flex items-center gap-1'>
           <ChevronLeft /> Volver
-        </Button>
-      </Link>
+        </Link>
+      </Button>
       <FacilityForm userId={user.id} facilityData={facility} />
     </main>
   )
