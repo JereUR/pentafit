@@ -28,7 +28,7 @@ export default async function EditFacilityPage({ params }: { params: Promise<{ i
   }
 
   return (
-    <main className="container py-8">
+    <main className="relative container py-8">
       <Link href='/establecimientos' className='absolute top-0 left-0 border border-input rounded-md'>
         <Button variant='ghost'>
           <ChevronLeft /> Volver
