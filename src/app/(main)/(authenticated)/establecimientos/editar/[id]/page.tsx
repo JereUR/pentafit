@@ -12,14 +12,16 @@ export const metadata: Metadata = {
   title: "Editar establecimiento",
 }
 
-export default async function EditFacilityPage({ params }: { params: { id: string } }) {
+export default async function EditFacilityPage({ params }: { params: Promise<{ id: string }> }) {
   const { user } = await validateRequest()
 
   if (!user) {
     redirect("/login")
   }
 
-  const facility = await getFacilityById(params.id)
+  const { id } = await params
+
+  const facility = await getFacilityById(id)
 
   if (!facility) {
     redirect("/establecimientos")
