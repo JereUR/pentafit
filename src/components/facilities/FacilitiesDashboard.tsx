@@ -5,6 +5,7 @@ import { AlertCircle, Plus } from 'lucide-react'
 import Link from 'next/link'
 
 import { useFacilities } from "@/hooks/useFacilities"
+import { useWorkingFacility } from "@/contexts/WorkingFacilityContext"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
@@ -16,11 +17,13 @@ export default function FacilityDashboard({ user }: { user: User }) {
     facilities,
     isLoading: isLoadingFacilities,
     error: facilitiesError,
-    workingFacility,
-    setWorkingFacility
+    setWorkingFacility,
+    isUpdatingFacility
   } = useFacilities(user.id)
 
-  if (isLoadingFacilities) return <FacilitiesDashboardSkeleton />
+  const { workingFacility, isLoading: isLoadingWorkingFacility } = useWorkingFacility()
+
+  if (isLoadingFacilities || isLoadingWorkingFacility) return <FacilitiesDashboardSkeleton />
 
   if (facilitiesError) return (
     <Alert variant="destructive" className="max-w-4xl mx-auto mt-4">
@@ -31,6 +34,8 @@ export default function FacilityDashboard({ user }: { user: User }) {
       </AlertDescription>
     </Alert>
   )
+
+  console.log({ workingFacility })
 
   return (
     <Card className="w-full max-w-4xl mx-auto mt-4">
@@ -55,6 +60,7 @@ export default function FacilityDashboard({ user }: { user: User }) {
                   name: facility.name,
                   logoUrl: facility.logoUrl
                 })}
+                isUpdatingFacility={isUpdatingFacility}
               />
             ))}
           </div>

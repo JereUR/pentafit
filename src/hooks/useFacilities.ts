@@ -1,6 +1,12 @@
 "use client"
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  useIsMutating,
+} from "@tanstack/react-query"
+
 import {
   FacilityData,
   FacilityReduceData,
@@ -9,7 +15,7 @@ import {
 import { useWorkingFacility } from "@/contexts/WorkingFacilityContext"
 
 export function useFacilities(userId: string) {
-  const { workingFacility, setWorkingFacility } = useWorkingFacility()
+  const { workingFacility, updateWorkingFacility } = useWorkingFacility()
   const queryClient = useQueryClient()
 
   const queryKey = ["facilities", userId]
@@ -21,13 +27,24 @@ export function useFacilities(userId: string) {
   })
 
   const updateFacilityMutation = useMutation({
+    mutationKey: ["updateFacility"],
     mutationFn: (updatedFacility: FacilityData) =>
-      fetch(`/api/facilities/${updatedFacility.id}`, {
+      fetch(`/api/facility/${updatedFacility.id}`, {
         method: "PUT",
         body: JSON.stringify(updatedFacility),
       }).then((res) => res.json()),
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey })
+      queryClient.invalidateQueries({ queryKey: ["workingFacility"] })
+      if (data.isWorking) {
+        updateWorkingFacility({
+          id: data.id,
+          name: data.name,
+          logoUrl: data.logoUrl,
+        })
+      } else if (workingFacility && workingFacility.id === data.id) {
+        updateWorkingFacility(null)
+      }
     },
   })
 
@@ -37,22 +54,10 @@ export function useFacilities(userId: string) {
       isWorking: true,
       userId,
     } as FacilityData)
-    setWorkingFacility(facility)
   }
 
-  const setActiveFacility = (facilityId: string) => {
-    updateFacilityMutation.mutate({
-      id: facilityId,
-      isActive: true,
-    } as FacilityData)
-  }
-
-  const setInactiveFacility = (facilityId: string) => {
-    updateFacilityMutation.mutate({
-      id: facilityId,
-      isActive: false,
-    } as FacilityData)
-  }
+  const isUpdatingFacility =
+    useIsMutating({ mutationKey: ["updateFacility"] }) > 0
 
   return {
     facilities: facilitiesQuery.data,
@@ -60,7 +65,6 @@ export function useFacilities(userId: string) {
     error: facilitiesQuery.error,
     workingFacility,
     setWorkingFacility: setWorkingFacilityLocal,
-    setActiveFacility,
-    setInactiveFacility,
+    isUpdatingFacility,
   }
 }
