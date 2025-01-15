@@ -30,11 +30,32 @@ export interface FacilityData {
 }
 
 export interface FacilityMetadata {
-  id: number
+  id?: number
   title?: string | null
   primaryColor?: string | null
   secondaryColor?: string | null
   thirdColor?: string | null
   slogan?: string | null
   logoWebUrl?: string | null
+}
+
+interface UserFacilityInfo {
+  firstName: string
+  lastName: string
+  avatarUrl: string | null
+}
+
+export interface FacilityAllInfo {
+  users: UserFacilityInfo[]
+  name: string
+  description?: string | null
+  email?: string | null
+  phone?: string | null
+  address?: string | null
+  instagram?: string | null
+  facebook?: string | null
+  isActive: boolean
+  isWorking: boolean
+  logoUrl?: string | null
+  metadata?: FacilityMetadata | null
 }
