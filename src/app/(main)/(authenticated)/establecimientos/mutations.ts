@@ -101,7 +101,7 @@ export function useDeleteFacilityMutation() {
     onSuccess: (data) => {
       toast({
         title: "Establecimiento eliminado correctamente",
-        description: `Se ha eliminado ${data.deletedFacility?.name || 'el establecimiento'}`,
+        description: `Se ha eliminado ${data.deletedFacility?.name || "el establecimiento"}`,
       })
       queryClient.invalidateQueries({ queryKey: ["facilities"] })
       router.push("/establecimientos")
@@ -110,6 +110,41 @@ export function useDeleteFacilityMutation() {
       toast({
         variant: "destructive",
         title: "Error al eliminar el establecimiento",
+        description: error.message,
+      })
+    },
+  })
+}
+
+export function useToggleFacilityActivationMutation() {
+  const { toast } = useToast()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ id, isActive }: { id: string; isActive: boolean }) => {
+      const response = await fetch(`/api/facility/${id}/toggle-activation`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ isActive }),
+      })
+      if (!response.ok) {
+        throw new Error("Failed to toggle facility activation")
+      }
+      return response.json()
+    },
+    onSuccess: (data) => {
+      toast({
+        title: `Establecimiento ${data.isActive ? "activado" : "desactivado"} correctamente`,
+        description: `${data.name} ha sido ${data.isActive ? "activado" : "desactivado"}.`,
+      })
+      queryClient.invalidateQueries({ queryKey: ["facilities"] })
+    },
+    onError: (error: Error) => {
+      toast({
+        variant: "destructive",
+        title: "Error al cambiar el estado del establecimiento",
         description: error.message,
       })
     },
