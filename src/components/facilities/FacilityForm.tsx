@@ -24,8 +24,8 @@ import ErrorText from "@/components/ErrorText"
 import { facilitySchema, type FacilityValues } from "@/lib/validation"
 import { useFacilityMutation, useUpdateFacilityMutation } from "@/app/(main)/(authenticated)/establecimientos/mutations"
 import noLogoImage from '@/assets/no-image.png'
-import { GeneralInfoTab } from "./GeneralInfoTab"
-import { CustomizationTab } from "./CustomizationTab"
+import { GeneralInfoTabForm } from "./GeneralInfoTabForm"
+import { CustomizationTabForm } from "./CustomizationTabForm"
 
 interface FacilityFormProps {
   userId: string
@@ -146,7 +146,7 @@ export default function FacilityForm({ userId, facilityData }: FacilityFormProps
                 <TabsTrigger value="customization">Personalización</TabsTrigger>
               </TabsList>
               <TabsContent value="general">
-                <GeneralInfoTab
+                <GeneralInfoTabForm
                   control={form.control}
                   croppedLogo={croppedLogo}
                   setCroppedLogo={setCroppedLogo}
@@ -154,7 +154,7 @@ export default function FacilityForm({ userId, facilityData }: FacilityFormProps
                 />
               </TabsContent>
               <TabsContent value="customization">
-                <CustomizationTab
+                <CustomizationTabForm
                   control={form.control}
                   webLogoFile={webLogoFile}
                   setWebLogoFile={setWebLogoFile}
