@@ -1,132 +1,71 @@
 import Image from 'next/image'
-import { StaticImageData } from "next/image"
-import { Control } from "react-hook-form"
 
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { FacilityValues } from "@/lib/validation"
-
+import { FacilityAllInfo } from "@/types/facility"
+import noLogoImage from '@/assets/no-image.png'
+import { Badge } from "@/components/ui/badge"
+import { cn } from '@/lib/utils'
 
 interface CustomizationTabProps {
-  control: Control<FacilityValues>
-  webLogoFile: File | null
-  setWebLogoFile: (file: File | null) => void
-  noLogoImage: string | StaticImageData
+  facility: FacilityAllInfo
 }
 
-export function CustomizationTab({ control, webLogoFile, setWebLogoFile, noLogoImage }: CustomizationTabProps) {
+export function CustomizationTab({ facility }: CustomizationTabProps) {
   return (
     <div className="space-y-6">
-      <div className="space-y-4">
-        <FormLabel>Logo Web</FormLabel>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
-          <div className="relative w-full aspect-square overflow-hidden rounded-lg border border-gray-200 bg-gray-100">
-            <Image
-              src={webLogoFile ? URL.createObjectURL(webLogoFile) : noLogoImage}
-              alt="Logo web"
-              layout="fill"
-              objectFit="contain"
-            />
-          </div>
-          <div className="flex flex-col space-y-2">
-            <label
-              htmlFor="web-logo-upload"
-              className="flex items-center justify-center px-4 py-2 border border-primary bg-background text-sm font-medium rounded-md cursor-pointer transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-            >
-              <span>Seleccionar archivo</span>
-              <input
-                id="web-logo-upload"
-                type="file"
-                accept="image/*"
-                onChange={(e) => {
-                  const file = e.target.files?.[0]
-                  if (file) {
-                    setWebLogoFile(file)
-                  }
-                }}
-                className="sr-only"
+      {facility.metadata ? (
+        <>
+          <div className="flex items-center space-x-4">
+            <div className="relative w-24 h-24 overflow-hidden rounded-lg border-2 border-primary bg-white">
+              <Image
+                src={facility.metadata.logoWebUrl || noLogoImage.src}
+                alt="Logo web"
+                layout="fill"
+                objectFit="contain"
               />
-            </label>
-            {webLogoFile ? (
-              <p className="text-sm text-muted-foreground">
-                Archivo seleccionado: {webLogoFile.name}
-              </p>
-            ) : (
-              <p className="text-sm text-muted-foreground">
-                No se ha seleccionado ningún archivo
-              </p>
-            )}
+            </div>
+            <div>
+              <h3 className="text-2xl font-bold text-primary">{facility.metadata.title || facility.name}</h3>
+              <p className={cn("text-sm text-muted-foreground italic", !facility.metadata.slogan && 'text-foreground/40')}>{facility.metadata.slogan ? `"${facility.metadata.slogan}"` : 'N/A'}</p>
+            </div>
           </div>
-        </div>
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <FormField
-          control={control}
-          name="metadata.title"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Título</FormLabel>
-              <FormControl>
-                <Input placeholder="Título personalizado" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={control}
-          name="metadata.slogan"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Slogan</FormLabel>
-              <FormControl>
-                <Input placeholder="Tu slogan aquí" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <FormField
-          control={control}
-          name="metadata.primaryColor"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Color primario</FormLabel>
-              <FormControl>
-                <Input type="color" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={control}
-          name="metadata.secondaryColor"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Color secundario</FormLabel>
-              <FormControl>
-                <Input type="color" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={control}
-          name="metadata.thirdColor"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Color terciario</FormLabel>
-              <FormControl>
-                <Input type="color" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <InfoItem label="Título" value={facility.metadata.title} />
+            <InfoItem label="Slogan" value={facility.metadata.slogan} />
+          </div>
+
+          <div className="border border-input p-4 rounded-lg shadow-sm">
+            <h4 className="font-semibold mb-4 text-primary">Paleta de Colores</h4>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <ColorItem label="Color primario" color={facility.metadata.primaryColor} />
+              <ColorItem label="Color secundario" color={facility.metadata.secondaryColor} />
+              <ColorItem label="Color terciario" color={facility.metadata.thirdColor} />
+            </div>
+          </div>
+        </>
+      ) : (
+        <p className="text-center py-4 bg-primary/5 rounded-lg">No hay información de personalización disponible.</p>
+      )}
+    </div>
+  )
+}
+
+function InfoItem({ label, value }: { label: string; value: string | null | undefined }) {
+  return (
+    <div className="p-3 rounded-md shadow-sm border border-input">
+      <p className="text-sm font-medium text-primary">{label}</p>
+      <p className={cn('mt-1', !value && 'text-foreground/40')}>{value || 'N/A'}</p>
+    </div>
+  )
+}
+
+function ColorItem({ label, color }: { label: string; color: string | null | undefined }) {
+  return (
+    <div className="flex items-center space-x-2">
+      <div className="w-8 h-8 rounded-full border-2 border-gray-300" style={{ backgroundColor: color || '#000000' }}></div>
+      <div>
+        <p className="text-sm font-medium text-primary">{label}</p>
+        <Badge className={`${!color && 'text-foreground/40'}`} variant="outline">{color || 'N/A'}</Badge>
       </div>
     </div>
   )

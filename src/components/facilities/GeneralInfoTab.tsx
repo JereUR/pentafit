@@ -1,131 +1,104 @@
-import { Control } from "react-hook-form"
-import { StaticImageData } from "next/image"
+import { Check, Instagram, Facebook, Mail, MapPin, Phone, X } from "lucide-react"
 
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { AvatarInput } from "../AvatarInput"
-import { FacilityValues } from "@/lib/validation"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { FacilityAllInfo } from "@/types/facility"
+import noLogoImage from '@/assets/no-image.png'
+import noImageUser from '@/assets/avatar-placeholder.png'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { Carousel } from '@/components/ui/carousel'
+import { cn } from "@/lib/utils"
 
 interface GeneralInfoTabProps {
-  control: Control<FacilityValues>
-  croppedLogo: Blob | null
-  setCroppedLogo: (logo: Blob | null) => void
-  noLogoImage: string | StaticImageData
+  facility: FacilityAllInfo
 }
 
-export function GeneralInfoTab({ control, croppedLogo, setCroppedLogo, noLogoImage }: GeneralInfoTabProps) {
+export function GeneralInfoTab({ facility }: GeneralInfoTabProps) {
   return (
     <div className="space-y-6">
-      <div className="space-y-4">
-        <FormLabel>Logo</FormLabel>
-        <AvatarInput
-          src={croppedLogo ? URL.createObjectURL(croppedLogo) : noLogoImage}
-          onImageCropped={setCroppedLogo}
+      <div className="flex items-center space-x-4">
+        <Avatar className="w-24 h-24 border-4 border-primary">
+          <AvatarImage src={facility.logoUrl || noLogoImage.src} alt={facility.name} />
+          <AvatarFallback className="text-2xl bg-primary/20">{facility.name.slice(0, 2).toUpperCase()}</AvatarFallback>
+        </Avatar>
+        <div>
+          <h3 className="text-2xl font-bold text-primary">{facility.name}</h3>
+          <p className="text-sm text-muted-foreground">{facility.description}</p>
+        </div>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <InfoItem label="Email" value={facility.email} icon={<Mail />} />
+        <InfoItem label="Teléfono" value={facility.phone} icon={<Phone />} />
+        <InfoItem label="Dirección" value={facility.address} icon={<MapPin />} />
+        <InfoItem
+          label="Estado"
+          value={facility.isActive ? 'Activo' : 'Inactivo'}
+          icon={facility.isActive ? <Check className="text-green-600" /> : <X className="text-destructive" />}
         />
       </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <FormField
-          control={control}
-          name="name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Nombre</FormLabel>
-              <FormControl>
-                <Input placeholder="Mi establecimiento" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
+      <div className="border border-input p-4 rounded-lg">
+        <h4 className="font-semibold mb-2 text-primary">Redes Sociales</h4>
+        <div className="flex space-x-4">
+          {facility.instagram && (
+            <SocialLink href={`https://instagram.com/${facility.instagram}`} label="Instagram" icon={<Instagram />} />
           )}
-        />
-        <FormField
-          control={control}
-          name="email"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Email</FormLabel>
-              <FormControl>
-                <Input type="email" placeholder="email@ejemplo.com" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
+          {facility.facebook && (
+            <SocialLink href={`https://facebook.com/${facility.facebook}`} label="Facebook" icon={<Facebook />} />
           )}
-        />
+          {!facility.instagram && !facility.facebook && <p className='italic text-foreground/40'>N/A</p>}
+        </div>
       </div>
-      <FormField
-        control={control}
-        name="description"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Descripción</FormLabel>
-            <FormControl>
-              <Textarea
-                placeholder="Describe tu establecimiento..."
-                className="resize-none"
-                {...field}
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <FormField
-          control={control}
-          name="phone"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Teléfono</FormLabel>
-              <FormControl>
-                <Input placeholder="+1234567890" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={control}
-          name="address"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Dirección</FormLabel>
-              <FormControl>
-                <Input placeholder="Calle ejemplo 123" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <FormField
-          control={control}
-          name="instagram"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Instagram</FormLabel>
-              <FormControl>
-                <Input placeholder="@usuario" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={control}
-          name="facebook"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Facebook</FormLabel>
-              <FormControl>
-                <Input placeholder="usuario.facebook" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+      <div>
+        <h4 className="font-semibold mb-2 text-primary">Staff</h4>
+        <TooltipProvider>
+          <Carousel>
+            {facility.users.map((user, index) => (
+              <Tooltip key={index}>
+                <TooltipTrigger>
+                  <div className="w-20 flex-shrink-0">
+                    <Avatar className="w-16 h-16 border-2 border-primary transition-transform hover:scale-110">
+                      <AvatarImage
+                        src={user.avatarUrl || noImageUser.src}
+                        alt={`${user.firstName} ${user.lastName}`}
+                      />
+                      <AvatarFallback className="bg-primary/20">
+                        {user.firstName[0]}
+                        {user.lastName[0]}
+                      </AvatarFallback>
+                    </Avatar>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{`${user.firstName} ${user.lastName}`}</p>
+                </TooltipContent>
+              </Tooltip>
+            ))}
+          </Carousel>
+        </TooltipProvider>
       </div>
     </div>
+  )
+}
+
+function InfoItem({ label, value, icon }: { label: string; value: string | null | undefined; icon: React.ReactNode }) {
+  return (
+    <div className="p-3 rounded-md shadow-sm border border-input">
+      <p className="text-sm font-medium text-primary flex items-center gap-2">
+        <span>{icon}</span> {label}
+      </p>
+      <p className={cn('mt-1', !value && 'text-foreground/40')}>{value || 'N/A'}</p>
+    </div>
+  )
+}
+
+function SocialLink({ href, label, icon }: { href: string; label: string; icon: React.ReactNode }) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="flex items-center gap-2 text-primary hover:underline"
+    >
+      <span>{icon}</span> {label}
+    </a>
   )
 }
