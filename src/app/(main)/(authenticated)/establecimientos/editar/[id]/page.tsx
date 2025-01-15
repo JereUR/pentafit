@@ -5,8 +5,8 @@ import { ChevronLeft } from "lucide-react"
 
 import { validateRequest } from "@/auth"
 import FacilityForm from "@/components/facilities/FacilityForm"
-import { getFacilityById } from "@/lib/facilities"
 import { Button } from "@/components/ui/button"
+import { getFacilityById } from "../../actions"
 
 export const metadata: Metadata = {
   title: "Editar establecimiento",
