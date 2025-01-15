@@ -36,6 +36,9 @@ export function useFacilities(userId: string) {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey })
       queryClient.invalidateQueries({ queryKey: ["workingFacility"] })
+      queryClient.invalidateQueries({
+        queryKey: ["facilityDetails", data.id],
+      })
       if (data.isWorking) {
         updateWorkingFacility({
           id: data.id,
@@ -67,4 +70,29 @@ export function useFacilities(userId: string) {
     setWorkingFacility: setWorkingFacilityLocal,
     isUpdatingFacility,
   }
+}
+
+export function useFacilityDetails(facilityId: string | null) {
+  const queryClient = useQueryClient()
+
+  const fetchFacilityDetails = async (id: string) => {
+    const response = await fetch(`/api/facility/${id}`)
+    if (!response.ok) throw new Error("Failed to fetch facility details")
+    return response.json()
+  }
+
+  const { data, error, isLoading } = useQuery({
+    queryKey: ["facilityDetails", facilityId],
+    queryFn: () => fetchFacilityDetails(facilityId!),
+  })
+
+  const invalidateFacilityDetails = () => {
+    if (facilityId) {
+      queryClient.invalidateQueries({
+        queryKey: ["facilityDetails", facilityId],
+      })
+    }
+  }
+
+  return { data, error, isLoading, invalidateFacilityDetails }
 }
