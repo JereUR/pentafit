@@ -1,4 +1,4 @@
-"use client"
+'use client'
 
 import { useState } from 'react'
 import Link from 'next/link'
@@ -67,21 +67,23 @@ export function FacilityItem({ facility, isWorking, onWorkingChange, isUpdatingF
 
   return (
     <Card className={`mb-4 ${isWorking ? 'border-primary border-2' : ''}`}>
-      <CardHeader className="flex flex-row items-center gap-4">
-        <Avatar className="w-16 h-16 sm:w-10 sm:h-10">
-          <AvatarImage src={facility.logoUrl || (noLogoImage.src as string)} alt={facility.name} />
-          <AvatarFallback>{facility.name.slice(0, 2).toUpperCase()}</AvatarFallback>
-        </Avatar>
-        <div className="flex-1">
-          <CardTitle className="text-xl sm:text-lg">{facility.name}</CardTitle>
-          <CardDescription className="mt-1 text-sm">{facility.description}</CardDescription>
+      <CardHeader className="flex flex-col sm:flex-row items-start gap-4">
+        <div className="flex items-start gap-4 flex-grow">
+          <Avatar className="w-16 h-16 flex-shrink-0">
+            <AvatarImage src={facility.logoUrl || (noLogoImage.src as string)} alt={facility.name} />
+            <AvatarFallback>{facility.name.slice(0, 2).toUpperCase()}</AvatarFallback>
+          </Avatar>
+          <div className="flex-1 min-w-0">
+            <CardTitle className="text-xl">{facility.name}</CardTitle>
+            <CardDescription className="mt-1 text-sm line-clamp-2">{facility.description}</CardDescription>
+          </div>
         </div>
-        <div className="flex flex-col sm:flex-row items-end sm:items-center gap-2">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full sm:w-auto">
           <LoadingButton
             loading={isToggling}
             onClick={handleToggleActivation}
             size="sm"
-            className={`rounded-full text-white ${getActiveStatusColor(facility.isActive)} ${!facility.isActive && 'border border-input hover:border-green-600'}`}
+            className={`rounded-full text-white w-full sm:w-auto ${getActiveStatusColor(facility.isActive)} ${!facility.isActive && 'border border-input hover:border-green-600'}`}
           >
             {facility.isActive ? "Activo" : "Inactivo"}
           </LoadingButton>
@@ -89,7 +91,7 @@ export function FacilityItem({ facility, isWorking, onWorkingChange, isUpdatingF
             loading={isUpdatingFacility}
             onClick={onWorkingChange}
             size="sm"
-            className={`rounded-full text-white ${getWorkingStatusColor(facility.isWorking)} ${!facility.isWorking && 'border border-input hover:border-purple-600'}`}
+            className={`rounded-full text-white w-full sm:w-auto ${getWorkingStatusColor(facility.isWorking)} ${!facility.isWorking && 'border border-input hover:border-purple-600'}`}
             disabled={!facility.isActive}
           >
             {facility.isWorking ? "Área de trabajo actual" : "Seleccionar como área"}
@@ -97,19 +99,19 @@ export function FacilityItem({ facility, isWorking, onWorkingChange, isUpdatingF
         </div>
       </CardHeader>
       <CardContent>
-        <div className="flex justify-between items-center">
-          <div className="text-sm text-background-500">
-            {isWorking ? "Este establecimiento es el área de trabajo actual" : ""}
-          </div>
-          <div className="flex gap-2">
-            <Button asChild variant="outline">
+        <div className={`flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-2 ${isWorking ? 'justify-between':'justify-end'}`}>
+          {isWorking && <div className="text-sm text-background-500 w-full sm:w-auto">
+            Este establecimiento es el área de trabajo actual
+          </div>}
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+            <Button asChild variant="outline" className="w-full sm:w-auto">
               <Link href={`/establecimientos/editar/${facility.id}`}>
                 <Edit className="mr-2 h-4 w-4" /> Editar
               </Link>
             </Button>
             <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
               <AlertDialogTrigger asChild>
-                <Button variant="destructive">
+                <Button variant="destructive" className="w-full sm:w-auto">
                   <Trash2 className="mr-2 h-4 w-4" /> Eliminar
                 </Button>
               </AlertDialogTrigger>
