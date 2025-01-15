@@ -79,8 +79,11 @@ export function useUpdateFacilityMutation() {
       logo?: File
       webLogo?: File
     }) => updateFacility(id, values),
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["facilities"] })
+      queryClient.invalidateQueries({
+        queryKey: ["facilityDetails", data.facility?.id],
+      })
     },
   })
 }
@@ -140,6 +143,9 @@ export function useToggleFacilityActivationMutation() {
         description: `${data.name} ha sido ${data.isActive ? "activado" : "desactivado"}.`,
       })
       queryClient.invalidateQueries({ queryKey: ["facilities"] })
+      queryClient.invalidateQueries({
+        queryKey: ["facilityDetails", data.id],
+      })
     },
     onError: (error: Error) => {
       toast({
