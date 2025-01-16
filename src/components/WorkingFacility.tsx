@@ -4,9 +4,17 @@ import { useWorkingFacility } from '@/contexts/WorkingFacilityContext'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
 import noImage from '@/assets/no-image.png'
 import { WorkingFacilitySkeleton } from './skeletons/WorkingFacilitySkeleton'
+import FacilitiesSelector from './FacilitiesSelector'
+import { useFacilities } from '@/hooks/useFacilities'
 
-export default function WorkingFacility({ isUpdatingFacility }: { isUpdatingFacility: boolean }) {
+
+interface WorkingFacilityProps {
+  userId: string
+}
+
+export default function WorkingFacility({ userId }: WorkingFacilityProps) {
   const { workingFacility, isLoading } = useWorkingFacility()
+  const { facilities, isUpdatingFacility, setWorkingFacility } = useFacilities(userId)
 
   if (isLoading || isUpdatingFacility) {
     return (
@@ -24,10 +32,12 @@ export default function WorkingFacility({ isUpdatingFacility }: { isUpdatingFaci
             <AvatarFallback>{workingFacility.name.slice(0, 2).toUpperCase()}</AvatarFallback>
           </Avatar>
           <p className='text-lg md:text-xl font-bold text-primary'>{workingFacility.name}</p>
+
         </div>
         :
         <p>Sin establecimiento en área de trabajo</p>
       }
+      <FacilitiesSelector facilities={facilities} setWorkingFacility={setWorkingFacility} workingFacility={workingFacility} isUpdatingFacility={isUpdatingFacility} />
     </div>
   )
 }

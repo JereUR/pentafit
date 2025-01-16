@@ -8,6 +8,7 @@ export function WorkingFacilitySkeleton() {
         <Skeleton className="w-16 h-16 rounded-full" />
         <Skeleton className='h-7 w-40' />
       </div>
+      <Skeleton className='h-8 w-[90%] mt-4 rounded-md mx-auto' />
     </div>
   )
 }

@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import noImage from '@/assets/no-image.png'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select'
-import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar'
 import { FacilityReduceData, WorkingFacility } from '@/types/facility'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select'
+import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
 
 interface FacilitiesSelectorProps {
   facilities: FacilityReduceData[] | undefined
