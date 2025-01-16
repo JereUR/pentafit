@@ -5,20 +5,18 @@ import { Building2, Loader2 } from 'lucide-react'
 import { useFacilities } from "@/hooks/useFacilities"
 import { Card, CardContent } from '../ui/card'
 import WorkingFacility from '../WorkingFacility'
-import FacilitiesSelector from './FacilitiesSelector'
 
 export default function Dashboard({ userId }: { userId: string }) {
-  const { facilities, isLoading: isLoadingFacilities, error: facilitiesError, setWorkingFacility, isUpdatingFacility, workingFacility } = useFacilities(userId)
+  const { facilities, isLoading: isLoadingFacilities, error: facilitiesError } = useFacilities(userId)
 
   return (
     <div className='flex justify-between px-10 w-full'>
       <div className='hidden md:inline'>
-        <DashboardCard id={0} title='Establecimientos' icon={<Building2 />} value={facilities?.filter(f => f.isActive).length} loading={isLoadingFacilities} error={facilitiesError} />
+        <DashboardCard id={0} title='Establecimientos activos' icon={<Building2 className='h-8 w-8 mr-4' />} value={facilities?.filter(f => f.isActive).length} loading={isLoadingFacilities} error={facilitiesError} />
       </div>
       <Card className="w-[300px] border-2 border-primary shadow-md">
         <CardContent className="p-4">
-          <WorkingFacility isUpdatingFacility={isUpdatingFacility} />
-          <FacilitiesSelector facilities={facilities} setWorkingFacility={setWorkingFacility} workingFacility={workingFacility} isUpdatingFacility={isUpdatingFacility} />
+          <WorkingFacility userId={userId} />
         </CardContent>
       </Card>
     </div>
@@ -40,15 +38,15 @@ export function DashboardCard({ id, title, icon, value, loading, error }: Dashbo
     return (
       <Card
         key={id}
-        className="w-[250px] h-[120px] border-2 border-primary shadow-md"
+        className="w-[300px] h-[150px] border-2 border-primary shadow-md"
       >
         <CardContent className="flex flex-col justify-between h-full p-4">
-          <div className='flex items-center gap-2 text-primary'>
+          <div className='flex w-full items-center gap-4 text-primary'>
             {icon}
-            <span className="md:text-xl font-bold">{title}</span>
+            <span className="md:text-xl font-bold text-center">{title}</span>
           </div>
-          <div className="flex justify-center items-end">
-            <span className="text-sm md:text-lg font-semibold text-foreground">Error al cargar datos</span>
+          <div className="flex justify-center items-end mt-2">
+            <span className="text-lg font-semibold text-foreground">Error al cargar datos</span>
           </div>
         </CardContent>
       </Card>
