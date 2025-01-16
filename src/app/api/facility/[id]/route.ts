@@ -82,3 +82,45 @@ export async function GET(
     )
   }
 }
+
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const id = (await params).id
+  const body = await request.json()
+  try {
+    const facilityState = await prisma.facility.findUnique({
+      where: { id },
+      select: { isWorking: true },
+    })
+    if (!facilityState) {
+      return NextResponse.json(
+        { error: "Establecimiento no encontrado o no activo" },
+        { status: 404 },
+      )
+    }
+
+    await prisma.facility.updateMany({
+      where: { users: { some: { userId: body.userId } } },
+      data: { isWorking: false },
+    })
+    const updatedFacility = await prisma.facility.update({
+      where: { id },
+      data: { isWorking: !facilityState.isWorking },
+      select: {
+        id: true,
+        name: true,
+        logoUrl: true,
+        isWorking: true,
+      },
+    })
+    return NextResponse.json(updatedFacility)
+  } catch (error) {
+    console.error("Error updating facility:", error)
+    return NextResponse.json(
+      { error: "Error al actualizar la instalación" },
+      { status: 500 },
+    )
+  }
+}
