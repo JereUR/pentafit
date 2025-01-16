@@ -3,7 +3,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent } from "@/components/ui/card"
-import { FacilityAllInfo} from "@/types/facility"
+import { FacilityAllInfo } from "@/types/facility"
 import { Skeleton } from '@/components/ui/skeleton'
 import { GeneralInfoTab } from "./GeneralInfoTab"
 import { CustomizationTab } from "./CustomizationTab"
@@ -26,7 +26,7 @@ export function FacilityDetailsDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[625px]">
+      <DialogContent className="flex flex-col justify-start h-[600px] md:h-[750px] sm:max-w-[625px] overflow-y-auto scrollbar-thin">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-primary">{data?.name || 'Detalles del establecimiento'}</DialogTitle>
         </DialogHeader>
