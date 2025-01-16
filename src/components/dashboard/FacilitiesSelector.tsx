@@ -28,13 +28,13 @@ export default function FacilitiesSelector({ facilities, setWorkingFacility, wor
 
   return (
     <Select open={isSelectOpen} onValueChange={handleFacilityChange} value={workingFacility?.id} onOpenChange={setIsSelectOpen} disabled={isUpdatingFacility}>
-      <SelectTrigger className="w-full mt-8">
+      <SelectTrigger className="w-full mt-4">
         <SelectValue>
           {workingFacility ? workingFacility.name : "Seleccione establecimiento"}
         </SelectValue>
       </SelectTrigger>
       <SelectContent>
-        {facilities?.filter(f => f.id !== workingFacility?.id).map((facility) => (
+        {facilities?.filter(f => f.id !== workingFacility?.id && f.isActive).map((facility) => (
           <SelectItem
             key={facility.id}
             value={facility.id}
@@ -53,4 +53,3 @@ export default function FacilitiesSelector({ facilities, setWorkingFacility, wor
     </Select>
   )
 }
-
