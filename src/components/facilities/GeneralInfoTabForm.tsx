@@ -106,7 +106,7 @@ export function GeneralInfoTabForm({ control, croppedLogo, setCroppedLogo, noLog
             <FormItem>
               <FormLabel>Instagram</FormLabel>
               <FormControl>
-                <Input placeholder="@usuario" {...field} />
+                <Input placeholder="usuario" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>

@@ -1,4 +1,4 @@
-import { Check, Instagram, Facebook, Mail, MapPin, Phone, X } from "lucide-react"
+import { Instagram, Facebook, Mail, MapPin, Phone, Antenna } from "lucide-react"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { FacilityAllInfo } from "@/types/facility"
@@ -32,7 +32,7 @@ export function GeneralInfoTab({ facility }: GeneralInfoTabProps) {
         <InfoItem
           label="Estado"
           value={facility.isActive ? 'Activo' : 'Inactivo'}
-          icon={facility.isActive ? <Check className="text-green-600" /> : <X className="text-destructive" />}
+          icon={<Antenna />}
         />
       </div>
       <div className="border border-input p-4 rounded-lg">
@@ -96,7 +96,7 @@ function SocialLink({ href, label, icon }: { href: string; label: string; icon: 
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="flex items-center gap-2 text-primary hover:underline"
+      className="flex items-center gap-2 text-foreground hover:underline"
     >
       <span>{icon}</span> {label}
     </a>
