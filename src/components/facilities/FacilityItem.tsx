@@ -112,7 +112,7 @@ export function FacilityItem({ facility, isWorking, onWorkingChange, isUpdatingF
               className={`rounded-full text-white w-full sm:w-auto ${getWorkingStatusColor(facility.isWorking)} ${!facility.isWorking && 'border border-input hover:border-purple-600'}`}
               disabled={!facility.isActive}
             >
-              {facility.isWorking ? "Área de trabajo actual" : "Seleccionar como área"}
+              {facility.isWorking ? "Área de trabajo actual" : "Seleccionar"}
             </LoadingButton>
           </div>
         </CardHeader>
