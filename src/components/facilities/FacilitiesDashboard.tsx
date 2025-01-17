@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button"
 import { FacilityItem } from "./FacilityItem"
 import { FacilitiesDashboardSkeleton } from "../skeletons/FacilityDashboardSkeleton"
 
-export default function FacilityDashboard({ user }: { user: User }) {
+export default function FacilitiesDashboard({ user }: { user: User }) {
   const {
     facilities,
     isLoading: isLoadingFacilities,

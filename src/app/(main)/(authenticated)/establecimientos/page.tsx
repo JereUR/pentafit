@@ -3,13 +3,13 @@ import { Metadata } from "next"
 import { Suspense } from "react"
 
 import { validateRequest } from "@/auth"
-import FacilityDashboard from "@/components/facilities/FacilitiesDashboard"
+import FacilitiesDashboard from "@/components/facilities/FacilitiesDashboard"
 
 export const metadata: Metadata = {
   title: "Establecimientos",
 }
 
-export default async function FacilityPage() {
+export default async function FacilitiesPage() {
   const { user } = await validateRequest()
 
   if (!user) return null
@@ -17,7 +17,7 @@ export default async function FacilityPage() {
   return (
     <main className="flex container gap-5 p-5">
       <Suspense fallback={<Loader2 className="mx-auto animate-spin" />}>
-        <FacilityDashboard user={user} />
+        <FacilitiesDashboard user={user} />
       </Suspense>
     </main>
   )
