@@ -81,6 +81,7 @@ model Facility {
   logoUrl     String?
   metadata    FacilityMetadata?
   users       UserFacility[]
+  activities  Activity[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -110,4 +111,27 @@ model FacilityMetadata {
   facility       Facility @relation(fields: [facilityId], references: [id])
 
   @@map("facility_metadata")
+}
+
+model Activity {
+  id              String   @id @default(uuid())
+  name            String
+  description     String?
+  price           Float
+  isPublic        Boolean
+  publicName      String?
+  generateInvoice Boolean
+  maxSessions     Int
+  mpAvailable     Boolean
+  startDate       DateTime
+  endDate         DateTime
+  paymentType     String
+  activityType    String
+  facilityId      String
+  facility        Facility @relation(fields: [facilityId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("activities")
 }
