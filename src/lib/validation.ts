@@ -89,3 +89,21 @@ export const facilitySchema = z.object({
 })
 
 export type FacilityValues = z.infer<typeof facilitySchema>
+
+export const activitySchema = z.object({
+  name: z.string().min(1, "El nombre es requerido"),
+  description: z.string().optional(),
+  price: z.number().min(0, "El precio debe ser mayor o igual a 0"),
+  isPublic: z.boolean(),
+  publicName: z.string().optional(),
+  generateInvoice: z.boolean(),
+  maxSessions: z.number().int().min(1, "El número máximo de sesiones debe ser al menos 1"),
+  mpAvailable: z.boolean(),
+  startDate: z.date(),
+  endDate: z.date(),
+  paymentType: z.string().min(1, "El tipo de pago es requerido"),
+  activityType: z.string().min(1, "El tipo de actividad es requerido"),
+  facilityId: z.string().uuid("ID de establecimiento inválido"),
+})
+
+export type ActivityValues = z.infer<typeof activitySchema>
