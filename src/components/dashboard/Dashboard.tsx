@@ -14,11 +14,7 @@ export default function Dashboard({ userId }: { userId: string }) {
       <div className='hidden md:inline'>
         <DashboardCard id={0} title='Establecimientos activos' icon={<Building2 className='h-8 w-8 mr-4' />} value={facilities?.filter(f => f.isActive).length} loading={isLoadingFacilities} error={facilitiesError} />
       </div>
-      <Card className="w-[300px] border-2 border-primary shadow-md">
-        <CardContent className="p-4">
-          <WorkingFacility userId={userId} />
-        </CardContent>
-      </Card>
+      <WorkingFacility userId={userId} />
     </div>
   )
 }
