@@ -13,8 +13,6 @@ export default function ActivitiesDashboard() {
   if (isLoading) return <p>Cargando actividades...</p>
   if (isError) return <p>Error al cargar actividades: {error?.message}</p>
 
-  console.log({ activities })
-
   return (
     <div>
       <h1>Actividades</h1>
