@@ -1,4 +1,5 @@
-import { Control } from "react-hook-form"
+import { Control, Controller } from "react-hook-form"
+
 import {
   FormControl,
   FormDescription,
@@ -46,14 +47,19 @@ export function DetailsTabForm({ control }: DetailsTabFormProps) {
             </FormItem>
           )}
         />
-        <FormField
-          control={control}
+        <Controller
           name="maxSessions"
+          control={control}
           render={({ field }) => (
             <FormItem>
               <FormLabel>Máximo de sesiones</FormLabel>
               <FormControl>
-                <Input type="number" {...field} />
+                <Input
+                  type="number"
+                  {...field}
+                  onChange={(e) => field.onChange(e.target.value)}
+                  value={field.value === 0 ? '' : field.value}
+                />
               </FormControl>
               <FormDescription>
                 Número máximo de sesiones permitidas

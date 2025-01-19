@@ -1,4 +1,4 @@
-"use client"
+'use client'
 
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useState, useEffect } from "react"
@@ -105,13 +105,14 @@ export default function ActivityForm({ userId, activityData }: ActivityFormProps
     : "Ingresa los datos de tu actividad para comenzar"
 
   if (!workingFacility) {
-    return <NoWorkingFacilityMessage entityName="una actividad" />
+    return <div className='flex flex-col items-center gap-5 p-5 md:p-10 rounded-md border'>
+      <WorkingFacility userId={userId} />
+      <NoWorkingFacilityMessage entityName="una actividad" />
+    </div>
   }
 
-  console.log({ workingFacility })
-
   return (
-    <div className="flex flex-col items-center md:items-start gap-5 p-5 md:p-10 rounded-md border">
+    <div className="flex flex-col items-center md:items-start gap-5 p-5 md:p-10 md:py-14 rounded-md border">
       <WorkingFacility userId={userId} />
       <Card className="w-full">
         <CardHeader>
@@ -136,7 +137,7 @@ export default function ActivityForm({ userId, activityData }: ActivityFormProps
               )}
               <Tabs defaultValue="general" className="w-full">
                 <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="general">Información General</TabsTrigger>
+                  {window.innerWidth > 700 ? <TabsTrigger value="general">Información General</TabsTrigger> : <TabsTrigger value="general">Inf General</TabsTrigger>}
                   <TabsTrigger value="details">Detalles</TabsTrigger>
                 </TabsList>
                 <TabsContent value="general">
@@ -160,3 +161,4 @@ export default function ActivityForm({ userId, activityData }: ActivityFormProps
     </div>
   )
 }
+

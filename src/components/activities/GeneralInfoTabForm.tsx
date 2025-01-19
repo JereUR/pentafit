@@ -1,4 +1,5 @@
-import { Control } from "react-hook-form"
+import { Control, Controller } from "react-hook-form"
+
 import {
   FormControl,
   FormDescription,
@@ -17,8 +18,6 @@ interface GeneralInfoTabFormProps {
 }
 
 export function GeneralInfoTabForm({ control }: GeneralInfoTabFormProps) {
-  console.log({ control })
-
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -35,14 +34,20 @@ export function GeneralInfoTabForm({ control }: GeneralInfoTabFormProps) {
             </FormItem>
           )}
         />
-        <FormField
-          control={control}
+        <Controller
           name="price"
+          control={control}
           render={({ field }) => (
             <FormItem>
               <FormLabel>Precio</FormLabel>
               <FormControl>
-                <Input type="number" placeholder="0.00" {...field} />
+                <Input
+                  type="number"
+                  placeholder="0.00"
+                  {...field}
+                  onChange={(e) => field.onChange(e.target.value)}
+                  value={field.value === 0 ? '' : field.value}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -60,6 +65,7 @@ export function GeneralInfoTabForm({ control }: GeneralInfoTabFormProps) {
                 placeholder="Describe la actividad"
                 className="resize-none"
                 {...field}
+                value={field.value ?? ""}
               />
             </FormControl>
             <FormMessage />
@@ -94,7 +100,7 @@ export function GeneralInfoTabForm({ control }: GeneralInfoTabFormProps) {
             <FormItem>
               <FormLabel>Nombre público</FormLabel>
               <FormControl>
-                <Input placeholder="Nombre público de la actividad" {...field} />
+                <Input placeholder="Nombre público de la actividad" {...field} value={field.value ?? ""} />
               </FormControl>
               <FormDescription>
                 Nombre que verá el público si la actividad es pública
