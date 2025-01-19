@@ -27,7 +27,7 @@ export default function TopBar({ onMenuClick, userName, isLoading = false }: Top
           <Menu className="h-6 w-6" />
           <span className="sr-only">Open menu</span>
         </Button>
-        <div className="text-foreground font-bold capitalize text-2xl">
+        <div className="text-foreground font-bold capitalize text-lg md:text-2xl">
           {title}
         </div>
       </div>

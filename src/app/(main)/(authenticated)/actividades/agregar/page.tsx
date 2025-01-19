@@ -18,8 +18,8 @@ export default async function AddActivityPage() {
   if (!user) return null
 
   return (
-    <main className="md:relative container py-8">
-      <Button variant='ghost' className='absolute top-11 left-2 border border-input'>
+    <main className="relative container py-8">
+      <Button variant='ghost' className='absolute -top-2 md:top-11 left-0 md:left-2 border border-input'>
         <Link href='/actividades' className='flex items-center gap-1'>
           <ChevronLeft /> Volver
         </Link>

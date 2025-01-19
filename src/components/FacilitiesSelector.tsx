@@ -29,7 +29,7 @@ export default function FacilitiesSelector({ facilities, setWorkingFacility, wor
 
   return (
     <Select open={isSelectOpen} onValueChange={handleFacilityChange} value={workingFacility?.id} onOpenChange={setIsSelectOpen} disabled={isUpdatingFacility}>
-      <SelectTrigger className="w-full mt-4">
+      <SelectTrigger className="w-[80%] md:w-full mt-2 md:mt-4 mx-auto">
         <SelectValue>
           {workingFacility ? workingFacility.name : "Seleccione establecimiento"}
         </SelectValue>
