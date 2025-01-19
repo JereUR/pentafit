@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { ActivityValues } from "@/lib/validation"
+import { activitiesType, paymentsType } from "@/types/activity"
 
 interface DetailsTabFormProps {
   control: Control<ActivityValues>
@@ -103,8 +104,11 @@ export function DetailsTabForm({ control }: DetailsTabFormProps) {
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="single">Pago único</SelectItem>
-                  <SelectItem value="recurring">Pago recurrente</SelectItem>
+                  {paymentsType.map((type) => (
+                    <SelectItem key={type} value={type}>
+                      {type}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
               <FormMessage />
@@ -125,9 +129,11 @@ export function DetailsTabForm({ control }: DetailsTabFormProps) {
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
-                <SelectItem value="class">Clase</SelectItem>
-                <SelectItem value="event">Evento</SelectItem>
-                <SelectItem value="service">Servicio</SelectItem>
+                {activitiesType.map((type) => (
+                  <SelectItem key={type} value={type}>
+                    {type}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
             <FormMessage />

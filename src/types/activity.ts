@@ -1,17 +1,26 @@
 export const columns: { key: keyof ActivityData; label: string }[] = [
-  { key: 'name', label: 'Nombre' },
-  { key: 'description', label: 'Descripción' },
-  { key: 'price', label: 'Precio' },
-  { key: 'isPublic', label: 'Es público' },
-  { key: 'publicName', label: 'Nombre público' },
-  { key: 'generateInvoice', label: 'Generar factura' },
-  { key: 'maxSessions', label: 'Sesiones máximas' },
-  { key: 'mpAvailable', label: 'Disponible en MP' },
-  { key: 'startDate', label: 'Fecha de inicio' },
-  { key: 'endDate', label: 'Fecha de fin' },
-  { key: 'paymentType', label: 'Tipo de pago' },
-  { key: 'activityType', label: 'Tipo de actividad' },
+  { key: "name", label: "Nombre" },
+  { key: "description", label: "Descripción" },
+  { key: "price", label: "Precio" },
+  { key: "isPublic", label: "Es público" },
+  { key: "publicName", label: "Nombre público" },
+  { key: "generateInvoice", label: "Generar factura" },
+  { key: "maxSessions", label: "Sesiones máximas" },
+  { key: "mpAvailable", label: "Disponible en MP" },
+  { key: "startDate", label: "Fecha de inicio" },
+  { key: "endDate", label: "Fecha de fin" },
+  { key: "paymentType", label: "Tipo de pago" },
+  { key: "activityType", label: "Tipo de actividad" },
 ]
+
+export const paymentsType = [
+  "Por sesión",
+  "Por período",
+  "Mensual",
+  "Mensual con sesiones",
+]
+
+export const activitiesType = ["Individual", "Grupal"]
 
 export type ActivityData = {
   id: string
