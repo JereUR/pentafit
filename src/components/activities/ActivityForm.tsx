@@ -113,7 +113,7 @@ export default function ActivityForm({ userId, activityData }: ActivityFormProps
 
   return (
     <div className="flex flex-col items-center md:items-start gap-5 p-5 md:p-10 md:py-14 rounded-md border">
-      <WorkingFacility userId={userId} />
+      {!isEditing && <WorkingFacility userId={userId} />}
       <Card className="w-full">
         <CardHeader>
           <CardTitle>{pageTitle}</CardTitle>
