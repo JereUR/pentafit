@@ -2,6 +2,7 @@ import { TableCell, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { ActivityData, columns } from "@/types/activity"
+import { cn } from "@/lib/utils"
 
 interface ActivityRowProps {
   activity: ActivityData
@@ -21,8 +22,12 @@ export default function ActivityRow({
   onEditActivity
 }: ActivityRowProps) {
   return (
-    <TableRow className={index % 2 === 0 ? 'bg-card/40' : 'bg-muted/20'}>
-      <TableCell className="text-center">
+    <TableRow
+      className={cn(
+        isSelected ? 'bg-primary/40 dark:bg-primary/20' : index % 2 === 0 ? 'bg-card/40' : 'bg-muted/20'
+      )}
+    >
+      <TableCell className="p-0 w-[50px] text-center">
         <Checkbox
           checked={isSelected}
           onCheckedChange={() => onToggleRow(activity.id)}

@@ -21,11 +21,11 @@ export default function ActivitiesTable({
   onEditActivity
 }: ActivitiesTableProps) {
   return (
-    <div className="w-full overflow-x-auto border rounded-md">
+    <div className="w-[90vw] md:w-full overflow-x-auto border rounded-md scrollbar-thin mx-auto">
       <Table className="w-full">
         <TableHeader>
           <TableRow className="bg-muted/50">
-            <TableHead className="w-[50px] text-center border-r">
+            <TableHead className="p-1 md:p-0 w-[50px] text-center border-r">
               <Checkbox
                 checked={selectedRows.size === activities.length}
                 onCheckedChange={onToggleAllRows}

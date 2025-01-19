@@ -22,7 +22,7 @@ export default function ActivitiesHeader({
   onToggleColumn
 }: ActivitiesHeaderProps) {
   return (
-    <div className="flex flex-col justify-between items-start gap-4 mb-4">
+    <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-4">
       <h1 className="text-2xl font-bold">Actividades</h1>
       <div className="flex flex-col md:flex-row md:justify-between gap-2 w-full">
         <ColumnSelector
@@ -30,7 +30,7 @@ export default function ActivitiesHeader({
           visibleColumns={visibleColumns}
           onToggleColumn={onToggleColumn}
         />
-        <div className="flex gap-2 items-center">
+        <div className="flex flex-col md:flex-row gap-2 items-center">
           {selectedCount > 0 && (
             <>
               <Button onClick={onDeleteSelected} variant="destructive" className="w-full sm:w-auto">
