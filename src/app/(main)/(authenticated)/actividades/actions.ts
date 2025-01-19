@@ -46,10 +46,10 @@ export async function createActivity(values: ActivityValues) {
     const activity = await prisma.activity.create({
       data: {
         name: values.name,
-        description: values.description,
+        description: values.description ?? undefined,
         price: values.price,
         isPublic: values.isPublic,
-        publicName: values.publicName,
+        publicName: values.publicName ?? undefined,
         generateInvoice: values.generateInvoice,
         maxSessions: values.maxSessions,
         mpAvailable: values.mpAvailable,
