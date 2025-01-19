@@ -1,9 +1,11 @@
 import { Metadata } from "next"
 import { Suspense } from "react"
-import { Loader2 } from 'lucide-react'
+import { ChevronLeft, Loader2 } from 'lucide-react'
+import Link from "next/link"
 
 import { validateRequest } from "@/auth"
 import ActivityForm from "@/components/activities/ActivityForm"
+import { Button } from "@/components/ui/button"
 
 export const metadata: Metadata = {
   title: "Agregar actividad",
@@ -16,7 +18,12 @@ export default async function AddActivityPage() {
   if (!user) return null
 
   return (
-    <main className="flex container gap-5 p-5">
+    <main className="md:relative container py-8">
+      <Button variant='ghost' className='absolute top-11 left-2 border border-input'>
+        <Link href='/actividades' className='flex items-center gap-1'>
+          <ChevronLeft /> Volver
+        </Link>
+      </Button>
       <section className="w-full mx-auto">
         <Suspense fallback={<Loader2 className="mx-auto animate-spin" />}>
           <ActivityFormWrapper userId={user.id} />
