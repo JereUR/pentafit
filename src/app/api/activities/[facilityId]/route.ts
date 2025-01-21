@@ -5,12 +5,16 @@ import { ActivityData } from "@/types/activity"
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ facilityId: string }> },
-): Promise<NextResponse<{ activities: ActivityData[], total: number } | { error: string }>> {
+): Promise<
+  NextResponse<
+    { activities: ActivityData[]; total: number } | { error: string }
+  >
+> {
   try {
     const id = (await params).facilityId
     const { searchParams } = request.nextUrl
-    const page = parseInt(searchParams.get('page') || '1', 10)
-    const pageSize = parseInt(searchParams.get('pageSize') || '10', 10)
+    const page = parseInt(searchParams.get("page") || "1", 10)
+    const pageSize = parseInt(searchParams.get("pageSize") || "10", 10)
     const skip = (page - 1) * pageSize
 
     const [activities, total] = await Promise.all([
@@ -32,6 +36,7 @@ export async function GET(
               endDate: true,
               paymentType: true,
               activityType: true,
+              facilityId: true,
             },
             skip,
             take: pageSize,

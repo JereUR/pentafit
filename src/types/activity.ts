@@ -36,4 +36,5 @@ export type ActivityData = {
   endDate: Date
   paymentType: string
   activityType: string
+  facilityId: string
 }
