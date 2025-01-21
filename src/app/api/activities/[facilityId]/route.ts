@@ -18,30 +18,26 @@ export async function GET(
     const skip = (page - 1) * pageSize
 
     const [activities, total] = await Promise.all([
-      prisma.facility.findUnique({
-        where: { id },
+      prisma.activity.findMany({
+        where: { facilityId: id },
         select: {
-          activities: {
-            select: {
-              id: true,
-              name: true,
-              description: true,
-              price: true,
-              isPublic: true,
-              publicName: true,
-              generateInvoice: true,
-              maxSessions: true,
-              mpAvailable: true,
-              startDate: true,
-              endDate: true,
-              paymentType: true,
-              activityType: true,
-              facilityId: true,
-            },
-            skip,
-            take: pageSize,
-          },
+          id: true,
+          name: true,
+          description: true,
+          price: true,
+          isPublic: true,
+          publicName: true,
+          generateInvoice: true,
+          maxSessions: true,
+          mpAvailable: true,
+          startDate: true,
+          endDate: true,
+          paymentType: true,
+          activityType: true,
+          facilityId: true,
         },
+        skip,
+        take: pageSize,
       }),
       prisma.activity.count({
         where: { facilityId: id },
@@ -52,7 +48,7 @@ export async function GET(
       return NextResponse.json({ activities: [], total: 0 })
     }
 
-    return NextResponse.json({ activities: activities.activities, total })
+    return NextResponse.json({ activities: activities, total })
   } catch (error) {
     console.error("Error fetching activities:", error)
     return NextResponse.json(
