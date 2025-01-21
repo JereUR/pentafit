@@ -9,19 +9,24 @@ import { ActivityData, columns } from "@/types/activity"
 import { Pagination } from "@/components/Pagination"
 import ActivitiesHeader from './ActivitiesHeader'
 import ActivitiesTable from './ActivitiesTable'
+import { useDeleteActivityMutation } from '@/app/(main)/(authenticated)/actividades/mutations'
+import { useToast } from '@/hooks/use-toast'
+import { PAGE_SIZE } from '@/lib/prisma'
 
 export default function ActivitiesDashboard() {
   const router = useRouter()
   const { workingFacility } = useWorkingFacility()
   const [page, setPage] = useState(1)
   const [visibleColumns, setVisibleColumns] = useState<Set<keyof ActivityData>>(new Set(columns.map(col => col.key)))
-  const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set())
+  const [selectedRows, setSelectedRows] = useState<string[]>([])
   const [selectedCount, setSelectedCount] = useState(0)
 
   const { data, isLoading, isError, error } = useActivities(workingFacility?.id, page)
+  const { mutate: deleteActivity, isPending: isDeleting } = useDeleteActivityMutation()
+  const { toast } = useToast()
 
   useEffect(() => {
-    setSelectedCount(selectedRows.size)
+    setSelectedCount(selectedRows.length)
   }, [selectedRows])
 
   if (!workingFacility) return <p className="text-center p-4">No hay un establecimiento seleccionado.</p>
@@ -42,35 +47,42 @@ export default function ActivitiesDashboard() {
 
   const toggleRowSelection = (id: string) => {
     setSelectedRows(prev => {
-      const newSet = new Set(prev)
-      if (newSet.has(id)) {
-        newSet.delete(id)
-      } else {
-        newSet.add(id)
+      if (prev.includes(id)) {
+        return prev.filter(rowId => rowId !== id)
       }
-      return newSet
+      return [...prev, id]
     })
   }
 
   const toggleAllRows = () => {
-    if (selectedRows.size === data.activities.length) {
-      setSelectedRows(new Set())
-    } else {
-      setSelectedRows(new Set(data.activities.map(a => a.id)))
-    }
+    setSelectedRows(prev => {
+      if (prev.length === data?.activities.length) {
+        return []
+      }
+      return data ? data.activities.map(activity => activity.id) : []
+    })
   }
 
   const handleDeleteSelected = () => {
-    console.log(`Deleting ${selectedCount} activities`)
-    // Implement delete logic here
+    deleteActivity({ activityIds: selectedRows, facilityId: workingFacility.id }, {
+      onSuccess: () => {
+        setSelectedRows([])
+      },
+      onError: (error) => {
+        toast({
+          variant: "destructive",
+          title: "Error al eliminar el establecimiento",
+          description: error.message,
+        })
+      },
+    })
   }
 
   const handleAddToFacility = () => {
     console.log(`Adding ${selectedCount} activities to facility`)
-    // Implement add to facility logic here
   }
 
-  const totalPages = Math.ceil(data.total / 10)
+  const totalPages = Math.ceil(data ? data.total / PAGE_SIZE : 0)
 
   return (
     <div className="w-full space-y-6">
@@ -81,13 +93,17 @@ export default function ActivitiesDashboard() {
         onAddToFacility={handleAddToFacility}
         visibleColumns={visibleColumns}
         onToggleColumn={toggleColumn}
+        isDeleting={isDeleting}
       />
       <ActivitiesTable
-        activities={data.activities}
+        activities={data ? data.activities : []}
         visibleColumns={visibleColumns}
         selectedRows={selectedRows}
         onToggleRow={toggleRowSelection}
         onToggleAllRows={toggleAllRows}
+        deleteActivity={deleteActivity}
+        isDeleting={isDeleting}
+        isLoading={isLoading}
       />
       <Pagination
         currentPage={page}

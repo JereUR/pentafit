@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button"
 import { ActivityData, columns } from "@/types/activity"
 import { SquarePlus } from "lucide-react"
 import ColumnSelector from "./ColumnSelector"
+import { DeleteConfirmationDialog } from "../DeleteConfirmationDialog"
 
 
 interface ActivitiesHeaderProps {
@@ -11,6 +12,7 @@ interface ActivitiesHeaderProps {
   onAddToFacility: () => void
   visibleColumns: Set<keyof ActivityData>
   onToggleColumn: (column: keyof ActivityData) => void
+  isDeleting: boolean
 }
 
 export default function ActivitiesHeader({
@@ -19,7 +21,8 @@ export default function ActivitiesHeader({
   onDeleteSelected,
   onAddToFacility,
   visibleColumns,
-  onToggleColumn
+  onToggleColumn,
+  isDeleting
 }: ActivitiesHeaderProps) {
   return (
     <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-4">
@@ -33,9 +36,7 @@ export default function ActivitiesHeader({
         <div className="flex flex-col md:flex-row gap-2 items-center">
           {selectedCount > 0 && (
             <>
-              <Button onClick={onDeleteSelected} variant="destructive" className="w-full sm:w-auto">
-                Eliminar {selectedCount} actividad{selectedCount !== 1 ? 'es' : ''}
-              </Button>
+              <DeleteConfirmationDialog itemName={`las ${selectedCount} actividaades seleccionadas`} onDelete={onDeleteSelected} isDeleting={isDeleting} count={selectedCount}/>
               <Button onClick={onAddToFacility} variant="secondary" className="w-full sm:w-auto">
                 Agregar a establecimiento
               </Button>
