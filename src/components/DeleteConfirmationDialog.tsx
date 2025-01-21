@@ -20,13 +20,15 @@ interface DeleteConfirmationDialogProps {
   onDelete: () => void
   isDeleting: boolean
   buttonClassName?: string
+  count?: number
 }
 
 export function DeleteConfirmationDialog({
   itemName,
   onDelete,
   isDeleting,
-  buttonClassName = "w-full sm:w-auto"
+  buttonClassName = "w-full sm:w-auto",
+  count
 }: DeleteConfirmationDialogProps) {
   const [isOpen, setIsOpen] = useState(false)
 
@@ -39,7 +41,7 @@ export function DeleteConfirmationDialog({
     <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
       <AlertDialogTrigger asChild>
         <Button variant="destructive" className={buttonClassName} onClick={(e) => e.stopPropagation()}>
-          <Trash2 className="mr-2 h-4 w-4" /> Eliminar
+          <Trash2 className="mr-2 h-4 w-4" /> Eliminar {count && `(${count})`}
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
