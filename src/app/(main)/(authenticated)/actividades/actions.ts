@@ -98,28 +98,31 @@ export async function updateActivity(id: string, values: ActivityValues) {
   }
 }
 
-export async function deleteActivity(id: string) {
+export async function deleteActivities(activityIds: string[]) {
   try {
-    const activity = await prisma.activity.findUnique({
-      where: { id },
-      select: { facilityId: true },
+    const { count } = await prisma.activity.deleteMany({
+      where: {
+        id: { in: activityIds },
+      },
     })
 
-    if (!activity) {
-      throw new Error("Actividad no encontrada")
+    if (count === 0) {
+      throw new Error("No se encontraron actividades para eliminar")
     }
 
-    const deletedActivity = await prisma.activity.delete({
-      where: { id },
-    })
-
-    revalidatePath(`/actividades`)
-    return { success: true, deletedActivity }
+    return {
+      success: true,
+      message: `Se ${count === 1 ? "ha" : "han"} eliminado ${count} ${count === 1 ? "actividad" : "actividades"} correctamente`,
+      deletedCount: count,
+    }
   } catch (error) {
-    console.error("Error deleting activity:", error)
-    if (error instanceof Error) {
-      return { error: error.message }
+    console.error("Error deleting activities:", error)
+    return {
+      success: false,
+      message:
+        error instanceof Error
+          ? error.message
+          : "Error al eliminar las actividades",
     }
-    return { error: "Error al eliminar la actividad" }
   }
 }

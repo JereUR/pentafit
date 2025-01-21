@@ -4,7 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query"
 
 import { useToast } from "@/hooks/use-toast"
 import { ActivityValues } from "@/lib/validation"
-import { createActivity, deleteActivity, updateActivity } from "./actions"
+import { createActivity, deleteActivities, updateActivity } from "./actions"
 
 export function useCreateActivityMutation() {
   const { toast } = useToast()
@@ -77,20 +77,39 @@ export function useDeleteActivityMutation() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async ({ id }: { id: string }) => {
-      const result = await deleteActivity(id)
-      if (result.error) {
-        throw new Error(result.error)
+    mutationFn: async ({
+      activityIds,
+      facilityId,
+    }: {
+      activityIds: string | string[]
+      facilityId: string
+    }) => {
+      const idsArray = Array.isArray(activityIds) ? activityIds : [activityIds]
+      const result = await deleteActivities(idsArray)
+      if (!result.success) {
+        throw new Error(result.message)
       }
-      return result.deletedActivity
+
+      const { message, deletedCount } = result
+
+      return { message, deletedCount, facilityId }
     },
-    onSuccess: (deletedActivity) => {
+    onSuccess: (message) => {
+      const { message: description, deletedCount, facilityId } = message
+
+      const title =
+        deletedCount === undefined
+          ? "Error al eliminar actividades"
+          : deletedCount === 1
+            ? "Actividad eliminada correctamente"
+            : "Actividades eliminadas correctamente"
+
       toast({
-        title: "Actividad eliminada correctamente",
-        description: `Se ha eliminado ${deletedActivity?.name || "la actividad"}`,
+        title,
+        description,
       })
       queryClient.invalidateQueries({
-        queryKey: ["activities", deletedActivity?.facilityId],
+        queryKey: ["activities", facilityId],
       })
     },
     onError: (error: Error) => {
