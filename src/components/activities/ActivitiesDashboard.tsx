@@ -88,7 +88,6 @@ export default function ActivitiesDashboard() {
         selectedRows={selectedRows}
         onToggleRow={toggleRowSelection}
         onToggleAllRows={toggleAllRows}
-        onEditActivity={(id) => router.push(`/actividades/editar/${id}`)}
       />
       <Pagination
         currentPage={page}

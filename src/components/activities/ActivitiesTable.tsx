@@ -9,7 +9,6 @@ interface ActivitiesTableProps {
   selectedRows: Set<string>
   onToggleRow: (id: string) => void
   onToggleAllRows: () => void
-  onEditActivity: (id: string) => void
 }
 
 export default function ActivitiesTable({
@@ -17,8 +16,7 @@ export default function ActivitiesTable({
   visibleColumns,
   selectedRows,
   onToggleRow,
-  onToggleAllRows,
-  onEditActivity
+  onToggleAllRows
 }: ActivitiesTableProps) {
   return (
     <div className="w-[90vw] md:w-full overflow-x-auto border rounded-md scrollbar-thin mx-auto">
@@ -51,7 +49,6 @@ export default function ActivitiesTable({
               visibleColumns={visibleColumns}
               isSelected={selectedRows.has(activity.id)}
               onToggleRow={onToggleRow}
-              onEditActivity={onEditActivity}
             />
           ))}
         </TableBody>

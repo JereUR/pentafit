@@ -3,6 +3,11 @@ import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { ActivityData, columns } from "@/types/activity"
 import { cn } from "@/lib/utils"
+import Link from "next/link"
+import { Edit } from "lucide-react"
+import { DeleteConfirmationDialog } from "../DeleteConfirmationDialog"
+import { useDeleteActivityMutation } from "@/app/(main)/(authenticated)/actividades/mutations"
+import { useToast } from "@/hooks/use-toast"
 
 interface ActivityRowProps {
   activity: ActivityData
@@ -10,7 +15,6 @@ interface ActivityRowProps {
   visibleColumns: Set<keyof ActivityData>
   isSelected: boolean
   onToggleRow: (id: string) => void
-  onEditActivity: (id: string) => void
 }
 
 export default function ActivityRow({
@@ -18,9 +22,24 @@ export default function ActivityRow({
   index,
   visibleColumns,
   isSelected,
-  onToggleRow,
-  onEditActivity
+  onToggleRow
 }: ActivityRowProps) {
+  const { mutate: deleteActivity, isPending: isDeleting } = useDeleteActivityMutation()
+
+  const { toast } = useToast()
+
+  const handleDelete = () => {
+    deleteActivity({ activityIds: activity.id, facilityId: activity.facilityId }, {
+      onError: (error) => {
+        toast({
+          variant: "destructive",
+          title: "Error al eliminar el establecimiento",
+          description: error.message,
+        })
+      },
+    })
+  }
+
   return (
     <TableRow
       className={cn(
@@ -46,8 +65,16 @@ export default function ActivityRow({
       ))}
       <TableCell className="text-center">
         <div className="flex flex-col sm:flex-row justify-center gap-2">
-          <Button variant="outline" size="sm" className="w-full sm:w-auto" onClick={() => onEditActivity(activity.id)}>Editar</Button>
-          <Button variant="destructive" size="sm" className="w-full sm:w-auto">Borrar</Button>
+          <Button asChild variant="outline" className="w-full sm:w-auto" onClick={(e) => e.stopPropagation()}>
+            <Link href={`/actividades/editar/${activity.id}`}>
+              <Edit className="mr-2 h-4 w-4" /> Editar
+            </Link>
+          </Button>
+          <DeleteConfirmationDialog
+            itemName={`la actividad ${activity.name}`}
+            onDelete={handleDelete}
+            isDeleting={isDeleting}
+          />
         </div>
       </TableCell>
     </TableRow>
