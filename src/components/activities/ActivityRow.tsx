@@ -1,12 +1,13 @@
+import Link from "next/link"
+import { Edit } from "lucide-react"
+import { UseMutateFunction } from "@tanstack/react-query"
+
 import { TableCell, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { ActivityData, columns } from "@/types/activity"
 import { cn } from "@/lib/utils"
-import Link from "next/link"
-import { Edit } from "lucide-react"
 import { DeleteConfirmationDialog } from "../DeleteConfirmationDialog"
-import { useDeleteActivityMutation } from "@/app/(main)/(authenticated)/actividades/mutations"
 import { useToast } from "@/hooks/use-toast"
 
 interface ActivityRowProps {
@@ -15,6 +16,8 @@ interface ActivityRowProps {
   visibleColumns: Set<keyof ActivityData>
   isSelected: boolean
   onToggleRow: (id: string) => void
+  deleteActivity: UseMutateFunction<{ message: string; deletedCount: number | undefined; facilityId: string; }, Error, { activityIds: string | string[]; facilityId: string; }, unknown>
+  isDeleting: boolean
 }
 
 export default function ActivityRow({
@@ -22,9 +25,10 @@ export default function ActivityRow({
   index,
   visibleColumns,
   isSelected,
-  onToggleRow
+  onToggleRow,
+  deleteActivity,
+  isDeleting
 }: ActivityRowProps) {
-  const { mutate: deleteActivity, isPending: isDeleting } = useDeleteActivityMutation()
 
   const { toast } = useToast()
 
