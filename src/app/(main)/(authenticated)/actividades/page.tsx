@@ -24,7 +24,7 @@ export default async function ActivitiesPage() {
         </section>
         <section className="flex-1">
           <Suspense fallback={<Loader2 className="mx-auto animate-spin" />}>
-            <ActivitiesDashboard />
+            <ActivitiesDashboard userId={user.id}/>
           </Suspense>
         </section>
       </div>
