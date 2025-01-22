@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use server"
 
 import { revalidatePath } from "next/cache"
@@ -123,6 +124,55 @@ export async function deleteActivities(activityIds: string[]) {
         error instanceof Error
           ? error.message
           : "Error al eliminar las actividades",
+    }
+  }
+}
+
+export async function replicateActivities(
+  activityIds: string[],
+  targetFacilityIds: string[],
+) {
+  try {
+    const activities = await prisma.activity.findMany({
+      where: { id: { in: activityIds } },
+    })
+
+    const replicatedActivities = await Promise.all(
+      targetFacilityIds.flatMap(async (facilityId) =>
+        activities.map(async (activity) => {
+          const {
+            id,
+            createdAt,
+            updatedAt,
+            facilityId: _,
+            ...activityData
+          } = activity
+          return prisma.activity.create({
+            data: {
+              ...activityData,
+              facilityId: facilityId,
+            },
+          })
+        }),
+      ),
+    )
+
+    const flattenedActivities = replicatedActivities.flat()
+
+    revalidatePath(`/actividades`)
+    return {
+      success: true,
+      message: `Se han replicado ${flattenedActivities.length} actividades en ${targetFacilityIds.length} establecimientos.`,
+      replicatedCount: flattenedActivities.length,
+    }
+  } catch (error) {
+    console.error("Error replicating activities:", error)
+    return {
+      success: false,
+      message:
+        error instanceof Error
+          ? error.message
+          : "Error al replicar las actividades",
     }
   }
 }
