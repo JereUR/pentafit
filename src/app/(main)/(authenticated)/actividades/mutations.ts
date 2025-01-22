@@ -4,7 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query"
 
 import { useToast } from "@/hooks/use-toast"
 import { ActivityValues } from "@/lib/validation"
-import { createActivity, deleteActivities, updateActivity } from "./actions"
+import { createActivity, deleteActivities, updateActivity, replicateActivities } from "./actions"
 
 export function useCreateActivityMutation() {
   const { toast } = useToast()
@@ -116,6 +116,43 @@ export function useDeleteActivityMutation() {
       toast({
         variant: "destructive",
         title: "Error al eliminar la actividad",
+        description: error.message,
+      })
+    },
+  })
+}
+
+export function useReplicateActivityMutation() {
+  const { toast } = useToast()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({
+      activityIds,
+      targetFacilityIds,
+    }: {
+      activityIds: string[]
+      targetFacilityIds: string[]
+    }) => {
+      const result = await replicateActivities(activityIds, targetFacilityIds)
+      if (!result.success) {
+        throw new Error(result.message)
+      }
+      return result
+    },
+    onSuccess: (result) => {
+      toast({
+        title: "Actividades replicadas correctamente",
+        description: result.message,
+      })
+      queryClient.invalidateQueries({
+        queryKey: ["activities"],
+      })
+    },
+    onError: (error: Error) => {
+      toast({
+        variant: "destructive",
+        title: "Error al replicar las actividades",
         description: error.message,
       })
     },
