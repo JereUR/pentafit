@@ -15,11 +15,18 @@ export async function GET(
     const { searchParams } = request.nextUrl
     const page = parseInt(searchParams.get("page") || "1", 10)
     const pageSize = parseInt(searchParams.get("pageSize") || "10", 10)
+    const search = searchParams.get("search") || ""
     const skip = (page - 1) * pageSize
 
     const [activities, total] = await Promise.all([
       prisma.activity.findMany({
-        where: { facilityId: id },
+        where: {
+          facilityId: id,
+          name: {
+            contains: search,
+            mode: "insensitive",
+          },
+        },
         select: {
           id: true,
           name: true,
@@ -40,7 +47,13 @@ export async function GET(
         take: pageSize,
       }),
       prisma.activity.count({
-        where: { facilityId: id },
+        where: {
+          facilityId: id,
+          name: {
+            contains: search,
+            mode: "insensitive",
+          },
+        },
       }),
     ])
 
