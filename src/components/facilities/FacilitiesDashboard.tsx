@@ -1,6 +1,5 @@
 'use client'
 
-import { User } from "lucia"
 import { AlertCircle, Plus } from 'lucide-react'
 import Link from 'next/link'
 
@@ -12,14 +11,14 @@ import { Button } from "@/components/ui/button"
 import { FacilityItem } from "./FacilityItem"
 import { FacilitiesDashboardSkeleton } from "../skeletons/FacilityDashboardSkeleton"
 
-export default function FacilitiesDashboard({ user }: { user: User }) {
+export default function FacilitiesDashboard({ userId }: { userId: string }) {
   const {
     facilities,
     isLoading: isLoadingFacilities,
     error: facilitiesError,
     setWorkingFacility,
     isUpdatingFacility
-  } = useFacilities(user.id)
+  } = useFacilities(userId)
 
   const { workingFacility, isLoading: isLoadingWorkingFacility } = useWorkingFacility()
 

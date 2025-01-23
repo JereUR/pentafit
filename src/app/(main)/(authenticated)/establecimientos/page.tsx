@@ -17,7 +17,7 @@ export default async function FacilitiesPage() {
   return (
     <main className="flex container gap-5 p-5">
       <Suspense fallback={<Loader2 className="mx-auto animate-spin" />}>
-        <FacilitiesDashboard user={user} />
+        <FacilitiesDashboard userId={user.id} />
       </Suspense>
     </main>
   )
