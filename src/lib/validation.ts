@@ -1,4 +1,4 @@
-import { MembershipLevel } from "@prisma/client"
+import { MembershipLevel, Role } from "@prisma/client"
 import { z } from "zod"
 
 const requiredString = z.string().trim().min(1, "Este campo es requerido")
@@ -113,3 +113,48 @@ export const activitySchema = z.object({
 })
 
 export type ActivityValues = z.infer<typeof activitySchema>
+
+export const teamSchema = z
+  .object({
+    firstName: requiredString.min(1, "El nombre es requerido"),
+    lastName: requiredString.min(1, "El apellido es requerido"),
+    email: requiredString.email("El correo electrónico es inválido"),
+    gender: requiredString,
+    birthday: z
+      .string({
+        required_error: "La fecha de nacimiento es requerida",
+        invalid_type_error: "Formato de fecha inválido",
+      })
+      .refine(
+        (date) => {
+          return !isNaN(Date.parse(date))
+        },
+        {
+          message: "Formato de fecha inválido",
+        },
+      ),
+    role: z.enum([Role.SUPER_ADMIN, Role.ADMIN, Role.STAFF, Role.DEFAULT]),
+    password: requiredString.min(
+      8,
+      "La contraseña debe tener al menos 8 caracteres",
+    ),
+    avatarUrl: z
+      .string()
+      .url("La URL del avatar debe ser válida")
+      .nullable()
+      .default(null),
+    confirmPassword: requiredString,
+    facilities: z.array(
+      z.object({
+        id: z.string(),
+        name: z.string(),
+        logoUrl: z.string().optional(),
+      }),
+    ),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Las contraseñas no coinciden",
+    path: ["confirmPassword"],
+  })
+
+export type TeamValues = z.infer<typeof teamSchema>
