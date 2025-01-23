@@ -1,24 +1,30 @@
-import { useState } from 'react'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+"use client"
 
-import { Button } from '@/components/ui/button'
-import { navItems } from '@/config/nav'
-import { Logo } from './Logo'
-import { ThemeToggle } from '../ThemeToggle'
-import { NavItemComponent } from './NavItemComponente'
+import { useState } from "react"
+import { ChevronLeft, ChevronRight } from "lucide-react"
+
+import { Button } from "@/components/ui/button"
+import { navItems } from "@/config/nav"
+import { Logo } from "./Logo"
+import { ThemeToggle } from "../ThemeToggle"
+import { NavItemComponent } from "./NavItemComponente"
+import type { Role } from "@prisma/client"
 
 interface NavContentProps {
   isExpanded: boolean
   onExpandedChange: (expanded: boolean) => void
   onClose: () => void
+  userRole: Role
 }
 
-export function NavContent({ isExpanded, onExpandedChange, onClose }: NavContentProps) {
+export function NavContent({ isExpanded, onExpandedChange, onClose, userRole }: NavContentProps) {
   const [openItems, setOpenItems] = useState<Record<string, boolean>>({})
 
   const toggleSubmenu = (title: string) => {
-    setOpenItems(prev => ({ ...prev, [title]: !prev[title] }))
+    setOpenItems((prev) => ({ ...prev, [title]: !prev[title] }))
   }
+
+  const filteredNavItems = navItems.filter((item) => !item.roles || item.roles.includes(userRole))
 
   return (
     <div className="flex flex-col h-full">
@@ -34,7 +40,7 @@ export function NavContent({ isExpanded, onExpandedChange, onClose }: NavContent
         </Button>
       </div>
       <nav className="flex-1 overflow-y-auto space-y-2 p-2">
-        {navItems.map((item) => (
+        {filteredNavItems.map((item) => (
           <NavItemComponent
             key={item.title}
             item={item}
@@ -51,3 +57,4 @@ export function NavContent({ isExpanded, onExpandedChange, onClose }: NavContent
     </div>
   )
 }
+

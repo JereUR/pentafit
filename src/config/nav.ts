@@ -10,17 +10,39 @@ import {
   MessageSquare,
 } from "lucide-react"
 
-import { NavItem } from "@/types/sidebar"
+import type { NavItem } from "@/types/sidebar"
+import { Role } from "@prisma/client"
 
 export const navItems: NavItem[] = [
   { title: "Inicio", icon: Home, href: "/panel-de-control" },
-  { title: "Establecimientos", icon: Building2, href: "/establecimientos" },
-  { title: "Equipo", icon: Users, href: "/equipo" },
-  { title: "Agenda", icon: Calendar, href: "/agenda" },
-  { title: "Actividades", icon: ClipboardList, href: "/actividades" },
+  {
+    title: "Establecimientos",
+    icon: Building2,
+    href: "/establecimientos",
+    roles: [Role.SUPER_ADMIN],
+  },
+  {
+    title: "Equipo",
+    icon: Users,
+    href: "/equipo",
+    roles: [Role.SUPER_ADMIN, Role.ADMIN],
+  },
+  {
+    title: "Agenda",
+    icon: Calendar,
+    href: "/agenda",
+    roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.STAFF],
+  },
+  {
+    title: "Actividades",
+    icon: ClipboardList,
+    href: "/actividades",
+    roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.STAFF],
+  },
   {
     title: "Facturación",
     icon: Receipt,
+    roles: [Role.SUPER_ADMIN, Role.ADMIN],
     items: [
       { title: "Facturas", href: "/facturacion/facturas" },
       { title: "Pagos", href: "/facturacion/pagos" },
@@ -34,6 +56,7 @@ export const navItems: NavItem[] = [
       { title: "Rutinas", href: "/entrenamiento/rutinas" },
       { title: "Planes", href: "/entrenamiento/planes" },
     ],
+    roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.STAFF],
   },
   {
     title: "Comunicación",
