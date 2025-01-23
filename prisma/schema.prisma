@@ -35,6 +35,7 @@ model User {
   email           String?         @unique
   birthday        String
   gender          String
+  role            Role            @default(DEFAULT)
   passwordHash    String?
   googleId        String?         @unique
   avatarUrl       String?
