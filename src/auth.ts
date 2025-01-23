@@ -5,7 +5,7 @@ import { cookies } from "next/headers"
 import { Google } from "arctic"
 
 import prisma from "./lib/prisma"
-import { MembershipLevel } from "@prisma/client"
+import { MembershipLevel, Role } from "@prisma/client"
 
 const adapter = new PrismaAdapter(prisma.session, prisma.user)
 
@@ -73,6 +73,29 @@ export const validateRequest = cache(
     return result
   },
 )
+
+export const validateRole = cache(async (): Promise<{ role: Role } | null> => {
+  const { user: loggedInUser } = await validateRequest()
+
+  if (!loggedInUser) {
+    return null
+  }
+
+  const user = await prisma.user.findFirst({
+    where: {
+      id: loggedInUser.id,
+    },
+    select: {
+      role: true,
+    },
+  })
+
+  if (!user) {
+    return null
+  }
+
+  return { role: user.role }
+})
 
 export const validateMembership = cache(
   async (): Promise<{ membership: MembershipLevel } | null> => {
