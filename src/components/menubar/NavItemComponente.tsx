@@ -56,13 +56,15 @@ export function NavItemComponent({ item, isExpanded, isOpen, onToggle, onClose }
                 !isExpanded && 'lg:hidden'
               )}
             >
-              <Link href={subItem.href} onClick={() => {
-                if (window.innerWidth < 1024) {
-                  onClose()
-                }
-              }}>
-                {subItem.title}
-              </Link>
+              {subItem.href && (
+                <Link href={subItem.href} onClick={() => {
+                  if (window.innerWidth < 1024) {
+                    onClose()
+                  }
+                }}>
+                  {subItem.title}
+                </Link>
+              )}
             </Button>
           ))}
         </CollapsibleContent>
