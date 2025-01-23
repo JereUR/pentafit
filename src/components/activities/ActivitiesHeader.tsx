@@ -1,10 +1,11 @@
-import { Button } from "@/components/ui/button"
-import { type ActivityData, columns } from "@/types/activity"
 import { SquarePlus, Search } from "lucide-react"
-import ColumnSelector from "./ColumnSelector"
+
+import { Button } from "@/components/ui/button"
+import { type ActivityData, columnsActivities } from "@/types/activity"
 import { DeleteConfirmationDialog } from "../DeleteConfirmationDialog"
 import { Input } from "@/components/ui/input"
 import { ReplicateConfirmationDialog } from "../ReplicateConfirmationDialog"
+import ColumnSelector from "../ColumnSelector"
 
 interface ActivitiesHeaderProps {
   selectedCount: number
@@ -50,7 +51,7 @@ export default function ActivitiesHeader({
               className="pl-8"
             />
           </div>
-          <ColumnSelector columns={columns} visibleColumns={visibleColumns} onToggleColumn={onToggleColumn} />
+          <ColumnSelector columns={columnsActivities} visibleColumns={visibleColumns} onToggleColumn={onToggleColumn} />
         </div>
         <div className="flex flex-col md:flex-row gap-2 items-center">
           {selectedCount > 0 && (

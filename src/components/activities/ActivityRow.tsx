@@ -5,7 +5,7 @@ import { UseMutateFunction } from "@tanstack/react-query"
 import { TableCell, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
-import { ActivityData, columns } from "@/types/activity"
+import { ActivityData, columnsActivities } from "@/types/activity"
 import { cn } from "@/lib/utils"
 import { DeleteConfirmationDialog } from "../DeleteConfirmationDialog"
 import { useToast } from "@/hooks/use-toast"
@@ -56,7 +56,7 @@ export default function ActivityRow({
           onCheckedChange={() => onToggleRow(activity.id)}
         />
       </TableCell>
-      {columns.filter(col => visibleColumns.has(col.key)).map((column) => (
+      {columnsActivities.filter(col => visibleColumns.has(col.key)).map((column) => (
         <TableCell key={column.key} className="border-x text-center">
           {column.key === 'isPublic' || column.key === 'generateInvoice' || column.key === 'mpAvailable' ? (
             <Checkbox checked={activity[column.key] as boolean} disabled />

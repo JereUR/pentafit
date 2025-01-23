@@ -2,17 +2,17 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { useDebounce } from "use-debounce"
 
 import { useActivities } from "@/hooks/useActivities"
 import { useWorkingFacility } from "@/contexts/WorkingFacilityContext"
-import { type ActivityData, columns } from "@/types/activity"
+import { type ActivityData, columnsActivities } from "@/types/activity"
 import { Pagination } from "@/components/Pagination"
 import ActivitiesHeader from "./ActivitiesHeader"
 import ActivitiesTable from "./ActivitiesTable"
 import { useDeleteActivityMutation, useReplicateActivityMutation } from "@/app/(main)/(authenticated)/actividades/mutations"
 import { useToast } from "@/hooks/use-toast"
 import { PAGE_SIZE } from "@/lib/prisma"
-import { useDebounce } from "use-debounce"
 import { TableSkeleton } from "../skeletons/TableSkeleton"
 
 export default function ActivitiesDashboard({ userId }: { userId: string }) {
@@ -21,7 +21,7 @@ export default function ActivitiesDashboard({ userId }: { userId: string }) {
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState("")
   const [debouncedSearch] = useDebounce(search, 400)
-  const [visibleColumns, setVisibleColumns] = useState<Set<keyof ActivityData>>(new Set(columns.map((col) => col.key)))
+  const [visibleColumns, setVisibleColumns] = useState<Set<keyof ActivityData>>(new Set(columnsActivities.map((col) => col.key)))
   const [selectedRows, setSelectedRows] = useState<string[]>([])
   const [selectedCount, setSelectedCount] = useState(0)
 

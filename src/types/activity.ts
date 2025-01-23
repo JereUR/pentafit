@@ -1,4 +1,4 @@
-export const columns: { key: keyof ActivityData; label: string }[] = [
+export const columnsActivities: { key: keyof ActivityData; label: string }[] = [
   { key: "name", label: "Nombre" },
   { key: "description", label: "Descripción" },
   { key: "price", label: "Precio" },
