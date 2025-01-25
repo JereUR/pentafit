@@ -17,7 +17,7 @@ datasource db {
 enum Role {
   SUPER_ADMIN
   ADMIN
-  DEFAULT
+  CLIENT
   STAFF
 }
 
@@ -35,7 +35,7 @@ model User {
   email           String?         @unique
   birthday        String
   gender          String
-  role            Role            @default(DEFAULT)
+  role            Role            @default(CLIENT)
   passwordHash    String?
   googleId        String?         @unique
   avatarUrl       String?
