@@ -1,3 +1,5 @@
+import {Analytics} from '@vercel/analytics/next'
+
 import { validateRequest } from "@/auth"
 import SessionProvider from "./SessionProvider"
 import { ClientAuthCheck } from "@/components/ClientAuthCheck"
@@ -14,6 +16,7 @@ export default async function Layout({
       <ClientAuthCheck user={user}>
         <div className="flex min-h-screen flex-col">
           {children}
+          <Analytics />
         </div>
       </ClientAuthCheck>
     </SessionProvider>
