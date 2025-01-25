@@ -20,11 +20,11 @@ import {
 import { ActivityValues } from "@/lib/validation"
 import { activitiesType, paymentsType } from "@/types/activity"
 
-interface DetailsTabFormProps {
+interface DetailsTabActivityFormProps {
   control: Control<ActivityValues>
 }
 
-export function DetailsTabForm({ control }: DetailsTabFormProps) {
+export function DetailsTabActivityForm({ control }: DetailsTabActivityFormProps) {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

@@ -13,11 +13,11 @@ import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
 import { ActivityValues } from "@/lib/validation"
 
-interface GeneralInfoTabFormProps {
+interface GeneralInfoTabActivityFormProps {
   control: Control<ActivityValues>
 }
 
-export function GeneralInfoTabForm({ control }: GeneralInfoTabFormProps) {
+export function GeneralInfoTabActivityForm({ control }: GeneralInfoTabActivityFormProps) {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
