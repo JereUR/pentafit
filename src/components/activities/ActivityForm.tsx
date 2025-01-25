@@ -3,7 +3,6 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useState, useEffect } from "react"
 import { useForm } from "react-hook-form"
-import { useRouter } from "next/navigation"
 
 import { Form } from "@/components/ui/form"
 import {
@@ -22,12 +21,12 @@ import {
 import LoadingButton from "@/components/LoadingButton"
 import ErrorText from "@/components/ErrorText"
 import { activitySchema, type ActivityValues } from "@/lib/validation"
-import { GeneralInfoTabForm } from "./GeneralInfoTabForm"
-import { DetailsTabForm } from "./DetailsTabForm"
 import { useWorkingFacility } from "@/contexts/WorkingFacilityContext"
 import NoWorkingFacilityMessage from "../NoWorkingFacilityMessage"
 import WorkingFacility from "../WorkingFacility"
 import { useCreateActivityMutation, useUpdateActivityMutation } from "@/app/(main)/(authenticated)/actividades/mutations"
+import { GeneralInfoTabActivityForm } from "./GeneralInfoTabActivityForm"
+import { DetailsTabActivityForm } from "./DetailsTabActivityForm"
 
 interface ActivityFormProps {
   userId: string
@@ -37,7 +36,6 @@ interface ActivityFormProps {
 export default function ActivityForm({ userId, activityData }: ActivityFormProps) {
   const { workingFacility } = useWorkingFacility()
   const [error, setError] = useState<string>()
-  const router = useRouter()
   const isEditing = !!activityData
 
   const { mutate: createActivity, isPending: isCreating, error: createError } = useCreateActivityMutation()
@@ -80,7 +78,6 @@ export default function ActivityForm({ userId, activityData }: ActivityFormProps
         {
           onSuccess: () => {
             form.reset()
-            router.push('/actividades')
           },
         }
       )
@@ -90,7 +87,6 @@ export default function ActivityForm({ userId, activityData }: ActivityFormProps
         {
           onSuccess: () => {
             form.reset()
-            router.push('/actividades')
           },
         }
       )
@@ -141,10 +137,10 @@ export default function ActivityForm({ userId, activityData }: ActivityFormProps
                   <TabsTrigger value="details">Detalles</TabsTrigger>
                 </TabsList>
                 <TabsContent value="general">
-                  <GeneralInfoTabForm control={form.control} />
+                  <GeneralInfoTabActivityForm control={form.control} />
                 </TabsContent>
                 <TabsContent value="details">
-                  <DetailsTabForm control={form.control} />
+                  <DetailsTabActivityForm control={form.control} />
                 </TabsContent>
               </Tabs>
               <LoadingButton
