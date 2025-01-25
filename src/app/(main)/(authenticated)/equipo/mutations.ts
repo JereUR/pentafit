@@ -3,15 +3,24 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 
 import { useToast } from "@/hooks/use-toast"
-import { TeamValues } from "@/lib/validation"
+import { MemberValues } from "@/lib/validation"
 import { createMember, deleteMember, updateMember } from "./actions"
+import { useUploadThing } from "@/lib/uploadthing"
 
 export function useCreateMemberMutation() {
   const { toast } = useToast()
   const queryClient = useQueryClient()
+  const { startUpload } = useUploadThing("imageUploader")
 
   return useMutation({
-    mutationFn: async (values: TeamValues) => {
+    mutationFn: async (values: MemberValues, avatar?: File) => {
+      if (avatar) {
+        const uploadResult = await startUpload([avatar])
+        if (uploadResult && uploadResult[0]) {
+          values = { ...values, avatarUrl: uploadResult[0].url }
+        }
+      }
+
       const result = await createMember(values)
       if (result.error) {
         throw new Error(result.error)
@@ -21,7 +30,7 @@ export function useCreateMemberMutation() {
     },
     onSuccess: (newMember) => {
       toast({
-        title: "Miembro agregado correctamente",
+        title: "Integrante agregado correctamente",
       })
       queryClient.invalidateQueries({
         queryKey: ["team", newMember?.facilities.map((f) => f.facilityId)],
@@ -30,7 +39,7 @@ export function useCreateMemberMutation() {
     onError: (error: Error) => {
       toast({
         variant: "destructive",
-        title: "Error al agregar miembro",
+        title: "Error al agregar integrante",
         description: error.message,
       })
     },
@@ -40,9 +49,25 @@ export function useCreateMemberMutation() {
 export function useUpdateMemberMutation() {
   const { toast } = useToast()
   const queryClient = useQueryClient()
+  const { startUpload } = useUploadThing("imageUploader")
 
   return useMutation({
-    mutationFn: async ({ id, values }: { id: string; values: TeamValues }) => {
+    mutationFn: async ({
+      id,
+      values,
+      avatar,
+    }: {
+      id: string
+      values: MemberValues
+      avatar?: File
+    }) => {
+      if (avatar) {
+        const uploadResult = await startUpload([avatar])
+        if (uploadResult && uploadResult[0]) {
+          values = { ...values, avatarUrl: uploadResult[0].url }
+        }
+      }
+
       const result = await updateMember(id, values)
       if (result.error) {
         throw new Error(result.error)
@@ -95,10 +120,10 @@ export function useDeleteMemberMutation() {
 
       const title =
         deletedCount === undefined
-          ? "Error al eliminar miembros"
+          ? "Error al eliminar integrantes"
           : deletedCount === 1
-            ? "Miembro eliminado correctamente"
-            : "Miembros eliminados correctamente"
+            ? "Integrante eliminado correctamente"
+            : "Integrantes eliminados correctamente"
 
       toast({
         title,
@@ -111,7 +136,7 @@ export function useDeleteMemberMutation() {
     onError: (error: Error) => {
       toast({
         variant: "destructive",
-        title: "Error al eliminar al miembro",
+        title: "Error al eliminar al integrante",
         description: error.message,
       })
     },

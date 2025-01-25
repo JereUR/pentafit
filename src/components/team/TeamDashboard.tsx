@@ -83,7 +83,7 @@ export default function TeamDashboard({ userId }: { userId: string }) {
         onError: (error) => {
           toast({
             variant: "destructive",
-            title: "Error al eliminar al miembro",
+            title: "Error al eliminar al integrante",
             description: error.message,
           })
         },

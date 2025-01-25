@@ -74,7 +74,7 @@ export default function TeamTable({
                 colSpan={visibleColumns.size + 2}
                 className="text-center text-foreground/70 italic font-medium py-4"
               >
-                No hay miembros para mostrar.
+                No hay integrantes para mostrar.
               </td>
             </TableRow>
           )}

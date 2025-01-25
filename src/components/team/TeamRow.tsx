@@ -69,7 +69,7 @@ export default function TeamRow({
             </Link>
           </Button>
           <DeleteConfirmationDialog
-            itemName={`al miembro ${member.firstName} ${member.lastName}`}
+            itemName={`al integrante ${member.firstName} ${member.lastName}`}
             onDelete={handleDelete}
             isDeleting={isDeleting}
           />

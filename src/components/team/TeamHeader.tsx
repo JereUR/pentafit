@@ -47,7 +47,7 @@ export default function TeamHeader({
             <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
             <Input
               type="text"
-              placeholder="Buscar miembros..."
+              placeholder="Buscar integrantes..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-8"
@@ -59,13 +59,13 @@ export default function TeamHeader({
           {selectedCount > 0 && (
             <>
               <DeleteConfirmationDialog
-                itemName={`los ${selectedCount} miembros seleccionados`}
+                itemName={`los ${selectedCount} integrantes seleccionados`}
                 onDelete={onDeleteSelected}
                 isDeleting={isDeleting}
                 count={selectedCount}
               />
               <ReplicateConfirmationDialog
-                itemName={`los ${selectedCount} miembros seleccionados`}
+                itemName={`los ${selectedCount} integrantes seleccionados`}
                 onReplicate={onReplicateToFacility}
                 isReplicating={isReplicating}
                 count={selectedCount}
@@ -78,7 +78,7 @@ export default function TeamHeader({
             onClick={onAddMember}
             className="w-full sm:w-auto bg-green-500 dark:bg-green-600 hover:bg-green-600 dark:hover:bg-green-700"
           >
-            Agregar Miembro
+            Agregar Integrante
             <SquarePlus />
           </Button>
         </div>

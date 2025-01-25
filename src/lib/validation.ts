@@ -114,7 +114,7 @@ export const activitySchema = z.object({
 
 export type ActivityValues = z.infer<typeof activitySchema>
 
-export const teamSchema = z
+export const memberSchema = z
   .object({
     firstName: requiredString.min(1, "El nombre es requerido"),
     lastName: requiredString.min(1, "El apellido es requerido"),
@@ -133,7 +133,7 @@ export const teamSchema = z
           message: "Formato de fecha inválido",
         },
       ),
-    role: z.enum([Role.SUPER_ADMIN, Role.ADMIN, Role.STAFF, Role.DEFAULT]),
+    role: z.enum([Role.SUPER_ADMIN, Role.ADMIN, Role.STAFF, Role.CLIENT]),
     password: requiredString.min(
       8,
       "La contraseña debe tener al menos 8 caracteres",
@@ -157,4 +157,4 @@ export const teamSchema = z
     path: ["confirmPassword"],
   })
 
-export type TeamValues = z.infer<typeof teamSchema>
+export type MemberValues = z.infer<typeof memberSchema>

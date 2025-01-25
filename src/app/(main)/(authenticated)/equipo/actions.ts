@@ -6,12 +6,12 @@ import { cache } from "react"
 import { notFound } from "next/navigation"
 import { hash } from "@node-rs/argon2"
 
-import { teamSchema, TeamValues } from "@/lib/validation"
+import { memberSchema, MemberValues } from "@/lib/validation"
 import prisma from "@/lib/prisma"
 import { generateIdFromEntropySize } from "lucia"
 
 export const getMemberById = cache(
-  async (id: string): Promise<TeamValues & { id: string }> => {
+  async (id: string): Promise<MemberValues & { id: string }> => {
     try {
       const member = await prisma.user.findUnique({
         where: { id },
@@ -58,7 +58,7 @@ export const getMemberById = cache(
   },
 )
 
-export async function createMember(values: TeamValues) {
+export async function createMember(values: MemberValues) {
   try {
     const {
       firstName,
@@ -66,11 +66,11 @@ export async function createMember(values: TeamValues) {
       email,
       gender,
       birthday,
-      role,
       avatarUrl,
+      role,
       facilities,
       password,
-    } = teamSchema.parse(values)
+    } = memberSchema.parse(values)
 
     const passwordHash = await hash(password, {
       memoryCost: 19456,
@@ -97,14 +97,14 @@ export async function createMember(values: TeamValues) {
     const member = await prisma.user.create({
       data: {
         id: userId,
-        firstName: firstName,
-        lastName: lastName,
-        email: email,
+        firstName,
+        lastName,
+        email,
         passwordHash,
-        gender: gender,
-        birthday: birthday,
-        role: role,
-        avatarUrl: avatarUrl,
+        gender,
+        birthday,
+        role,
+        avatarUrl,
         facilities: {
           create: facilities.map((facility) => ({
             facilityId: facility.id,
@@ -124,13 +124,13 @@ export async function createMember(values: TeamValues) {
     return { success: true, member }
   } catch (error) {
     console.error(error)
-    return { error: "Error al crear miembro" }
+    return { error: "Error al crear integrante" }
   }
 }
 
-export async function updateMember(id: string, values: TeamValues) {
+export async function updateMember(id: string, values: MemberValues) {
   try {
-    const updateData: Partial<TeamValues & { password?: string }> = {
+    const updateData: Partial<MemberValues & { password?: string }> = {
       firstName: values.firstName,
       lastName: values.lastName,
       email: values.email,
@@ -184,7 +184,7 @@ export async function updateMember(id: string, values: TeamValues) {
     return { success: true, member }
   } catch (error) {
     console.error(error)
-    return { error: "Error al actualizar al miembro del equipo" }
+    return { error: "Error al actualizar al integrante del equipo" }
   }
 }
 
@@ -197,7 +197,7 @@ export async function deleteMember(memberIds: string[]) {
     })
 
     if (count === 0) {
-      throw new Error("No se encontraron miembros para eliminar")
+      throw new Error("No se encontraron integrantes para eliminar")
     }
 
     return {
@@ -212,7 +212,7 @@ export async function deleteMember(memberIds: string[]) {
       message:
         error instanceof Error
           ? error.message
-          : "Error al eliminar a los miembros",
+          : "Error al eliminar a los integrantes",
     }
   }
 }
