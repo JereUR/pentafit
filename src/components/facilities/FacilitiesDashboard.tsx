@@ -34,8 +34,6 @@ export default function FacilitiesDashboard({ userId }: { userId: string }) {
     </Alert>
   )
 
-  console.log({ workingFacility })
-
   return (
     <Card className="w-full max-w-4xl mx-auto mt-4">
       <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-4 sm:space-y-0">
