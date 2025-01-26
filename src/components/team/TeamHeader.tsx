@@ -4,7 +4,6 @@ import React from 'react'
 
 import { Input } from '../ui/input'
 import { DeleteConfirmationDialog } from '../DeleteConfirmationDialog'
-import { ReplicateConfirmationDialog } from '../ReplicateConfirmationDialog'
 import { Button } from '../ui/button'
 import { columnsTeam, TeamData } from '@/types/team'
 import ColumnSelector from '../ColumnSelector'
@@ -63,14 +62,6 @@ export default function TeamHeader({
                 onDelete={onDeleteSelected}
                 isDeleting={isDeleting}
                 count={selectedCount}
-              />
-              <ReplicateConfirmationDialog
-                itemName={`los ${selectedCount} integrantes seleccionados`}
-                onReplicate={onReplicateToFacility}
-                isReplicating={isReplicating}
-                count={selectedCount}
-                workingFacilityId={workingFacilityId}
-                userId={userId}
               />
             </>
           )}
