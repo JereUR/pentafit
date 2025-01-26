@@ -17,7 +17,7 @@ export default async function EditActivityPage({ params }: { params: Promise<{ i
   const { user } = await validateRequest()
 
   if (!user) {
-    redirect("/login")
+    redirect("/iniciar-sesion")
   }
 
   const { id } = await params
