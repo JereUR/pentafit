@@ -91,8 +91,6 @@ export default function TeamDashboard() {
 
   const totalPages = Math.ceil(data ? data.total / PAGE_SIZE : 0)
 
-  console.log({ data })
-
   return (
     <div className="w-full space-y-6">
       <TeamHeader

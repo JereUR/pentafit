@@ -20,7 +20,20 @@ interface TeamRowProps {
   visibleColumns: Set<keyof TeamData>
   isSelected: boolean
   onToggleRow: (id: string) => void
-  deleteMember: UseMutateFunction<{ message: string; deletedCount: number | undefined; facilityId: string; }, Error, { memberIds: string | string[]; facilityId: string; }, unknown>
+  deleteMember: UseMutateFunction<{
+    facilityId: string;
+    success: boolean;
+    message: string;
+    deletedCount: number;
+} | {
+    facilityId: string;
+    success: boolean;
+    message: string;
+    deletedCount?: undefined;
+}, Error, {
+    memberIds: string | string[];
+    facilityId: string;
+}, unknown>
   isDeleting: boolean
 }
 

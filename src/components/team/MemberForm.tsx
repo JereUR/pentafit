@@ -5,8 +5,6 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useRouter } from "next/navigation"
 
-import WorkingFacility from "../WorkingFacility"
-import NoWorkingFacilityMessage from "../NoWorkingFacilityMessage"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card"
 import { Form } from "../ui/form"
 import ErrorText from "../ErrorText"
@@ -14,7 +12,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs"
 import LoadingButton from "../LoadingButton"
 import GeneralInfoTabMemberForm from "./GeneralInfoTabMemberForm"
 import { DetailsTabMemberForm } from "./DetailsTabMemberForm"
-import { useWorkingFacility } from "@/contexts/WorkingFacilityContext"
 import { memberSchema, updateMemberSchema, UpdateMemberValues, type MemberValues } from "@/lib/validation"
 import { useCreateMemberMutation, useUpdateMemberMutation } from "@/app/(main)/(authenticated)/equipo/mutations"
 
@@ -24,7 +21,6 @@ interface MemberFormProps {
 }
 
 export default function MemberForm({ userId, memberData }: MemberFormProps) {
-  const { workingFacility } = useWorkingFacility()
   const [error, setError] = useState<string>()
   const [croppedAvatar, setCroppedAvatar] = useState<Blob | null>(null)
   const isEditing = !!memberData
@@ -99,18 +95,8 @@ export default function MemberForm({ userId, memberData }: MemberFormProps) {
     ? "Modifica los datos del integrante"
     : "Ingresa los datos del integrante para comenzar"
 
-  if (!workingFacility) {
-    return (
-      <div className="flex flex-col items-center gap-5 p-5 md:p-10 rounded-md border">
-        <WorkingFacility userId={userId} />
-        <NoWorkingFacilityMessage entityName="un integrante" />
-      </div>
-    )
-  }
-
   return (
     <div className="flex flex-col items-center md:items-start gap-5 p-5 md:p-10 md:py-14 rounded-md border">
-      {!isEditing && <WorkingFacility userId={userId} />}
       <Card className="w-full">
         <CardHeader>
           <CardTitle>{pageTitle}</CardTitle>
