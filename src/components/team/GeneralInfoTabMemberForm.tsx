@@ -94,13 +94,13 @@ export default function GeneralInfoTabMemberForm({ control, croppedAvatar, setCr
         control={control}
         name="gender"
         render={({ field }) => (
-          <FormItem className="grid grid-cols-1 lg:grid-cols-3 gap-2">
+          <FormItem>
             <FormLabel>Género</FormLabel>
             <FormControl>
               <RadioGroup
                 onValueChange={field.onChange}
                 defaultValue={field.value}
-                className="grid grid-cols-3 gap-2"
+                className="grid grid-cols-1 lg:grid-cols-3 gap-2"
               >
                 {GENDER_OPTIONS.map((option) => (
                   <FormItem key={option.value} className="flex items-center space-x-2 space-y-0 ring-1 p-2 ring-primary rounded-lg">
