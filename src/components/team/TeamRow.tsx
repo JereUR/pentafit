@@ -1,14 +1,18 @@
 import Link from "next/link"
 import { Edit } from "lucide-react"
 import { UseMutateFunction } from "@tanstack/react-query"
+import Image from "next/image"
 
 import { TableCell, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { TeamData, columnsTeam } from "@/types/team"
-import { cn } from "@/lib/utils"
+import { cn, formatBirthday } from "@/lib/utils"
 import { DeleteConfirmationDialog } from "../DeleteConfirmationDialog"
 import { useToast } from "@/hooks/use-toast"
+import UserAvatar from "../UserAvatar"
+import noImage from '@/assets/avatar-placeholder.png'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip"
 
 interface TeamRowProps {
   member: TeamData
@@ -56,16 +60,45 @@ export default function TeamRow({
           onCheckedChange={() => onToggleRow(member.id)}
         />
       </TableCell>
-      {columnsTeam.filter(col => visibleColumns.has(col.key)).map((column) => (
-        <TableCell key={column.key} className="border-x text-center">
-          {member[column.key]?.toString() || '-'}
-        </TableCell>
-      ))}
+      {columnsTeam
+        .filter((col) => visibleColumns.has(col.key))
+        .map((column) => (
+          <TableCell key={column.key} className="border-x text-center break-words">
+            {column.key === "birthday" ? (
+              formatBirthday(member[column.key].toString())
+            ) : column.key === "avatarUrl" ? (
+              <UserAvatar avatarUrl={member[column.key] as string} size={32} className='flex justify-center' />
+            ) : column.key === "facilities" ? (
+              <div className="flex justify-center space-x-1">
+                {(member[column.key] as { id: string; name: string; logoUrl: string }[]).map((facility) => (
+                  <TooltipProvider key={facility.id}>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <Image
+                          src={facility.logoUrl || noImage}
+                          alt={facility.name}
+                          width={32}
+                          height={32}
+                          className="rounded-full object-cover"
+                        />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{facility.name}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                ))}
+              </div>
+            ) : (
+              member[column.key]?.toString() || "-"
+            )}
+          </TableCell>
+        ))}
       <TableCell className="text-center">
-        <div className="flex flex-col sm:flex-row justify-center gap-2">
-          <Button asChild variant="outline" className="w-full sm:w-auto" onClick={(e) => e.stopPropagation()}>
+        <div className="flex flex-col items-center-center gap-2 text-xs md:text-sm">
+          <Button asChild variant="outline" className="w-full break-words" onClick={(e) => e.stopPropagation()}>
             <Link href={`/equipo/editar/${member.id}`}>
-              <Edit className="mr-2 h-4 w-4" /> Editar
+              <Edit className="h-4 w-4" /> Editar
             </Link>
           </Button>
           <DeleteConfirmationDialog
@@ -78,4 +111,3 @@ export default function TeamRow({
     </TableRow>
   )
 }
-
