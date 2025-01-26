@@ -3,6 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useState, useEffect } from "react"
 import { useForm } from "react-hook-form"
+import { useRouter } from "next/navigation"
 
 import { Form } from "@/components/ui/form"
 import {
@@ -37,6 +38,7 @@ export default function ActivityForm({ userId, activityData }: ActivityFormProps
   const { workingFacility } = useWorkingFacility()
   const [error, setError] = useState<string>()
   const isEditing = !!activityData
+  const router = useRouter()
 
   const { mutate: createActivity, isPending: isCreating, error: createError } = useCreateActivityMutation()
   const { mutate: updateActivity, isPending: isUpdating, error: updateError } = useUpdateActivityMutation()
@@ -78,6 +80,7 @@ export default function ActivityForm({ userId, activityData }: ActivityFormProps
         {
           onSuccess: () => {
             form.reset()
+            router.push('/actividades')
           },
         }
       )
