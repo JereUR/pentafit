@@ -12,30 +12,22 @@ interface TeamHeaderProps {
   selectedCount: number
   onAddMember: () => void
   onDeleteSelected: () => void
-  onReplicateToFacility: (targetFacilityIds: string[]) => void
   visibleColumns: Set<keyof TeamData>
   onToggleColumn: (column: keyof TeamData) => void
   isDeleting: boolean
-  isReplicating: boolean
   search: string
   setSearch: (search: string) => void
-  workingFacilityId: string
-  userId: string
 }
 
 export default function TeamHeader({
   selectedCount,
   onAddMember,
   onDeleteSelected,
-  onReplicateToFacility,
   visibleColumns,
   onToggleColumn,
   isDeleting,
-  isReplicating,
   search,
-  setSearch,
-  workingFacilityId,
-  userId
+  setSearch
 }: TeamHeaderProps) {
   return (
     <div className="flex flex-col items-start gap-4 mb-4">

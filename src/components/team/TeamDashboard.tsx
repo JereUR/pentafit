@@ -15,9 +15,7 @@ import { Pagination } from "../Pagination"
 import TeamTable from "./TeamTable"
 import { useDeleteMemberMutation } from "@/app/(main)/(authenticated)/equipo/mutations"
 
-
-
-export default function TeamDashboard({ userId }: { userId: string }) {
+export default function TeamDashboard() {
   const router = useRouter()
   const { workingFacility } = useWorkingFacility()
   const [page, setPage] = useState(1)
@@ -91,25 +89,6 @@ export default function TeamDashboard({ userId }: { userId: string }) {
     )
   }
 
-  const handleReplicateToFacility = (targetFacilityIds: string[]) => {
-    console.log(targetFacilityIds)
-    /* replicateTeam(
-      { TeamIds: selectedRows, targetFacilityIds },
-      {
-        onSuccess: () => {
-          setSelectedRows([])
-        },
-        onError: (error) => {
-          toast({
-            variant: "destructive",
-            title: "Error al replicar las actividades",
-            description: error.message,
-          })
-        },
-      },
-    ) */
-  }
-
   const totalPages = Math.ceil(data ? data.total / PAGE_SIZE : 0)
 
   console.log({ data })
@@ -120,15 +99,11 @@ export default function TeamDashboard({ userId }: { userId: string }) {
         selectedCount={selectedCount}
         onAddMember={() => router.push("/equipo/agregar")}
         onDeleteSelected={handleDeleteSelected}
-        onReplicateToFacility={handleReplicateToFacility}
         visibleColumns={visibleColumns}
         onToggleColumn={toggleColumn}
         isDeleting={isDeleting}
-        isReplicating={false}
         search={search}
         setSearch={setSearch}
-        workingFacilityId={workingFacility?.id || ""}
-        userId={userId}
       />
       <TeamTable
         team={data ? data.members : []}

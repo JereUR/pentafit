@@ -26,7 +26,7 @@ export default async function TeamPage() {
         </section>
         <section className="flex-1">
           <Suspense fallback={<TableSkeleton />}>
-            <TeamDashboard userId={user.id} />
+            <TeamDashboard />
           </Suspense>
         </section>
       </div>
