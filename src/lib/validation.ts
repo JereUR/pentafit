@@ -158,3 +158,38 @@ export const memberSchema = z
   })
 
 export type MemberValues = z.infer<typeof memberSchema>
+
+export const updateMemberSchema = z.object({
+  firstName: requiredString.min(1, "El nombre es requerido"),
+  lastName: requiredString.min(1, "El apellido es requerido"),
+  email: requiredString.email("El correo electrónico es inválido"),
+  gender: requiredString,
+  birthday: z
+    .string({
+      required_error: "La fecha de nacimiento es requerida",
+      invalid_type_error: "Formato de fecha inválido",
+    })
+    .refine(
+      (date) => {
+        return !isNaN(Date.parse(date))
+      },
+      {
+        message: "Formato de fecha inválido",
+      },
+    ),
+  role: z.enum([Role.SUPER_ADMIN, Role.ADMIN, Role.STAFF, Role.CLIENT]),
+  avatarUrl: z
+    .string()
+    .url("La URL del avatar debe ser válida")
+    .nullable()
+    .default(null),
+  facilities: z.array(
+    z.object({
+      id: z.string(),
+      name: z.string(),
+      logoUrl: z.string().optional(),
+    }),
+  ),
+})
+
+export type UpdateMemberValues = z.infer<typeof updateMemberSchema>
