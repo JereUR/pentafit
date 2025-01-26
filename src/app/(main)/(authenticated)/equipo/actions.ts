@@ -236,30 +236,41 @@ export async function updateMember(id: string, values: UpdateMemberValues) {
 }
 
 export async function deleteMember(memberIds: string[]) {
+  console.log({ memberIds })
   try {
-    const { count } = await prisma.user.deleteMany({
-      where: {
-        id: { in: memberIds },
-      },
+    if (!memberIds || memberIds.length === 0) {
+      throw new Error("No se proporcionaron IDs de miembros para eliminar")
+    }
+
+    const result = await prisma.$transaction(async (tx) => {
+      await tx.userFacility.deleteMany({
+        where: {
+          userId: { in: memberIds },
+        },
+      })
+      const { count } = await tx.user.deleteMany({
+        where: {
+          id: { in: memberIds },
+        },
+      })
+
+      return count
     })
 
-    if (count === 0) {
+    if (result === 0) {
       throw new Error("No se encontraron integrantes para eliminar")
     }
 
     return {
       success: true,
-      message: `Se ${count === 1 ? "ha" : "han"} eliminado ${count} ${count === 1 ? "miebro" : "miebros"} correctamente`,
-      deletedCount: count,
+      message: `Se ${result === 1 ? "ha" : "han"} eliminado ${result} ${result === 1 ? "miembro" : "miembros"} correctamente`,
+      deletedCount: result,
     }
   } catch (error) {
-    console.error("Error deleting members:", error)
+    console.error("Error deleting members:", error instanceof Error ? error.message : "Unknown error")
     return {
       success: false,
-      message:
-        error instanceof Error
-          ? error.message
-          : "Error al eliminar a los integrantes",
+      message: error instanceof Error ? error.message : "Error desconocido al eliminar a los integrantes",
     }
   }
 }

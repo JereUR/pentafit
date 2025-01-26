@@ -83,7 +83,7 @@ export function useUpdateMemberMutation() {
       }
 
       if (!result.member) {
-        throw new Error('No member data returned from update operation')
+        throw new Error("No member data returned from update operation")
       }
 
       return result.member
@@ -120,34 +120,35 @@ export function useDeleteMemberMutation() {
       facilityId: string
     }) => {
       const idsArray = Array.isArray(memberIds) ? memberIds : [memberIds]
+      console.log("Mutation function called with:", { idsArray, facilityId })
       const result = await deleteMember(idsArray)
+      console.log("Delete member result:", result)
       if (!result.success) {
         throw new Error(result.message)
       }
-
-      const { message, deletedCount } = result
-
-      return { message, deletedCount, facilityId }
+      return { ...result, facilityId }
     },
-    onSuccess: (message) => {
-      const { message: description, deletedCount, facilityId } = message
+    onSuccess: (data) => {
+      console.log("Mutation succeeded:", data)
+      const { message, deletedCount, facilityId } = data
 
       const title =
         deletedCount === undefined
-          ? "Error al eliminar integrantes"
+          ? "Operación completada"
           : deletedCount === 1
             ? "Integrante eliminado correctamente"
             : "Integrantes eliminados correctamente"
 
       toast({
         title,
-        description,
+        description: message,
       })
       queryClient.invalidateQueries({
         queryKey: ["team", facilityId],
       })
     },
     onError: (error: Error) => {
+      console.error("Mutation error:", error)
       toast({
         variant: "destructive",
         title: "Error al eliminar al integrante",
@@ -156,40 +157,3 @@ export function useDeleteMemberMutation() {
     },
   })
 }
-
-/* export function useReplicateActivityMutation() {
-  const { toast } = useToast()
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: async ({
-      activityIds,
-      targetFacilityIds,
-    }: {
-      activityIds: string[]
-      targetFacilityIds: string[]
-    }) => {
-      const result = await replicateActivities(activityIds, targetFacilityIds)
-      if (!result.success) {
-        throw new Error(result.message)
-      }
-      return result
-    },
-    onSuccess: (result) => {
-      toast({
-        title: "Actividades replicadas correctamente",
-        description: result.message,
-      })
-      queryClient.invalidateQueries({
-        queryKey: ["activities"],
-      })
-    },
-    onError: (error: Error) => {
-      toast({
-        variant: "destructive",
-        title: "Error al replicar las actividades",
-        description: error.message,
-      })
-    },
-  })
-} */
