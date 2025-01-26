@@ -94,7 +94,7 @@ export default function GeneralInfoTabMemberForm({ control, croppedAvatar, setCr
         control={control}
         name="gender"
         render={({ field }) => (
-          <FormItem className="grid grid-cols-3 gap-2">
+          <FormItem className="grid grid-cols-1 lg:grid-cols-3 gap-2">
             <FormLabel>Género</FormLabel>
             <FormControl>
               <RadioGroup
