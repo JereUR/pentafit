@@ -57,7 +57,7 @@ export default function ActivityRow({
         />
       </TableCell>
       {columnsActivities.filter(col => visibleColumns.has(col.key)).map((column) => (
-        <TableCell key={column.key} className="border-x text-center">
+        <TableCell key={column.key} className="border-x text-center break-words">
           {column.key === 'isPublic' || column.key === 'generateInvoice' || column.key === 'mpAvailable' ? (
             <Checkbox checked={activity[column.key] as boolean} disabled />
           ) : column.key === 'startDate' || column.key === 'endDate' ? (
@@ -68,8 +68,8 @@ export default function ActivityRow({
         </TableCell>
       ))}
       <TableCell className="text-center">
-        <div className="flex flex-col sm:flex-row justify-center gap-2">
-          <Button asChild variant="outline" className="w-full sm:w-auto" onClick={(e) => e.stopPropagation()}>
+      <div className="flex flex-col items-center-center gap-2 text-xs md:text-sm">
+          <Button asChild variant="outline" className="w-auto" onClick={(e) => e.stopPropagation()}>
             <Link href={`/actividades/editar/${activity.id}`}>
               <Edit className="mr-2 h-4 w-4" /> Editar
             </Link>
