@@ -3,7 +3,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 
 import { useToast } from "@/hooks/use-toast"
-import { MemberValues } from "@/lib/validation"
+import { MemberValues, UpdateMemberValues } from "@/lib/validation"
 import { createMember, deleteMember, updateMember } from "./actions"
 import { useUploadThing } from "@/lib/uploadthing"
 
@@ -13,7 +13,13 @@ export function useCreateMemberMutation() {
   const { startUpload } = useUploadThing("imageUploader")
 
   return useMutation({
-    mutationFn: async (values: MemberValues, avatar?: File) => {
+    mutationFn: async ({
+      values,
+      avatar,
+    }: {
+      values: MemberValues
+      avatar?: File
+    }) => {
       if (avatar) {
         const uploadResult = await startUpload([avatar])
         if (uploadResult && uploadResult[0]) {
@@ -58,7 +64,7 @@ export function useUpdateMemberMutation() {
       avatar,
     }: {
       id: string
-      values: MemberValues
+      values: UpdateMemberValues
       avatar?: File
     }) => {
       if (avatar) {
@@ -68,25 +74,33 @@ export function useUpdateMemberMutation() {
         }
       }
 
+      console.log("Mutation function values:", JSON.stringify(values, null, 2))
+
       const result = await updateMember(id, values)
       if (result.error) {
+        console.error("Update error:", result.error, "Details:", result.details)
         throw new Error(result.error)
+      }
+
+      if (!result.member) {
+        throw new Error('No member data returned from update operation')
       }
 
       return result.member
     },
-    onSuccess: (newMember) => {
+    onSuccess: (updatedMember) => {
       toast({
-        title: "Actividad actualizada correctamente",
+        title: "Integrante actualizado correctamente",
       })
       queryClient.invalidateQueries({
-        queryKey: ["team", newMember?.facilities.map((f) => f.facilityId)],
+        queryKey: ["team", updatedMember.facilities.map((f) => f.facilityId)],
       })
     },
     onError: (error: Error) => {
+      console.error("Mutation error:", error)
       toast({
         variant: "destructive",
-        title: "Error al actualizar la actividad",
+        title: "Error al actualizar el integrante",
         description: error.message,
       })
     },

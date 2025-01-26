@@ -6,9 +6,15 @@ import { cache } from "react"
 import { notFound } from "next/navigation"
 import { hash } from "@node-rs/argon2"
 
-import { memberSchema, MemberValues } from "@/lib/validation"
+import {
+  memberSchema,
+  MemberValues,
+  updateMemberSchema,
+  UpdateMemberValues,
+} from "@/lib/validation"
 import prisma from "@/lib/prisma"
 import { generateIdFromEntropySize } from "lucia"
+import { Prisma } from "@prisma/client"
 
 export const getMemberById = cache(
   async (id: string): Promise<MemberValues & { id: string }> => {
@@ -42,9 +48,9 @@ export const getMemberById = cache(
         gender: member.gender,
         birthday: member.birthday,
         role: member.role,
-        avatarUrl: member.avatarUrl,
-        password: "",
-        confirmPassword: "",
+        avatarUrl: member.avatarUrl || null,
+        password: member.passwordHash || "",
+        confirmPassword: member.passwordHash || "",
         facilities: member.facilities.map((facility) => ({
           id: facility.facility.id,
           name: facility.facility.name,
@@ -128,29 +134,28 @@ export async function createMember(values: MemberValues) {
   }
 }
 
-export async function updateMember(id: string, values: MemberValues) {
+export async function updateMember(id: string, values: UpdateMemberValues) {
   try {
-    const updateData: Partial<MemberValues & { password?: string }> = {
-      firstName: values.firstName,
-      lastName: values.lastName,
-      email: values.email,
-      gender: values.gender,
-      birthday: values.birthday,
-      role: values.role,
-      avatarUrl: values.avatarUrl,
+    if (!values || typeof values !== "object") {
+      throw new Error("Invalid input: values must be an object")
     }
 
-    if (values.password) {
-      updateData.password = await hash(values.password)
-    }
+    const validatedData = updateMemberSchema.parse(values)
 
-    const currentFacilities = await prisma.userFacility.findMany({
-      where: { userId: id },
-      select: { facilityId: true },
+    const currentUser = await prisma.user.findUnique({
+      where: { id },
+      include: { facilities: true },
     })
-    const currentFacilityIds = currentFacilities.map((f) => f.facilityId)
 
-    const newFacilityIds = values.facilities.map((f) => f.id)
+    if (!currentUser) {
+      throw new Error(`User with id ${id} not found`)
+    }
+
+    const currentFacilityIds = currentUser.facilities.map((f) => f.facilityId)
+    const newFacilityIds = Array.isArray(validatedData.facilities)
+      ? validatedData.facilities.map((f) => f.id)
+      : []
+
     const facilityIdsToConnect = newFacilityIds.filter(
       (id) => !currentFacilityIds.includes(id),
     )
@@ -158,33 +163,75 @@ export async function updateMember(id: string, values: MemberValues) {
       (id) => !newFacilityIds.includes(id),
     )
 
-    const member = await prisma.user.update({
-      where: { id },
-      data: {
-        ...updateData,
-        facilities: {
-          disconnect: facilityIdsToDisconnect.map((facilityId) => ({
-            userId_facilityId: { userId: id, facilityId },
-          })),
-          connect: facilityIdsToConnect.map((facilityId) => ({
-            userId_facilityId: { userId: id, facilityId },
-          })),
-        },
-      },
-      include: {
-        facilities: {
-          include: {
-            facility: true,
+    const updateData: Prisma.UserUpdateInput = {
+      firstName: validatedData.firstName,
+      lastName: validatedData.lastName,
+      email: validatedData.email,
+      gender: validatedData.gender,
+      birthday: validatedData.birthday,
+      role: validatedData.role,
+      avatarUrl: validatedData.avatarUrl,
+    }
+
+    const member = await prisma.$transaction(async (prismaClient) => {
+      const updatedUser = await prismaClient.user.update({
+        where: { id },
+        data: updateData,
+        include: {
+          facilities: {
+            include: {
+              facility: true,
+            },
           },
         },
-      },
+      })
+
+      if (facilityIdsToDisconnect.length > 0) {
+        await prismaClient.userFacility.deleteMany({
+          where: {
+            userId: id,
+            facilityId: { in: facilityIdsToDisconnect },
+          },
+        })
+      }
+
+      if (facilityIdsToConnect.length > 0) {
+        await prismaClient.userFacility.createMany({
+          data: facilityIdsToConnect.map((facilityId) => ({
+            userId: id,
+            facilityId,
+          })),
+        })
+      }
+
+      return prismaClient.user.findUnique({
+        where: { id },
+        include: {
+          facilities: {
+            include: {
+              facility: true,
+            },
+          },
+        },
+      })
     })
 
     revalidatePath(`/equipo`)
     return { success: true, member }
   } catch (error) {
-    console.error(error)
-    return { error: "Error al actualizar al integrante del equipo" }
+    console.error("Error in updateMember:", error)
+    if (error instanceof Error) {
+      console.error("Error name:", error.name)
+      console.error("Error message:", error.message)
+      console.error("Error stack:", error.stack)
+    }
+    return {
+      error:
+        error instanceof Error
+          ? error.message
+          : "Error al actualizar al integrante del equipo",
+      details: JSON.stringify(error, Object.getOwnPropertyNames(error)),
+    }
   }
 }
 
