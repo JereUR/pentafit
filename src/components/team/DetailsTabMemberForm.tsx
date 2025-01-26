@@ -1,8 +1,9 @@
 "use client"
 
 import { type Control, useFieldArray } from "react-hook-form"
+
 import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import type { MemberValues } from "@/lib/validation"
+import type { MemberValues, UpdateMemberValues } from "@/lib/validation"
 import { PasswordInput } from "../PasswordInput"
 import { useFacilities } from "@/hooks/useFacilities"
 import { rolesSelect } from "@/types/team"
@@ -12,11 +13,12 @@ import { MultiSelect } from "@/components/ui/multi-select"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 interface DetailsTabMemberFormProps {
-  control: Control<MemberValues>
+  control: Control<MemberValues | UpdateMemberValues>
   userId: string
+  isEditing: boolean
 }
 
-export function DetailsTabMemberForm({ control, userId }: DetailsTabMemberFormProps) {
+export function DetailsTabMemberForm({ control, userId, isEditing, }: DetailsTabMemberFormProps) {
   const { facilities } = useFacilities(userId)
   const { replace } = useFieldArray({
     control,
@@ -42,34 +44,42 @@ export function DetailsTabMemberForm({ control, userId }: DetailsTabMemberFormPr
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <FormField
-          control={control}
-          name="password"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Contraseña</FormLabel>
-              <FormControl>
-                <PasswordInput placeholder="Contraseña" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={control}
-          name="confirmPassword"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Confirmar Contraseña</FormLabel>
-              <FormControl>
-                <PasswordInput placeholder="Confirmar Contraseña" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      </div>
+      {!isEditing && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <FormField
+            control={control}
+            name="password"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Contraseña</FormLabel>
+                <FormControl>
+                  <PasswordInput
+                    placeholder="Contraseña"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={control}
+            name="confirmPassword"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Confirmar Contraseña</FormLabel>
+                <FormControl>
+                  <PasswordInput
+                    placeholder="Confirmar Contraseña"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+      )}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <FormField
           control={control}
@@ -79,13 +89,13 @@ export function DetailsTabMemberForm({ control, userId }: DetailsTabMemberFormPr
               <FormLabel>Rol</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
-                  <SelectTrigger className='h-20 text-start'>
+                  <SelectTrigger className="h-20 text-start">
                     <SelectValue placeholder="Selecciona un rol para el integrante" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
                   {rolesSelect.map((rol) => (
-                    <SelectItem key={rol.value} value={rol.value} className='cursor-pointer'>
+                    <SelectItem key={rol.value} value={rol.value} className="cursor-pointer">
                       <div className="flex flex-col">
                         <span>{rol.value}</span>
                         <span className="text-xs text-muted-foreground">{rol.description}</span>
@@ -123,7 +133,7 @@ export function DetailsTabMemberForm({ control, userId }: DetailsTabMemberFormPr
                   handleFacilityChange(selectedIds)
                 }}
                 placeholder="Selecciona uno o más establecimientos"
-                searchText='Buscar establecimientos...'
+                searchText="Buscar establecimientos..."
               />
               <FormMessage />
             </FormItem>

@@ -1,5 +1,6 @@
-import { MemberValues } from "@/lib/validation"
 import { Control } from "react-hook-form"
+
+import { MemberValues, UpdateMemberValues } from "@/lib/validation"
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "../ui/form"
 import { Input } from "../ui/input"
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group"
@@ -8,7 +9,7 @@ import { AvatarInput } from "../AvatarInput"
 import avatarPlaceholder from "@/assets/avatar-placeholder.png"
 
 interface GeneralInfoTabActivityFormProps {
-  control: Control<MemberValues>
+  control: Control<MemberValues | UpdateMemberValues>
   croppedAvatar: Blob | null
   setCroppedAvatar: (avatar: Blob | null) => void
   memberAvatarUrl: string | null

@@ -1,11 +1,10 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useWorkingFacility } from "@/contexts/WorkingFacilityContext"
-import { memberSchema, type MemberValues } from "@/lib/validation"
-import { useCreateMemberMutation, useUpdateMemberMutation } from "@/app/(main)/(authenticated)/equipo/mutations"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { useRouter } from "next/navigation"
+
 import WorkingFacility from "../WorkingFacility"
 import NoWorkingFacilityMessage from "../NoWorkingFacilityMessage"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card"
@@ -15,10 +14,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs"
 import LoadingButton from "../LoadingButton"
 import GeneralInfoTabMemberForm from "./GeneralInfoTabMemberForm"
 import { DetailsTabMemberForm } from "./DetailsTabMemberForm"
+import { useWorkingFacility } from "@/contexts/WorkingFacilityContext"
+import { memberSchema, updateMemberSchema, UpdateMemberValues, type MemberValues } from "@/lib/validation"
+import { useCreateMemberMutation, useUpdateMemberMutation } from "@/app/(main)/(authenticated)/equipo/mutations"
 
 interface MemberFormProps {
   userId: string
-  memberData?: MemberValues & { id: string } & { avatarUrl?: string }
+  memberData?: UpdateMemberValues & { id: string }
 }
 
 export default function MemberForm({ userId, memberData }: MemberFormProps) {
@@ -26,12 +28,13 @@ export default function MemberForm({ userId, memberData }: MemberFormProps) {
   const [error, setError] = useState<string>()
   const [croppedAvatar, setCroppedAvatar] = useState<Blob | null>(null)
   const isEditing = !!memberData
+  const router = useRouter()
 
   const { mutate: createMember, isPending: isCreating, error: createError } = useCreateMemberMutation()
   const { mutate: updateMember, isPending: isUpdating, error: updateError } = useUpdateMemberMutation()
 
-  const form = useForm<MemberValues>({
-    resolver: zodResolver(memberSchema),
+  const form = useForm<MemberValues | UpdateMemberValues>({
+    resolver: zodResolver(isEditing ? updateMemberSchema : memberSchema),
     defaultValues: memberData || {
       firstName: "",
       lastName: "",
@@ -52,7 +55,7 @@ export default function MemberForm({ userId, memberData }: MemberFormProps) {
     }
   }, [memberData, form])
 
-  async function onSubmit(values: MemberValues) {
+  async function onSubmit(values: MemberValues | UpdateMemberValues) {
     const newAvatarFile = croppedAvatar
       ? new File([croppedAvatar], `avatar_${userId}.webp`, { type: "image/webp" })
       : undefined
@@ -62,20 +65,22 @@ export default function MemberForm({ userId, memberData }: MemberFormProps) {
       updateMember(
         {
           id: memberData.id,
-          values,
+          values: values as UpdateMemberValues,
           avatar: newAvatarFile,
         },
         {
           onSuccess: () => {
             setCroppedAvatar(null)
             form.reset()
+            router.push('/equipo')
           },
         },
       )
     } else {
       createMember(
         {
-          ...values,
+          values: values as MemberValues,
+          avatar: newAvatarFile,
         },
         {
           onSuccess: () => {
@@ -145,7 +150,7 @@ export default function MemberForm({ userId, memberData }: MemberFormProps) {
                   />
                 </TabsContent>
                 <TabsContent value="details">
-                  <DetailsTabMemberForm control={form.control} userId={userId} />
+                  <DetailsTabMemberForm control={form.control} userId={userId} isEditing={isEditing} />
                 </TabsContent>
               </Tabs>
               <LoadingButton loading={isPending} type="submit" className="w-full">
