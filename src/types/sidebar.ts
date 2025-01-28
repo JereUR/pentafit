@@ -3,7 +3,7 @@ import type { Role } from "@prisma/client"
 
 export interface NavItem {
   title: string
-  icon: LucideIcon
+  icon: LucideIcon | React.FC
   href?: string
   items?: Omit<NavItem, "icon">[]
   roles?: Role[]

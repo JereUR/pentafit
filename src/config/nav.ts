@@ -12,6 +12,7 @@ import {
 
 import type { NavItem } from "@/types/sidebar"
 import { Role } from "@prisma/client"
+import { PlanIcon } from "./icons"
 
 export const navItems: NavItem[] = [
   { title: "Inicio", icon: Home, href: "/panel-de-control" },
@@ -26,6 +27,12 @@ export const navItems: NavItem[] = [
     icon: Users,
     href: "/equipo",
     roles: [Role.SUPER_ADMIN, Role.ADMIN],
+  },
+  {
+    title: "Planes",
+    icon: PlanIcon,
+    href: "/planes",
+    roles: [Role.SUPER_ADMIN],
   },
   {
     title: "Agenda",
