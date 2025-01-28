@@ -1,4 +1,4 @@
-import { MembershipLevel, Role } from "@prisma/client"
+import { MembershipLevel, PaymentType, PlanType, Role } from "@prisma/client"
 import { z } from "zod"
 
 const requiredString = z.string().trim().min(1, "Este campo es requerido")
@@ -193,3 +193,36 @@ export const updateMemberSchema = z.object({
 })
 
 export type UpdateMemberValues = z.infer<typeof updateMemberSchema>
+
+export const planSchema = z.object({
+  name: z.string().min(1, "El nombre es requerido"),
+  description: z.string(),
+  price: z.number().min(0),
+  startDate: z.date(),
+  endDate: z.date(),
+  expirationPeriod: z.number().int().min(0),
+  generateInvoice: z.boolean(),
+  paymentTypes: z.array(z.nativeEnum(PaymentType)),
+  planType: z.nativeEnum(PlanType),
+  freeTest: z.boolean(),
+  current: z.boolean(),
+  diariesCount: z.number().int().min(0),
+  facilities: z.array(
+    z.object({
+      id: z.string().uuid("ID de establecimiento inválido"),
+      name: z.string(),
+      logoUrl: z.string().optional(),
+    }),
+  ),
+  diaryPlans: z.array(
+    z.object({
+      name: z.string(),
+      daysOfWeek: z.array(z.boolean()).length(7),
+      sessionsPerWeek: z.number().int().min(1),
+      activityId: z.string().uuid("ID de actividad inválido"),
+      activityName: z.string(),
+    }),
+  ),
+})
+
+export type PlanValues = z.infer<typeof planSchema>
