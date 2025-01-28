@@ -84,6 +84,7 @@ model Facility {
   metadata    FacilityMetadata?
   users       UserFacility[]
   activities  Activity[]
+  plans       FacilityPlan[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -116,7 +117,7 @@ model FacilityMetadata {
 }
 
 model Activity {
-  id              String   @id @default(uuid())
+  id              String      @id @default(uuid())
   name            String
   description     String?
   price           Float
@@ -130,10 +131,69 @@ model Activity {
   paymentType     String
   activityType    String
   facilityId      String
-  facility        Facility @relation(fields: [facilityId], references: [id])
+  facility        Facility    @relation(fields: [facilityId], references: [id])
+  diaryPlans      DiaryPlan[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@map("activities")
+}
+
+enum PlanType {
+  MENSUAL
+  CLASE_UNICA
+  MEMBRESIA
+}
+
+enum PaymentType {
+  EFECTIVO
+  TRANSFERENCIA
+  DEBITO_AUTOMATICO
+}
+
+model Plan {
+  id               String         @id @default(uuid())
+  name             String
+  description      String
+  price            Float
+  startDate        DateTime
+  endDate          DateTime
+  expirationPeriod Int
+  generateInvoice  Boolean
+  paymentTypes     PaymentType[]
+  planType         PlanType
+  freeTest         Boolean
+  current          Boolean
+  diariesCount     Int
+  facilities       FacilityPlan[]
+  diaryPlans       DiaryPlan[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("plans")
+}
+
+model DiaryPlan {
+  id              String    @id @default(uuid())
+  name            String
+  daysOfWeek      Boolean[]
+  sessionsPerWeek Int
+  plan            Plan      @relation(fields: [planId], references: [id])
+  planId          String
+  activity        Activity  @relation(fields: [activityId], references: [id])
+  activityId      String
+
+  @@map("diary_plans")
+}
+
+model FacilityPlan {
+  facilityId String
+  planId     String
+  facility   Facility @relation(fields: [facilityId], references: [id])
+  plan       Plan     @relation(fields: [planId], references: [id])
+
+  @@id([facilityId, planId])
+  @@map("facility_plans")
 }
