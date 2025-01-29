@@ -1,32 +1,37 @@
-import { SquarePlus, Search } from "lucide-react"
-
+import React from 'react'
+import { SquarePlus, Search } from 'lucide-react'
 import { Button } from "@/components/ui/button"
-import { type ActivityData, columnsActivities } from "@/types/activity"
-import { DeleteConfirmationDialog } from "../DeleteConfirmationDialog"
 import { Input } from "@/components/ui/input"
-import { ReplicateConfirmationDialog } from "../ReplicateConfirmationDialog"
-import ColumnSelector from "../ColumnSelector"
+import { DeleteConfirmationDialog } from "./DeleteConfirmationDialog"
+import { ReplicateConfirmationDialog } from "./ReplicateConfirmationDialog"
+import ColumnSelector from "./ColumnSelector"
 
-interface ActivitiesHeaderProps {
+interface GenericDataHeaderProps<T> {
+  title: string
   selectedCount: number
-  onAddActivity: () => void
+  onAdd: () => void
   onDeleteSelected: () => void
-  onReplicateToFacility: (targetFacilityIds: string[]) => void
-  visibleColumns: Set<keyof ActivityData>
-  onToggleColumn: (column: keyof ActivityData) => void
+  onReplicateToFacility?: (targetFacilityIds: string[]) => void
+  columns: Array<{ key: keyof T; label: string }>
+  visibleColumns: Set<keyof T>
+  onToggleColumn: (column: keyof T) => void
   isDeleting: boolean
-  isReplicating: boolean
+  isReplicating?: boolean
   search: string
   setSearch: (search: string) => void
-  workingFacilityId: string
-  userId: string
+  workingFacilityId?: string
+  userId?: string
+  addButtonLabel: string
+  searchPlaceholder: string
 }
 
-export default function ActivitiesHeader({
+export default function GenericDataHeader<T>({
+  title,
   selectedCount,
-  onAddActivity,
+  onAdd,
   onDeleteSelected,
   onReplicateToFacility,
+  columns,
   visibleColumns,
   onToggleColumn,
   isDeleting,
@@ -34,49 +39,51 @@ export default function ActivitiesHeader({
   search,
   setSearch,
   workingFacilityId,
-  userId
-}: ActivitiesHeaderProps) {
+  userId,
+  addButtonLabel,
+  searchPlaceholder,
+}: GenericDataHeaderProps<T>) {
   return (
     <div className="flex flex-col items-start gap-4 mb-4">
-      <h1 className="text-2xl font-bold">Actividades</h1>
+      <h1 className="text-2xl font-bold">{title}</h1>
       <div className="flex flex-col md:flex-row md:justify-between gap-2 w-full">
         <div className="flex items-center gap-2">
           <div className="w-full relative">
             <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
             <Input
               type="text"
-              placeholder="Buscar actividades..."
+              placeholder={searchPlaceholder}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-8"
             />
           </div>
-          <ColumnSelector columns={columnsActivities} visibleColumns={visibleColumns} onToggleColumn={onToggleColumn} />
+          <ColumnSelector columns={columns} visibleColumns={visibleColumns} onToggleColumn={onToggleColumn} />
         </div>
         <div className="flex flex-col md:flex-row gap-2 items-center">
           {selectedCount > 0 && (
             <>
               <DeleteConfirmationDialog
-                itemName={`las ${selectedCount} actividades seleccionadas`}
+                itemName={`los ${selectedCount} elementos seleccionados`}
                 onDelete={onDeleteSelected}
                 isDeleting={isDeleting}
                 count={selectedCount}
               />
-              <ReplicateConfirmationDialog
-                itemName={`las ${selectedCount} actividades seleccionadas`}
+              {userId && onReplicateToFacility && isReplicating && workingFacilityId && <ReplicateConfirmationDialog
+                itemName={`los ${selectedCount} elementos seleccionados`}
                 onReplicate={onReplicateToFacility}
                 isReplicating={isReplicating}
                 count={selectedCount}
                 workingFacilityId={workingFacilityId}
                 userId={userId}
-              />
+              />}
             </>
           )}
           <Button
-            onClick={onAddActivity}
+            onClick={onAdd}
             className="w-full sm:w-auto bg-green-500 dark:bg-green-600 hover:bg-green-600 dark:hover:bg-green-700"
           >
-            Agregar Actividad
+            {addButtonLabel}
             <SquarePlus />
           </Button>
         </div>
@@ -84,4 +91,3 @@ export default function ActivitiesHeader({
     </div>
   )
 }
-

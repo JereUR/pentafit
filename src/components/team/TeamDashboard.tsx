@@ -10,10 +10,11 @@ import { useTeam } from "@/hooks/useTeam"
 import { useToast } from "@/hooks/use-toast"
 import { TableSkeleton } from "../skeletons/TableSkeleton"
 import { PAGE_SIZE } from "@/lib/prisma"
-import TeamHeader from "./TeamHeader"
 import { Pagination } from "../Pagination"
 import TeamTable from "./TeamTable"
 import { useDeleteMemberMutation } from "@/app/(main)/(authenticated)/equipo/mutations"
+import NoWorkingFacilityMessage from "../NoWorkingFacilityMessage"
+import GenericDataHeader from "../GenericDataHeader"
 
 export default function TeamDashboard() {
   const router = useRouter()
@@ -37,7 +38,7 @@ export default function TeamDashboard() {
     setPage(1)
   }, [debouncedSearch])
 
-  if (!workingFacility) return <p className="text-center p-4">No hay un establecimiento seleccionado.</p>
+  if (!workingFacility) return <NoWorkingFacilityMessage entityName="un integrante" />
   if (isLoading) return <TableSkeleton />
   if (isError) return <p className="text-center p-4 text-red-500">Error al cargar equipo: {error?.message}</p>
 
@@ -93,15 +94,19 @@ export default function TeamDashboard() {
 
   return (
     <div className="w-full space-y-6">
-      <TeamHeader
+      <GenericDataHeader
+        title="Equipo"
         selectedCount={selectedCount}
-        onAddMember={() => router.push("/equipo/agregar")}
+        onAdd={() => router.push("/equipo/agregar")}
         onDeleteSelected={handleDeleteSelected}
+        columns={columnsTeam}
         visibleColumns={visibleColumns}
         onToggleColumn={toggleColumn}
         isDeleting={isDeleting}
         search={search}
         setSearch={setSearch}
+        addButtonLabel="Agregar Miembro"
+        searchPlaceholder="Buscar miembros..."
       />
       <TeamTable
         team={data ? data.members : []}

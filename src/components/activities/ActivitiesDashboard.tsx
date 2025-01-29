@@ -8,12 +8,13 @@ import { useActivities } from "@/hooks/useActivities"
 import { useWorkingFacility } from "@/contexts/WorkingFacilityContext"
 import { type ActivityData, columnsActivities } from "@/types/activity"
 import { Pagination } from "@/components/Pagination"
-import ActivitiesHeader from "./ActivitiesHeader"
 import ActivitiesTable from "./ActivitiesTable"
 import { useDeleteActivityMutation, useReplicateActivityMutation } from "@/app/(main)/(authenticated)/actividades/mutations"
 import { useToast } from "@/hooks/use-toast"
 import { PAGE_SIZE } from "@/lib/prisma"
 import { TableSkeleton } from "../skeletons/TableSkeleton"
+import NoWorkingFacilityMessage from "../NoWorkingFacilityMessage"
+import GenericDataHeader from "../GenericDataHeader"
 
 export default function ActivitiesDashboard({ userId }: { userId: string }) {
   const router = useRouter()
@@ -38,7 +39,7 @@ export default function ActivitiesDashboard({ userId }: { userId: string }) {
     setPage(1)
   }, [debouncedSearch])
 
-  if (!workingFacility) return <p className="text-center p-4">No hay un establecimiento seleccionado.</p>
+  if (!workingFacility) return <NoWorkingFacilityMessage entityName="una actividad" />
   if (isLoading) return <TableSkeleton />
   if (isError) return <p className="text-center p-4 text-red-500">Error al cargar actividades: {error?.message}</p>
 
@@ -82,7 +83,7 @@ export default function ActivitiesDashboard({ userId }: { userId: string }) {
         onError: (error) => {
           toast({
             variant: "destructive",
-            title: "Error al eliminar el establecimiento",
+            title: "Error al eliminar la actividad",
             description: error.message,
           })
         },
@@ -112,11 +113,13 @@ export default function ActivitiesDashboard({ userId }: { userId: string }) {
 
   return (
     <div className="w-full space-y-6">
-      <ActivitiesHeader
+      <GenericDataHeader
+        title="Actividades"
         selectedCount={selectedCount}
-        onAddActivity={() => router.push("/actividades/agregar")}
+        onAdd={() => router.push("/actividades/agregar")}
         onDeleteSelected={handleDeleteSelected}
         onReplicateToFacility={handleReplicateToFacility}
+        columns={columnsActivities}
         visibleColumns={visibleColumns}
         onToggleColumn={toggleColumn}
         isDeleting={isDeleting}
@@ -125,6 +128,8 @@ export default function ActivitiesDashboard({ userId }: { userId: string }) {
         setSearch={setSearch}
         workingFacilityId={workingFacility?.id || ""}
         userId={userId}
+        addButtonLabel="Agregar Actividad"
+        searchPlaceholder="Buscar actividades..."
       />
       <ActivitiesTable
         activities={data ? data.activities : []}
