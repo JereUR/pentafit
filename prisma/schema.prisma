@@ -84,7 +84,7 @@ model Facility {
   metadata    FacilityMetadata?
   users       UserFacility[]
   activities  Activity[]
-  plans       FacilityPlan[]
+  plans       Plan[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -153,7 +153,7 @@ enum PaymentType {
 }
 
 model Plan {
-  id               String         @id @default(uuid())
+  id               String        @id @default(uuid())
   name             String
   description      String
   price            Float
@@ -166,7 +166,8 @@ model Plan {
   freeTest         Boolean
   current          Boolean
   diariesCount     Int
-  facilities       FacilityPlan[]
+  facilityId       String
+  facility         Facility      @relation(fields: [facilityId], references: [id])
   diaryPlans       DiaryPlan[]
 
   createdAt DateTime @default(now())
@@ -186,14 +187,4 @@ model DiaryPlan {
   activityId      String
 
   @@map("diary_plans")
-}
-
-model FacilityPlan {
-  facilityId String
-  planId     String
-  facility   Facility @relation(fields: [facilityId], references: [id])
-  plan       Plan     @relation(fields: [planId], references: [id])
-
-  @@id([facilityId, planId])
-  @@map("facility_plans")
 }
