@@ -4,6 +4,8 @@ import { Suspense } from "react"
 import { validateRequest } from "@/auth"
 import WorkingFacility from "@/components/WorkingFacility"
 import { WorkingFacilitySkeleton } from "@/components/skeletons/WorkingFacilitySkeleton"
+import PlansDashboard from "@/components/plans/PlansDashbord"
+import { TableSkeleton } from "@/components/skeletons/TableSkeleton"
 
 export const metadata: Metadata = {
   title: "Planes",
@@ -23,9 +25,9 @@ export default async function TeamPage() {
           </Suspense>
         </section>
         <section className="flex-1">
-          {/* <Suspense fallback={<TableSkeleton />}>
-            <TeamDashboard />
-          </Suspense> */}
+          <Suspense fallback={<TableSkeleton />}>
+            <PlansDashboard userId={user.id} />
+          </Suspense>
         </section>
       </div>
     </main>
