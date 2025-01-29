@@ -9,6 +9,10 @@ interface PaginationProps {
 }
 
 export function Pagination({ currentPage, totalPages, onPageChange }: PaginationProps) {
+  if (totalPages <= 0) {
+    return null
+  }
+
   return (
     <div className="flex justify-between items-center gap-2">
       <Button
