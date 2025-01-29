@@ -1,14 +1,19 @@
-export enum PlanType {
-  MENSUAL = "MENSUAL",
-  CLASE_UNICA = "CLASE_UNICA",
-  MEMBRESIA = "MEMBRESIA",
-}
+import { PaymentType, PlanType } from "@prisma/client"
 
-export enum PaymentType {
-  EFECTIVO = "EFECTIVO",
-  TRANSFERENCIA = "TRANSFERENCIA",
-  DEBITO_AUTOMATICO = "DEBITO_AUTOMATICO",
-}
+export const columnsPlans: { key: keyof PlanData; label: string }[] = [
+  { key: "name", label: "Nombre" },
+  { key: "description", label: "Descripción" },
+  { key: "price", label: "Precio" },
+  { key: "startDate", label: "Fecha de inicio" },
+  { key: "endDate", label: "Fecha de fin" },
+  { key: "expirationPeriod", label: "Plazo de vencimiento" },
+  { key: "generateInvoice", label: "¿Permite generación de cuota?" },
+  { key: "paymentTypes", label: "Modalidad de cobro" },
+  { key: "planType", label: "Tipo" },
+  { key: "freeTest", label: "Ofrece clase de prueba" },
+  { key: "current", label: "Vigente" },
+  { key: "diaryPlans", label: "Actividades asociadas" },
+]
 
 export interface DiaryPlanData {
   id: string
@@ -21,6 +26,7 @@ export interface DiaryPlanData {
 
 export interface PlanData {
   id: string
+  facilityId: string
   name: string
   description: string
   price: number
@@ -33,11 +39,6 @@ export interface PlanData {
   freeTest: boolean
   current: boolean
   diariesCount: number
-  facilities: {
-    id: string
-    name: string
-    logoUrl?: string
-  }[]
   diaryPlans: DiaryPlanData[]
 }
 

@@ -207,13 +207,6 @@ export const planSchema = z.object({
   freeTest: z.boolean(),
   current: z.boolean(),
   diariesCount: z.number().int().min(0),
-  facilities: z.array(
-    z.object({
-      id: z.string().uuid("ID de establecimiento inválido"),
-      name: z.string(),
-      logoUrl: z.string().optional(),
-    }),
-  ),
   diaryPlans: z.array(
     z.object({
       name: z.string(),
@@ -223,6 +216,7 @@ export const planSchema = z.object({
       activityName: z.string(),
     }),
   ),
+  facilityId: z.string().uuid("ID de establecimiento inválido"),
 })
 
 export type PlanValues = z.infer<typeof planSchema>
