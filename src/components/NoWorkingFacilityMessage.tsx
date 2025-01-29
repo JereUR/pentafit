@@ -14,7 +14,7 @@ export default function NoWorkingFacilityMessage({ entityName }: NoWorkingFacili
           No hay establecimiento seleccionado
         </CardTitle>
         <CardDescription>
-          Debe seleccionar un establecimiento como área de trabajo para agregar o editar {entityName}.
+          Debe seleccionar un establecimiento como área de trabajo para ver, agregar o editar {entityName}.
         </CardDescription>
       </CardHeader>
       <CardContent>
