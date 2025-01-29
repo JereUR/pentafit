@@ -54,7 +54,7 @@ export default function PlansDashboard({ userId }: { userId: string }) {
     })
   }
 
-  const toggleRowSelection = (id: string) => {
+  /* const toggleRowSelection = (id: string) => {
     setSelectedRows((prev) => {
       if (prev.includes(id)) {
         return prev.filter((rowId) => rowId !== id)
@@ -70,7 +70,7 @@ export default function PlansDashboard({ userId }: { userId: string }) {
       }
       return data ? data.plans.map((plan) => plan.id) : []
     })
-  }
+  } */
 
   const handleDeleteSelected = () => {
     deletePlan(
