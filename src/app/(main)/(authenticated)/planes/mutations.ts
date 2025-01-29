@@ -3,7 +3,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 
 import { useToast } from "@/hooks/use-toast"
-import { PlanValues } from "@/lib/validation"
+import type { PlanValues } from "@/lib/validation"
 import { createPlan, deletePlans, updatePlan, replicatePlans } from "./actions"
 
 export function useCreatePlanMutation() {
@@ -11,20 +11,18 @@ export function useCreatePlanMutation() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (values: PlanValues) => {
-      const result = await createPlan(values)
-      if (result.error) {
-        throw new Error(result.error)
+    mutationFn: createPlan,
+    onSuccess: (result) => {
+      if (result.success && result.plan) {
+        toast({
+          title: `Plan ${result.plan.name} creado correctamente`,
+        })
+        queryClient.invalidateQueries({
+          queryKey: ["plans"],
+        })
+      } else {
+        throw new Error(result.error || "Error desconocido al crear el plan")
       }
-      return result.plan
-    },
-    onSuccess: (newPlan) => {
-      toast({
-        title: `Plan ${newPlan?.name} creado correctamente`,
-      })
-      queryClient.invalidateQueries({
-        queryKey: ["plans"],
-      })
     },
     onError: (error: Error) => {
       toast({
@@ -41,20 +39,21 @@ export function useUpdatePlanMutation() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async ({ id, values }: { id: string; values: PlanValues }) => {
-      const result = await updatePlan(id, values)
-      if (result.error) {
-        throw new Error(result.error)
+    mutationFn: ({ id, values }: { id: string; values: PlanValues }) =>
+      updatePlan(id, values),
+    onSuccess: (result) => {
+      if (result.success && result.plan) {
+        toast({
+          title: `Plan '${result.plan.name}' actualizado correctamente`,
+        })
+        queryClient.invalidateQueries({
+          queryKey: ["plans"],
+        })
+      } else {
+        throw new Error(
+          result.error || "Error desconocido al actualizar el plan",
+        )
       }
-      return result.plan
-    },
-    onSuccess: (updatedPlan) => {
-      toast({
-        title: `Plan '${updatedPlan?.name}' actualizado correctamente`,
-      })
-      queryClient.invalidateQueries({
-        queryKey: ["plans"],
-      })
     },
     onError: (error: Error) => {
       toast({
@@ -71,8 +70,14 @@ export function useDeletePlanMutation() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (planIds: string | string[]) => {
-      const idsArray = Array.isArray(planIds) ? planIds : [planIds]
+    mutationFn: async ({
+      plansIds,
+      facilityId,
+    }: {
+      plansIds: string | string[]
+      facilityId: string
+    }) => {
+      const idsArray = Array.isArray(plansIds) ? plansIds : [plansIds]
       const result = await deletePlans(idsArray)
       if (!result.success) {
         throw new Error(result.message)
@@ -80,24 +85,24 @@ export function useDeletePlanMutation() {
 
       const { message, deletedCount } = result
 
-      return { message, deletedCount }
+      return { message, deletedCount, facilityId }
     },
     onSuccess: (message) => {
-      const { message: description, deletedCount } = message
+      const { message: description, deletedCount, facilityId } = message
 
       const title =
         deletedCount === undefined
           ? "Error al eliminar planes"
           : deletedCount === 1
-            ? "Plan eliminado correctamente"
-            : "Planes eliminados correctamente"
+            ? "Plan eliminada correctamente"
+            : "Planes eliminadas correctamente"
 
       toast({
         title,
         description,
       })
       queryClient.invalidateQueries({
-        queryKey: ["plans"],
+        queryKey: ["plans", facilityId],
       })
     },
     onError: (error: Error) => {
@@ -116,13 +121,13 @@ export function useReplicatePlanMutation() {
 
   return useMutation({
     mutationFn: async ({
-      planIds,
+      plansIds,
       targetFacilityIds,
     }: {
-      planIds: string[]
+      plansIds: string[]
       targetFacilityIds: string[]
     }) => {
-      const result = await replicatePlans(planIds, targetFacilityIds)
+      const result = await replicatePlans(plansIds, targetFacilityIds)
       if (!result.success) {
         throw new Error(result.message)
       }

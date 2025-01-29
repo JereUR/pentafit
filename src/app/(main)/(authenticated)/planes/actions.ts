@@ -14,11 +14,7 @@ export const getPlanById = cache(
         where: { id },
         include: {
           diaryPlans: {
-            select: {
-              id: true,
-              name: true,
-              daysOfWeek: true,
-              sessionsPerWeek: true,
+            include: {
               activity: {
                 select: {
                   id: true,
@@ -27,17 +23,7 @@ export const getPlanById = cache(
               },
             },
           },
-          facilities: {
-            select: {
-              facility: {
-                select: {
-                  id: true,
-                  name: true,
-                  logoUrl: true,
-                },
-              },
-            },
-          },
+          facility: true,
         },
       })
 
@@ -59,18 +45,13 @@ export const getPlanById = cache(
         freeTest: plan.freeTest,
         current: plan.current,
         diariesCount: plan.diariesCount,
-        facilities: plan.facilities.map((facility) => ({
-          id: facility.facility.id,
-          name: facility.facility.name,
-          logoUrl: facility.facility.logoUrl || "",
-        })),
-        diaryPlans: plan.diaryPlans.map((diaryPlans) => ({
-          id: diaryPlans.id,
-          name: diaryPlans.name,
-          daysOfWeek: diaryPlans.daysOfWeek,
-          sessionsPerWeek: diaryPlans.sessionsPerWeek,
-          activityId: diaryPlans.activity.id,
-          activityName: diaryPlans.activity.name,
+        facilityId: plan.facilityId,
+        diaryPlans: plan.diaryPlans.map((diaryPlan) => ({
+          name: diaryPlan.name,
+          daysOfWeek: diaryPlan.daysOfWeek,
+          sessionsPerWeek: diaryPlan.sessionsPerWeek,
+          activityId: diaryPlan.activity.id,
+          activityName: diaryPlan.activity.name,
         })),
       }
     } catch (error) {
@@ -96,26 +77,21 @@ export async function createPlan(values: PlanValues) {
         freeTest: values.freeTest,
         current: values.current,
         diariesCount: values.diariesCount,
-        facilities: {
-          create: values.facilities.map((f) => ({ facilityId: f.id })),
-        },
+        facilityId: values.facilityId,
         diaryPlans: {
-          create: values.diaryPlans,
+          create: values.diaryPlans.map(
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            ({ activityName, ...diaryPlan }) => diaryPlan,
+          ),
         },
       },
       include: {
-        facilities: {
-          select: {
-            facility: {
-              select: {
-                id: true,
-                name: true,
-                logoUrl: true,
-              },
-            },
+        facility: true,
+        diaryPlans: {
+          include: {
+            activity: true,
           },
         },
-        diaryPlans: true,
       },
     })
 
@@ -144,28 +120,22 @@ export async function updatePlan(id: string, values: PlanValues) {
         freeTest: values.freeTest,
         current: values.current,
         diariesCount: values.diariesCount,
-        facilities: {
-          deleteMany: {},
-          create: values.facilities.map((f) => ({ facilityId: f.id })),
-        },
+        facilityId: values.facilityId,
         diaryPlans: {
           deleteMany: {},
-          create: values.diaryPlans,
+          create: values.diaryPlans.map(
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            ({ activityName, ...diaryPlan }) => diaryPlan,
+          ),
         },
       },
       include: {
-        facilities: {
-          select: {
-            facility: {
-              select: {
-                id: true,
-                name: true,
-                logoUrl: true,
-              },
-            },
+        facility: true,
+        diaryPlans: {
+          include: {
+            activity: true,
           },
         },
-        diaryPlans: true,
       },
     })
 
@@ -189,6 +159,7 @@ export async function deletePlans(planIds: string[]) {
       throw new Error("No se encontraron planes para eliminar")
     }
 
+    revalidatePath(`/planes`)
     return {
       success: true,
       message: `Se ${count === 1 ? "ha" : "han"} eliminado ${count} ${count === 1 ? "plan" : "planes"} correctamente`,
@@ -213,36 +184,32 @@ export async function replicatePlans(
       where: { id: { in: planIds } },
       include: {
         diaryPlans: true,
-        facilities: true,
       },
     })
 
     const replicatedPlans = await Promise.all(
-      plans.flatMap(async (plan) => {
-        const { diaryPlans, ...planData } = plan
-        return targetFacilityIds.map(async (facilityId) => {
-          return prisma.plan.create({
+      plans.flatMap((plan) =>
+        targetFacilityIds.map((facilityId) =>
+          prisma.plan.create({
             data: {
-              ...planData,
-              facilities: {
-                create: [{ facilityId }],
-              },
+              ...plan,
+              id: undefined,
+              facilityId,
               diaryPlans: {
-                create: diaryPlans.map(({ ...dpData }) => dpData),
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                create: plan.diaryPlans.map(({ id, ...dpData }) => dpData),
               },
             },
-          })
-        })
-      }),
+          }),
+        ),
+      ),
     )
-
-    const flattenedPlans = replicatedPlans.flat()
 
     revalidatePath(`/planes`)
     return {
       success: true,
-      message: `Se han replicado ${flattenedPlans.length} planes en ${targetFacilityIds.length} establecimientos.`,
-      replicatedCount: flattenedPlans.length,
+      message: `Se han replicado ${replicatedPlans.length} planes en ${targetFacilityIds.length} establecimientos.`,
+      replicatedCount: replicatedPlans.length,
     }
   } catch (error) {
     console.error("Error replicating plans:", error)
