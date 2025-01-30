@@ -12,3 +12,5 @@ export const formatBirthday = (birthday: string) => {
   const age = differenceInYears(new Date(), date)
   return `${formattedDate} (${age} años)`
 }
+
+export const daysOfWeek = ["Lun", "Mar", "Mie", "Jue", "Vie", "Sab", "Dom"]
