@@ -197,15 +197,20 @@ export type UpdateMemberValues = z.infer<typeof updateMemberSchema>
 export const planSchema = z.object({
   name: z.string().min(1, "El nombre es requerido"),
   description: z.string(),
-  price: z.number().min(0),
+  price: z.union([z.number().min(0), z.string()]).transform((val) => {
+    const parsed = parseFloat(val as string)
+    return isNaN(parsed) ? 0 : parsed
+  }),
   startDate: z.date(),
   endDate: z.date(),
   expirationPeriod: z.number().int().min(0),
-  generateInvoice: z.boolean(),
-  paymentTypes: z.array(z.nativeEnum(PaymentType)),
+  generateInvoice: z.boolean().default(false),
+  paymentTypes: z
+    .array(z.nativeEnum(PaymentType))
+    .min(1, "Selecciona mínimo una modalidad de cobro"),
   planType: z.nativeEnum(PlanType),
-  freeTest: z.boolean(),
-  current: z.boolean(),
+  freeTest: z.boolean().default(false),
+  current: z.boolean().default(false),
   diariesCount: z.number().int().min(0),
   diaryPlans: z.array(
     z.object({
@@ -213,7 +218,6 @@ export const planSchema = z.object({
       daysOfWeek: z.array(z.boolean()).length(7),
       sessionsPerWeek: z.number().int().min(1),
       activityId: z.string().uuid("ID de actividad inválido"),
-      activityName: z.string(),
     }),
   ),
   facilityId: z.string().uuid("ID de establecimiento inválido"),
