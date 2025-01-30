@@ -14,7 +14,7 @@ import { usePlans } from "@/hooks/usePlans"
 import { useDeletePlanMutation, useReplicatePlanMutation } from "@/app/(main)/(authenticated)/planes/mutations"
 import NoWorkingFacilityMessage from "../NoWorkingFacilityMessage"
 import GenericDataHeader from "../GenericDataHeader"
-
+import PlansTable from "./PlansTable"
 export default function PlansDashboard({ userId }: { userId: string }) {
   const router = useRouter()
   const { workingFacility } = useWorkingFacility()
@@ -54,7 +54,7 @@ export default function PlansDashboard({ userId }: { userId: string }) {
     })
   }
 
-  /* const toggleRowSelection = (id: string) => {
+  const toggleRowSelection = (id: string) => {
     setSelectedRows((prev) => {
       if (prev.includes(id)) {
         return prev.filter((rowId) => rowId !== id)
@@ -70,7 +70,7 @@ export default function PlansDashboard({ userId }: { userId: string }) {
       }
       return data ? data.plans.map((plan) => plan.id) : []
     })
-  } */
+  }
 
   const handleDeleteSelected = () => {
     deletePlan(
@@ -110,8 +110,6 @@ export default function PlansDashboard({ userId }: { userId: string }) {
 
   const totalPages = Math.ceil(data ? data.total / PAGE_SIZE : 0)
 
-  console.log({ data })
-
   return (
     <div className="w-full space-y-6">
       <GenericDataHeader
@@ -132,17 +130,16 @@ export default function PlansDashboard({ userId }: { userId: string }) {
         addButtonLabel="Agregar Plan"
         searchPlaceholder="Buscar planes..."
       />
-      {/* 
-      <ActivitiesTable
-        activities={data ? data.activities : []}
+      <PlansTable
+        plans={data ? data.plans : []}
         visibleColumns={visibleColumns}
         selectedRows={selectedRows}
         onToggleRow={toggleRowSelection}
         onToggleAllRows={toggleAllRows}
-        deleteActivity={deleteActivity}
+        deletePlan={deletePlan}
         isDeleting={isDeleting}
         isLoading={isLoading}
-      /> */}
+      />
       <Pagination currentPage={page} totalPages={totalPages} onPageChange={setPage} />
     </div>
   )
