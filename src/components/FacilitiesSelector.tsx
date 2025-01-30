@@ -41,14 +41,14 @@ export default function FacilitiesSelector({ facilities, setWorkingFacility, wor
             <SelectItem
               key={facility.id}
               value={facility.id}
-              className='flex justify-start gap-2 p-2 cursor-pointer transition-colors duration-200 ease-in-out'
+              className='gap-2 p-2 cursor-pointer transition-colors duration-200 ease-in-out'
             >
               <div className='flex items-center gap-4 px-8'>
-                <Avatar className="w-8 h-8 md:w-10 md:h-10 ">
+                <Avatar className="w-6 h-6 md:w-8 md:h-8 ">
                   <AvatarImage src={facility.logoUrl || (noImage.src as string)} alt={facility.name} />
                   <AvatarFallback>{facility.name.slice(0, 2).toUpperCase()}</AvatarFallback>
                 </Avatar>
-                <span className='md:text-lg'>{facility.name}</span>
+                <span className='text-sm md:text-base'>{facility.name}</span>
               </div>
             </SelectItem>
           ))

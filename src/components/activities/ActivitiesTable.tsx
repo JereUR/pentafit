@@ -1,9 +1,10 @@
+import { UseMutateFunction } from "@tanstack/react-query"
+import { Loader2 } from "lucide-react"
+
 import { Table, TableBody, TableHeader, TableHead, TableRow } from "@/components/ui/table"
 import { Checkbox } from "@/components/ui/checkbox"
 import { ActivityData, columnsActivities } from "@/types/activity"
 import ActivityRow from './ActivityRow'
-import { UseMutateFunction } from "@tanstack/react-query"
-import { Loader2 } from "lucide-react"
 
 interface ActivitiesTableProps {
   activities: ActivityData[]
@@ -39,10 +40,10 @@ export default function ActivitiesTable({
                     onCheckedChange={onToggleAllRows}
                   />
                 </TableHead>
-                {columnsActivities.filter(col => visibleColumns.has(col.key)).map((column, index, array) => (
+                {columnsActivities.filter(col => visibleColumns.has(col.key)).map((column) => (
                   <TableHead
                     key={column.key}
-                    className={`font-medium text-center ${index < array.length - 1 ? 'border-r' : ''}`}
+                    className='font-medium text-center border-r'
                   >
                     {column.label}
                   </TableHead>

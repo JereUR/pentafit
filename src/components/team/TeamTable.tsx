@@ -52,10 +52,10 @@ export default function TeamTable({
                 </TableHead>
                 {columnsTeam
                   .filter((col) => visibleColumns.has(col.key))
-                  .map((column, index, array) => (
+                  .map((column) => (
                     <TableHead
                       key={column.key}
-                      className={`font-medium text-center ${index < array.length - 1 ? "border-r" : ""}`}
+                      className='font-medium text-center border-r'
                     >
                       {column.label}
                     </TableHead>

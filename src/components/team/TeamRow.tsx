@@ -25,15 +25,15 @@ interface TeamRowProps {
     success: boolean;
     message: string;
     deletedCount: number;
-} | {
+  } | {
     facilityId: string;
     success: boolean;
     message: string;
     deletedCount?: undefined;
-}, Error, {
+  }, Error, {
     memberIds: string | string[];
     facilityId: string;
-}, unknown>
+  }, unknown>
   isDeleting: boolean
 }
 
@@ -64,23 +64,26 @@ export default function TeamRow({
   return (
     <TableRow
       className={cn(
-        isSelected ? 'bg-primary/40 dark:bg-primary/20' : index % 2 === 0 ? 'bg-card/40' : 'bg-muted/20'
+        isSelected ? "bg-primary/40 dark:bg-primary/20" : index % 2 === 0 ? "bg-card/40" : "bg-muted/20",
+        "h-16",
       )}
     >
       <TableCell className="p-0 w-[50px] text-center">
-        <Checkbox
-          checked={isSelected}
-          onCheckedChange={() => onToggleRow(member.id)}
-        />
+        <Checkbox checked={isSelected} onCheckedChange={() => onToggleRow(member.id)} />
       </TableCell>
       {columnsTeam
         .filter((col) => visibleColumns.has(col.key))
         .map((column) => (
-          <TableCell key={column.key} className="border-x text-center break-words">
+          <TableCell
+            key={column.key}
+            className={cn("border-x text-center break-words h-full", column.key === "avatarUrl" && "p-0")}
+          >
             {column.key === "birthday" ? (
               formatBirthday(member[column.key].toString())
             ) : column.key === "avatarUrl" ? (
-              <UserAvatar avatarUrl={member[column.key] as string} size={32} className='flex justify-center' />
+              <div className="flex items-center justify-center h-full">
+                <UserAvatar avatarUrl={member[column.key] as string} size={32} />
+              </div>
             ) : column.key === "facilities" ? (
               <div className="flex justify-center space-x-1">
                 {(member[column.key] as { id: string; name: string; logoUrl: string }[]).map((facility) => (

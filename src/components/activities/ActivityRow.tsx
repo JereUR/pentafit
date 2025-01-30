@@ -37,7 +37,7 @@ export default function ActivityRow({
       onError: (error) => {
         toast({
           variant: "destructive",
-          title: "Error al eliminar el establecimiento",
+          title: "Error al eliminar la actividad",
           description: error.message,
         })
       },
@@ -68,7 +68,7 @@ export default function ActivityRow({
         </TableCell>
       ))}
       <TableCell className="text-center">
-      <div className="flex flex-col items-center-center gap-2 text-xs md:text-sm">
+        <div className="flex flex-col items-center-center gap-2 text-xs md:text-sm">
           <Button asChild variant="outline" className="w-auto" onClick={(e) => e.stopPropagation()}>
             <Link href={`/actividades/editar/${activity.id}`}>
               <Edit className="mr-2 h-4 w-4" /> Editar
