@@ -11,7 +11,13 @@ export function useCreatePlanMutation() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: createPlan,
+    mutationFn: async (values: PlanValues) => {
+      const result = await createPlan(values)
+      if (!result.success) {
+        throw new Error(result.error)
+      }
+      return result
+    },
     onSuccess: (result) => {
       if (result.success && result.plan) {
         toast({
@@ -20,11 +26,10 @@ export function useCreatePlanMutation() {
         queryClient.invalidateQueries({
           queryKey: ["plans"],
         })
-      } else {
-        throw new Error(result.error || "Error desconocido al crear el plan")
       }
     },
     onError: (error: Error) => {
+      console.error("Mutation error:", error) // Debug log
       toast({
         variant: "destructive",
         title: "Error al crear el plan",

@@ -47,11 +47,10 @@ export const getPlanById = cache(
         diariesCount: plan.diariesCount,
         facilityId: plan.facilityId,
         diaryPlans: plan.diaryPlans.map((diaryPlan) => ({
-          name: diaryPlan.name,
+          name: diaryPlan.activity.name,
           daysOfWeek: diaryPlan.daysOfWeek,
           sessionsPerWeek: diaryPlan.sessionsPerWeek,
           activityId: diaryPlan.activity.id,
-          activityName: diaryPlan.activity.name,
         })),
       }
     } catch (error) {
@@ -63,6 +62,15 @@ export const getPlanById = cache(
 
 export async function createPlan(values: PlanValues) {
   try {
+    console.log("Creating plan with values:", values) // Debug log
+
+    const sanitizedDiaryPlans = values.diaryPlans.map((plan) => ({
+      ...plan,
+      daysOfWeek: Array.isArray(plan.daysOfWeek)
+        ? plan.daysOfWeek
+        : [false, false, false, false, false, false, false],
+    }))
+
     const plan = await prisma.plan.create({
       data: {
         name: values.name,
@@ -79,10 +87,12 @@ export async function createPlan(values: PlanValues) {
         diariesCount: values.diariesCount,
         facilityId: values.facilityId,
         diaryPlans: {
-          create: values.diaryPlans.map(
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            ({ activityName, ...diaryPlan }) => diaryPlan,
-          ),
+          create: sanitizedDiaryPlans.map((diaryPlan) => ({
+            name: diaryPlan.name,
+            daysOfWeek: diaryPlan.daysOfWeek,
+            sessionsPerWeek: diaryPlan.sessionsPerWeek,
+            activityId: diaryPlan.activityId,
+          })),
         },
       },
       include: {
@@ -98,8 +108,11 @@ export async function createPlan(values: PlanValues) {
     revalidatePath(`/planes`)
     return { success: true, plan }
   } catch (error) {
-    console.error(error)
-    return { error: "Error al crear el plan" }
+    console.error("Error creating plan:", error)
+    if (error instanceof Error) {
+      return { success: false, error: error.message }
+    }
+    return { success: false, error: "Error al crear el plan" }
   }
 }
 
@@ -123,10 +136,7 @@ export async function updatePlan(id: string, values: PlanValues) {
         facilityId: values.facilityId,
         diaryPlans: {
           deleteMany: {},
-          create: values.diaryPlans.map(
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            ({ activityName, ...diaryPlan }) => diaryPlan,
-          ),
+          create: values.diaryPlans.map((diaryPlan) => diaryPlan),
         },
       },
       include: {
