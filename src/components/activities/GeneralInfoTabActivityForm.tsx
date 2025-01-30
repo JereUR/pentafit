@@ -1,8 +1,10 @@
 import { Control, Controller } from "react-hook-form"
+import { CalendarIcon } from "lucide-react"
+import { format } from "date-fns"
+import { es } from "date-fns/locale"
 
 import {
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -10,8 +12,10 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Switch } from "@/components/ui/switch"
 import { ActivityValues } from "@/lib/validation"
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover"
+import { Button } from "../ui/button"
+import { Calendar } from "../ui/calendar"
 
 interface GeneralInfoTabActivityFormProps {
   control: Control<ActivityValues>
@@ -75,36 +79,66 @@ export function GeneralInfoTabActivityForm({ control }: GeneralInfoTabActivityFo
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <FormField
           control={control}
-          name="isPublic"
+          name="startDate"
           render={({ field }) => (
-            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-              <div className="space-y-0.5">
-                <FormLabel className="text-base">Público</FormLabel>
-                <FormDescription>
-                  Hacer esta actividad visible al público
-                </FormDescription>
-              </div>
-              <FormControl>
-                <Switch
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                />
-              </FormControl>
+            <FormItem className="flex flex-col">
+              <FormLabel>Fecha de inicio</FormLabel>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <FormControl>
+                    <Button
+                      variant={"outline"}
+                      className={`w-full pl-3 text-left font-normal ${!field.value && "text-muted-foreground"}`}
+                    >
+                      {field.value ? format(field.value, "dd/MM/yyyy") : <span>Selecciona una fecha</span>}
+                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                    </Button>
+                  </FormControl>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={field.value}
+                    onSelect={field.onChange}
+                    disabled={(date) => date < new Date() || date > new Date("2100-01-01")}
+                    initialFocus
+                    locale={es}
+                  />
+                </PopoverContent>
+              </Popover>
+              <FormMessage />
             </FormItem>
           )}
         />
         <FormField
           control={control}
-          name="publicName"
+          name="endDate"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>Nombre público</FormLabel>
-              <FormControl>
-                <Input placeholder="Nombre público de la actividad" {...field} value={field.value ?? ""} />
-              </FormControl>
-              <FormDescription>
-                Nombre que verá el público si la actividad es pública
-              </FormDescription>
+            <FormItem className="flex flex-col">
+              <FormLabel>Fecha de fin</FormLabel>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <FormControl>
+                    <Button
+                      variant={"outline"}
+                      className={`w-full pl-3 text-left font-normal ${!field.value && "text-muted-foreground"}`}
+                    >
+                      {field.value ? format(field.value, "dd/MM/yyyy") : <span>Selecciona una fecha</span>}
+                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                    </Button>
+                  </FormControl>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={field.value}
+                    onSelect={field.onChange}
+                    disabled={(date) => date < new Date() || date > new Date("2100-01-01")}
+                    initialFocus
+                    locale={es}
+                  />
+                </PopoverContent>
+              </Popover>
               <FormMessage />
             </FormItem>
           )}

@@ -116,6 +116,44 @@ export function DetailsTabActivityForm({ control }: DetailsTabActivityFormProps)
           )}
         />
       </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <FormField
+          control={control}
+          name="isPublic"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+              <div className="space-y-0.5">
+                <FormLabel className="text-base">Público</FormLabel>
+                <FormDescription>
+                  Hacer esta actividad visible al público
+                </FormDescription>
+              </div>
+              <FormControl>
+                <Switch
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={control}
+          name="publicName"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Nombre público</FormLabel>
+              <FormControl>
+                <Input placeholder="Nombre público de la actividad" {...field} value={field.value ?? ""} />
+              </FormControl>
+              <FormDescription>
+                Nombre que verá el público si la actividad es pública
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </div>
       <FormField
         control={control}
         name="activityType"
