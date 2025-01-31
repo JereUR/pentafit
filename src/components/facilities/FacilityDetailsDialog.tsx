@@ -26,7 +26,7 @@ export function FacilityDetailsDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="flex flex-col justify-start h-[600px] md:h-[750px] sm:max-w-[625px] overflow-y-auto scrollbar-thin">
+      <DialogContent className="flex flex-col justify-start h-[600px] md:h-[750px] sm:max-w-[625px] overflow-y-auto scrollbar-thin rounded-md">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-primary">{data?.name || 'Detalles del establecimiento'}</DialogTitle>
         </DialogHeader>

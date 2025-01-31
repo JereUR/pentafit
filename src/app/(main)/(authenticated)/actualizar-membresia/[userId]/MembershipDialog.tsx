@@ -28,7 +28,7 @@ export function MembershipDialog({ isOpen, onClose, currentMembership, onUpdateM
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] rounded-md">
         <DialogHeader>
           <DialogTitle>Actualizar Membresía</DialogTitle>
           <DialogDescription>

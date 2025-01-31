@@ -37,7 +37,7 @@ export default function CropImageDialog({
 
   return (
     <Dialog open onOpenChange={onClose}>
-      <DialogContent className="z-[150]">
+      <DialogContent className="z-[150] rounded-md">
         <DialogHeader>
           <DialogTitle>Recortar imagen</DialogTitle>
         </DialogHeader>
