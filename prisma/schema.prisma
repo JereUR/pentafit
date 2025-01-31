@@ -85,6 +85,7 @@ model Facility {
   users       UserFacility[]
   activities  Activity[]
   plans       Plan[]
+  diaries     Diary[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -133,6 +134,7 @@ model Activity {
   facilityId      String
   facility        Facility    @relation(fields: [facilityId], references: [id])
   diaryPlans      DiaryPlan[]
+  diaries         Diary[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -165,7 +167,6 @@ model Plan {
   planType         PlanType
   freeTest         Boolean
   current          Boolean
-  diariesCount     Int
   facilityId       String
   facility         Facility      @relation(fields: [facilityId], references: [id])
   diaryPlans       DiaryPlan[]
@@ -187,4 +188,51 @@ model DiaryPlan {
   activityId      String
 
   @@map("diary_plans")
+}
+
+model DayAvailable {
+  id        Int     @id @default(autoincrement())
+  diaryId   Int
+  active    Boolean
+  timeStart String
+  timeEnd   String
+
+  diary Diary @relation(fields: [diaryId], references: [id])
+
+  @@map("days_available")
+}
+
+enum typeSchedule {
+  TURNOS
+  LIBRE
+}
+
+enum genreExclusive {
+  NO
+  MASCULINO
+  FEMENINO
+}
+
+model Diary {
+  id             Int            @id @default(autoincrement())
+  facilityId     String
+  activityId     String
+  name           String
+  typeSchedule   typeSchedule
+  dateFrom       DateTime
+  dateUntil      DateTime
+  repeatFor      Int?
+  offerDays      Boolean[]
+  termDuration   Int
+  amountOfPeople Int
+  isActive       Boolean
+  genreExclusive genreExclusive
+  worksHolidays  Boolean
+  observations   String?
+
+  facility      Facility       @relation(fields: [facilityId], references: [id])
+  activity      Activity       @relation(fields: [activityId], references: [id])
+  daysAvailable DayAvailable[]
+
+  @@map("diaries")
 }
