@@ -34,7 +34,6 @@ export const GET = async (req: Request) => {
 
     if (orphanedFiles.length > 0) {
       await utapi.deleteFiles(orphanedFiles.map((file) => file.key))
-      console.log(`Se eliminaron ${orphanedFiles.length} archivos huérfanos`)
     } else {
       console.log("No se encontraron archivos huérfanos")
     }

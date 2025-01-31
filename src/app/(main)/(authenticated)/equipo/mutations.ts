@@ -74,8 +74,6 @@ export function useUpdateMemberMutation() {
         }
       }
 
-      console.log("Mutation function values:", JSON.stringify(values, null, 2))
-
       const result = await updateMember(id, values)
       if (result.error) {
         console.error("Update error:", result.error, "Details:", result.details)
@@ -120,16 +118,13 @@ export function useDeleteMemberMutation() {
       facilityId: string
     }) => {
       const idsArray = Array.isArray(memberIds) ? memberIds : [memberIds]
-      console.log("Mutation function called with:", { idsArray, facilityId })
       const result = await deleteMember(idsArray)
-      console.log("Delete member result:", result)
       if (!result.success) {
         throw new Error(result.message)
       }
       return { ...result, facilityId }
     },
     onSuccess: (data) => {
-      console.log("Mutation succeeded:", data)
       const { message, deletedCount, facilityId } = data
 
       const title =

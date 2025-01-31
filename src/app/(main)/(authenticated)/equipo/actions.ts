@@ -236,7 +236,6 @@ export async function updateMember(id: string, values: UpdateMemberValues) {
 }
 
 export async function deleteMember(memberIds: string[]) {
-  console.log({ memberIds })
   try {
     if (!memberIds || memberIds.length === 0) {
       throw new Error("No se proporcionaron IDs de miembros para eliminar")
@@ -267,10 +266,16 @@ export async function deleteMember(memberIds: string[]) {
       deletedCount: result,
     }
   } catch (error) {
-    console.error("Error deleting members:", error instanceof Error ? error.message : "Unknown error")
+    console.error(
+      "Error deleting members:",
+      error instanceof Error ? error.message : "Unknown error",
+    )
     return {
       success: false,
-      message: error instanceof Error ? error.message : "Error desconocido al eliminar a los integrantes",
+      message:
+        error instanceof Error
+          ? error.message
+          : "Error desconocido al eliminar a los integrantes",
     }
   }
 }
