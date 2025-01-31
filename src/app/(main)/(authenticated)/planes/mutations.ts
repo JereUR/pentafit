@@ -29,7 +29,6 @@ export function useCreatePlanMutation() {
       }
     },
     onError: (error: Error) => {
-      console.error("Mutation error:", error) // Debug log
       toast({
         variant: "destructive",
         title: "Error al crear el plan",
@@ -84,28 +83,21 @@ export function useDeletePlanMutation() {
     }) => {
       const idsArray = Array.isArray(plansIds) ? plansIds : [plansIds]
       const result = await deletePlans(idsArray)
+
       if (!result.success) {
         throw new Error(result.message)
       }
 
-      const { message, deletedCount } = result
-
-      return { message, deletedCount, facilityId }
+      return { ...result, facilityId }
     },
-    onSuccess: (message) => {
-      const { message: description, deletedCount, facilityId } = message
-
-      const title =
-        deletedCount === undefined
-          ? "Error al eliminar planes"
-          : deletedCount === 1
-            ? "Plan eliminada correctamente"
-            : "Planes eliminadas correctamente"
+    onSuccess: (data) => {
+      const { message, deletedCount, facilityId } = data
 
       toast({
-        title,
-        description,
+        title: deletedCount === 1 ? "Plan eliminado" : "Planes eliminados",
+        description: message,
       })
+
       queryClient.invalidateQueries({
         queryKey: ["plans", facilityId],
       })
@@ -126,13 +118,13 @@ export function useReplicatePlanMutation() {
 
   return useMutation({
     mutationFn: async ({
-      plansIds,
+      planIds,
       targetFacilityIds,
     }: {
-      plansIds: string[]
+      planIds: string[]
       targetFacilityIds: string[]
-    }) => {
-      const result = await replicatePlans(plansIds, targetFacilityIds)
+    }) => { 
+      const result = await replicatePlans(planIds, targetFacilityIds)
       if (!result.success) {
         throw new Error(result.message)
       }

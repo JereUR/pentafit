@@ -12,7 +12,20 @@ interface PlansTableProps {
   selectedRows: string[]
   onToggleRow: (id: string) => void
   onToggleAllRows: () => void
-  deletePlan: UseMutateFunction<{ message: string; deletedCount: number | undefined; facilityId: string; }, Error, { plansIds: string | string[]; facilityId: string; }, unknown>
+  deletePlan: UseMutateFunction<
+    {
+      facilityId: string
+      success: boolean
+      message: string
+      deletedCount?: number
+    },
+    Error,
+    {
+      plansIds: string | string[]
+      facilityId: string
+    },
+    unknown
+  >
   isDeleting: boolean
   isLoading: boolean
 }

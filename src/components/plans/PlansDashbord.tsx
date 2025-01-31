@@ -92,7 +92,7 @@ export default function PlansDashboard({ userId }: { userId: string }) {
 
   const handleReplicateToFacility = (targetFacilityIds: string[]) => {
     replicatePlan(
-      { plansIds: selectedRows, targetFacilityIds },
+      { planIds: selectedRows, targetFacilityIds },
       {
         onSuccess: () => {
           setSelectedRows([])

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use server"
 
 import { revalidatePath } from "next/cache"
@@ -154,6 +155,19 @@ export async function updatePlan(id: string, values: PlanValues) {
 
 export async function deletePlans(planIds: string[]) {
   try {
+    if (!planIds || planIds.length === 0) {
+      return {
+        success: false,
+        message: "No se proporcionaron IDs de planes para eliminar",
+      }
+    }
+
+    await prisma.diaryPlan.deleteMany({
+      where: {
+        planId: { in: planIds },
+      },
+    })
+
     const { count } = await prisma.plan.deleteMany({
       where: {
         id: { in: planIds },
@@ -161,21 +175,26 @@ export async function deletePlans(planIds: string[]) {
     })
 
     if (count === 0) {
-      throw new Error("No se encontraron planes para eliminar")
+      return {
+        success: false,
+        message: "No se encontraron planes para eliminar",
+      }
     }
 
-    revalidatePath(`/planes`)
     return {
       success: true,
-      message: `Se ${count === 1 ? "ha" : "han"} eliminado ${count} ${count === 1 ? "plan" : "planes"} correctamente`,
+      message: `Se ${count === 1 ? "ha" : "han"} eliminado ${count} ${
+        count === 1 ? "plan" : "planes"
+      } correctamente`,
       deletedCount: count,
     }
   } catch (error) {
-    console.error("Error deleting plans:", error)
     return {
       success: false,
       message:
-        error instanceof Error ? error.message : "Error al eliminar los planes",
+        error instanceof Error
+          ? error.message
+          : "Error desconocido al eliminar los planes",
     }
   }
 }
@@ -193,28 +212,31 @@ export async function replicatePlans(
     })
 
     const replicatedPlans = await Promise.all(
-      plans.flatMap((plan) =>
-        targetFacilityIds.map((facilityId) =>
-          prisma.plan.create({
+      targetFacilityIds.flatMap(async (facilityId) =>
+        plans.map(async (plan) => {
+          const { id, facilityId: _, ...planData } = plan
+          return prisma.plan.create({
             data: {
-              ...plan,
-              id: undefined,
-              facilityId,
+              ...planData,
+              facilityId: facilityId,
               diaryPlans: {
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                create: plan.diaryPlans.map(({ id, ...dpData }) => dpData),
+                create: (plan.diaryPlans ?? []).map(
+                  ({ id, planId, ...dpData }) => dpData,
+                ),
               },
             },
-          }),
-        ),
+          })
+        }),
       ),
     )
+
+    const flattenedPlans = replicatedPlans.flat()
 
     revalidatePath(`/planes`)
     return {
       success: true,
-      message: `Se han replicado ${replicatedPlans.length} planes en ${targetFacilityIds.length} establecimientos.`,
-      replicatedCount: replicatedPlans.length,
+      message: `Se han replicado ${flattenedPlans.length} planes en ${targetFacilityIds.length} establecimientos.`,
+      replicatedCount: flattenedPlans.length,
     }
   } catch (error) {
     console.error("Error replicating plans:", error)

@@ -20,12 +20,17 @@ interface PlanRowProps {
   isSelected: boolean
   onToggleRow: (id: string) => void
   deletePlan: UseMutateFunction<
-    { message: string; deletedCount: number | undefined; facilityId: string },
-    Error,
-    {
-      plansIds: string | string[]
-      facilityId: string
-    },
+    { 
+      facilityId: string 
+      success: boolean 
+      message: string 
+      deletedCount?: number 
+    }, 
+    Error, 
+    { 
+      plansIds: string | string[] 
+      facilityId: string 
+    }, 
     unknown
   >
   isDeleting: boolean
