@@ -23,6 +23,7 @@ interface GenericDataHeaderProps<T> {
   userId?: string
   addButtonLabel: string
   searchPlaceholder: string
+  showReplicate?: boolean
 }
 
 export default function GenericDataHeader<T>({
@@ -30,18 +31,19 @@ export default function GenericDataHeader<T>({
   selectedCount,
   onAdd,
   onDeleteSelected,
-  onReplicateToFacility,
+  onReplicateToFacility = () => { },
   columns,
   visibleColumns,
   onToggleColumn,
   isDeleting,
-  isReplicating,
+  isReplicating = false,
   search,
   setSearch,
-  workingFacilityId,
-  userId,
+  workingFacilityId = '',
+  userId = '',
   addButtonLabel,
   searchPlaceholder,
+  showReplicate = true
 }: GenericDataHeaderProps<T>) {
   return (
     <div className="flex flex-col items-start gap-4 mb-4">
@@ -69,7 +71,7 @@ export default function GenericDataHeader<T>({
                 isDeleting={isDeleting}
                 count={selectedCount}
               />
-              {userId && onReplicateToFacility && isReplicating && workingFacilityId && <ReplicateConfirmationDialog
+              {showReplicate && <ReplicateConfirmationDialog
                 itemName={`los ${selectedCount} elementos seleccionados`}
                 onReplicate={onReplicateToFacility}
                 isReplicating={isReplicating}

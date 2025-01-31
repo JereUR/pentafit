@@ -99,6 +99,7 @@ export default function PlanForm({ userId, planData }: PlanFormProps) {
       createPlan(values, {
         onSuccess: () => {
           form.reset()
+          router.push("/planes")
         },
         onError: (error) => {
           setError(error instanceof Error ? error.message : "Error creating plan")

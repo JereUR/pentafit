@@ -107,6 +107,7 @@ export default function TeamDashboard() {
         setSearch={setSearch}
         addButtonLabel="Agregar Miembro"
         searchPlaceholder="Buscar miembros..."
+        showReplicate={false}
       />
       <TeamTable
         team={data ? data.members : []}
