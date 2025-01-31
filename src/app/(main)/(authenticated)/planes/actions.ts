@@ -44,7 +44,6 @@ export const getPlanById = cache(
         planType: plan.planType,
         freeTest: plan.freeTest,
         current: plan.current,
-        diariesCount: plan.diariesCount,
         facilityId: plan.facilityId,
         diaryPlans: plan.diaryPlans.map((diaryPlan) => ({
           name: diaryPlan.activity.name,
@@ -62,8 +61,6 @@ export const getPlanById = cache(
 
 export async function createPlan(values: PlanValues) {
   try {
-    console.log("Creating plan with values:", values) // Debug log
-
     const sanitizedDiaryPlans = values.diaryPlans.map((plan) => ({
       ...plan,
       daysOfWeek: Array.isArray(plan.daysOfWeek)
@@ -84,7 +81,6 @@ export async function createPlan(values: PlanValues) {
         planType: values.planType,
         freeTest: values.freeTest,
         current: values.current,
-        diariesCount: values.diariesCount,
         facilityId: values.facilityId,
         diaryPlans: {
           create: sanitizedDiaryPlans.map((diaryPlan) => ({
@@ -132,7 +128,6 @@ export async function updatePlan(id: string, values: PlanValues) {
         planType: values.planType,
         freeTest: values.freeTest,
         current: values.current,
-        diariesCount: values.diariesCount,
         facilityId: values.facilityId,
         diaryPlans: {
           deleteMany: {},
