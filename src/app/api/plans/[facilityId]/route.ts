@@ -63,7 +63,6 @@ export async function GET(
       planType: plan.planType,
       freeTest: plan.freeTest,
       current: plan.current,
-      diariesCount: plan.diariesCount,
       facilityId: id,
       diaryPlans: plan.diaryPlans.map((dp) => ({
         id: dp.id,
