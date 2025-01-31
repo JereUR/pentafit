@@ -38,7 +38,6 @@ export interface PlanData {
   planType: PlanType
   freeTest: boolean
   current: boolean
-  diariesCount: number
   diaryPlans: DiaryPlanData[]
 }
 
