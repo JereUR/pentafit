@@ -58,7 +58,6 @@ export default function PlanForm({ userId, planData }: PlanFormProps) {
       planType: PlanType.MENSUAL,
       freeTest: false,
       current: false,
-      diariesCount: 0,
       diaryPlans: [
         {
           name: "Test",
@@ -77,16 +76,7 @@ export default function PlanForm({ userId, planData }: PlanFormProps) {
     }
   }, [planData, form])
 
-  useEffect(() => {
-    const subscription = form.watch((value) => {
-      console.log("Form values changed:", value)
-      console.log("Form errors:", form.formState.errors)
-    })
-    return () => subscription.unsubscribe()
-  }, [form])
-
   async function onSubmit(values: PlanValues) {
-    console.log("Form submitted with values:", values) // Debug log
     setError(undefined)
 
     if (isEditing && planData) {
@@ -97,12 +87,10 @@ export default function PlanForm({ userId, planData }: PlanFormProps) {
         },
         {
           onSuccess: () => {
-            console.log("Plan updated successfully") // Debug log
             form.reset()
             router.push("/planes")
           },
           onError: (error) => {
-            console.error("Error updating plan:", error) // Debug log
             setError(error instanceof Error ? error.message : "Error updating plan")
           },
         },
@@ -110,11 +98,9 @@ export default function PlanForm({ userId, planData }: PlanFormProps) {
     } else {
       createPlan(values, {
         onSuccess: () => {
-          console.log("Plan created successfully") // Debug log
           form.reset()
         },
         onError: (error) => {
-          console.error("Error creating plan:", error) // Debug log
           setError(error instanceof Error ? error.message : "Error creating plan")
         },
       })
