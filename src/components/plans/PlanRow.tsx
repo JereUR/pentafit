@@ -10,7 +10,7 @@ import { type PlanData, columnsPlans } from "@/types/plan"
 import { cn } from "@/lib/utils"
 import { DeleteConfirmationDialog } from "../DeleteConfirmationDialog"
 import { useToast } from "@/hooks/use-toast"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogPortal, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { DiaryPlansDialog } from "./DiaryPlansDialog"
 
 interface PlanRowProps {
@@ -82,12 +82,16 @@ export default function PlanRow({
                       <Info className="h-4 w-4" />
                     </Button>
                   </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Actividades asociadas a {plan.name}</DialogTitle>
-                    </DialogHeader>
-                    <DiaryPlansDialog diaryPlans={plan.diaryPlans} />
-                  </DialogContent>
+                  <DialogPortal>
+                    <DialogContent className="sm:max-w-[80%] md:max-w-[60%] lg:max-w-[50%] xl:max-w-[40%] h-[80vh] flex flex-col rounded-md">
+                      <DialogHeader>
+                        <DialogTitle>Actividades asociadas a {plan.name}</DialogTitle>
+                      </DialogHeader>
+                      <div className="flex-grow overflow-y-auto scrollbar-thin">
+                        <DiaryPlansDialog diaryPlans={plan.diaryPlans} />
+                      </div>
+                    </DialogContent>
+                  </DialogPortal>
                 </Dialog>
               </div>
             ) : (
