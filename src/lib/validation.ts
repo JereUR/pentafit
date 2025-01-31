@@ -211,7 +211,6 @@ export const planSchema = z.object({
   planType: z.nativeEnum(PlanType),
   freeTest: z.boolean().default(false),
   current: z.boolean().default(false),
-  diariesCount: z.number().int().min(0),
   diaryPlans: z.array(
     z.object({
       name: z.string(),
