@@ -1,12 +1,13 @@
-import React from 'react'
-import { SquarePlus, Search } from 'lucide-react'
+"use client"
+import { SquarePlus, Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { DeleteConfirmationDialog } from "./DeleteConfirmationDialog"
 import { ReplicateConfirmationDialog } from "./ReplicateConfirmationDialog"
 import ColumnSelector from "./ColumnSelector"
+import ExportToExcel from "./ExportToExcel"
 
-interface GenericDataHeaderProps<T> {
+interface GenericDataHeaderProps<T extends { [key: string]: unknown }> {
   title: string
   selectedCount: number
   onAdd: () => void
@@ -24,9 +25,11 @@ interface GenericDataHeaderProps<T> {
   addButtonLabel: string
   searchPlaceholder: string
   showReplicate?: boolean
+  exportApiRoute?: string
+  exportFileName?: string
 }
 
-export default function GenericDataHeader<T>({
+export default function GenericDataHeader<T extends { [key: string]: unknown }>({
   title,
   selectedCount,
   onAdd,
@@ -39,11 +42,13 @@ export default function GenericDataHeader<T>({
   isReplicating = false,
   search,
   setSearch,
-  workingFacilityId = '',
-  userId = '',
+  workingFacilityId = "",
+  userId = "",
   addButtonLabel,
   searchPlaceholder,
-  showReplicate = true
+  showReplicate = true,
+  exportApiRoute,
+  exportFileName,
 }: GenericDataHeaderProps<T>) {
   return (
     <div className="flex flex-col items-start gap-4 mb-4">
@@ -61,6 +66,13 @@ export default function GenericDataHeader<T>({
             />
           </div>
           <ColumnSelector columns={columns} visibleColumns={visibleColumns} onToggleColumn={onToggleColumn} />
+          {exportApiRoute && exportFileName && (
+            <ExportToExcel<T>
+              apiRoute={exportApiRoute}
+              columns={columns as Array<{ key: Extract<keyof T, string>; label: string; width?: number }>}
+              fileName={exportFileName}
+            />
+          )}
         </div>
         <div className="flex flex-col md:flex-row gap-2 items-center">
           {selectedCount > 0 && (
@@ -71,14 +83,16 @@ export default function GenericDataHeader<T>({
                 isDeleting={isDeleting}
                 count={selectedCount}
               />
-              {showReplicate && <ReplicateConfirmationDialog
-                itemName={`los ${selectedCount} elementos seleccionados`}
-                onReplicate={onReplicateToFacility}
-                isReplicating={isReplicating}
-                count={selectedCount}
-                workingFacilityId={workingFacilityId}
-                userId={userId}
-              />}
+              {showReplicate && (
+                <ReplicateConfirmationDialog
+                  itemName={`los ${selectedCount} elementos seleccionados`}
+                  onReplicate={onReplicateToFacility}
+                  isReplicating={isReplicating}
+                  count={selectedCount}
+                  workingFacilityId={workingFacilityId}
+                  userId={userId}
+                />
+              )}
             </>
           )}
           <Button
@@ -93,3 +107,4 @@ export default function GenericDataHeader<T>({
     </div>
   )
 }
+

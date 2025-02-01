@@ -121,7 +121,7 @@ export default function ActivitiesDashboard({ userId }: { userId: string }) {
         onReplicateToFacility={handleReplicateToFacility}
         columns={columnsActivities}
         visibleColumns={visibleColumns}
-        onToggleColumn={toggleColumn}
+        onToggleColumn={(column) => toggleColumn(column as keyof ActivityData)}
         isDeleting={isDeleting}
         isReplicating={isReplicating}
         search={search}
@@ -130,6 +130,8 @@ export default function ActivitiesDashboard({ userId }: { userId: string }) {
         userId={userId}
         addButtonLabel="Agregar Actividad"
         searchPlaceholder="Buscar actividades..."
+        exportApiRoute={`/api/activities/${workingFacility?.id}/all`}
+        exportFileName={`Actividades_${workingFacility?.name}`}
       />
       <ActivitiesTable
         activities={data ? data.activities : []}
