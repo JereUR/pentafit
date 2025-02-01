@@ -108,6 +108,8 @@ export default function TeamDashboard() {
         addButtonLabel="Agregar Miembro"
         searchPlaceholder="Buscar miembros..."
         showReplicate={false}
+        exportApiRoute={`/api/team/${workingFacility?.id}/all`}
+        exportFileName={`Equipo_${workingFacility?.name}`}
       />
       <TeamTable
         team={data ? data.members : []}

@@ -15,6 +15,7 @@ import { useDeletePlanMutation, useReplicatePlanMutation } from "@/app/(main)/(a
 import NoWorkingFacilityMessage from "../NoWorkingFacilityMessage"
 import GenericDataHeader from "../GenericDataHeader"
 import PlansTable from "./PlansTable"
+
 export default function PlansDashboard({ userId }: { userId: string }) {
   const router = useRouter()
   const { workingFacility } = useWorkingFacility()
@@ -129,6 +130,8 @@ export default function PlansDashboard({ userId }: { userId: string }) {
         userId={userId}
         addButtonLabel="Agregar Plan"
         searchPlaceholder="Buscar planes..."
+        exportApiRoute={`/api/plans/${workingFacility?.id}/all`}
+        exportFileName={`Planes_${workingFacility?.name}`}
       />
       <PlansTable
         plans={data ? data.plans : []}
