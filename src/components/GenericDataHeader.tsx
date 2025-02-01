@@ -48,7 +48,7 @@ export default function GenericDataHeader<T extends { [key: string]: unknown }>(
   searchPlaceholder,
   showReplicate = true,
   exportApiRoute,
-  exportFileName,
+  exportFileName
 }: GenericDataHeaderProps<T>) {
   return (
     <div className="flex flex-col items-start gap-4 mb-4">
