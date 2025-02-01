@@ -4,9 +4,9 @@ import { useState } from "react"
 import ExcelJS from "exceljs"
 import { saveAs } from "file-saver"
 
-import { Button } from "@/components/ui/button"
 import { useToast } from "@/hooks/use-toast"
 import ExcelIcon from "@/config/icons"
+import LoadingButton from "./LoadingButton"
 
 interface ExportToExcelProps<T> {
   apiRoute: string
@@ -74,15 +74,15 @@ export default function ExportToExcel<T extends { [key: string]: unknown }>({
   }
 
   return (
-    <Button
+    <LoadingButton
       variant="outline"
       className="flex items-center gap-2 bg-card"
       onClick={exportToExcel}
-      disabled={isExporting}
+      loading={isExporting}
     >
       <ExcelIcon className="w-5 h-5" />
-      {isExporting ? "Exportando..." : buttonText}
-    </Button>
+      {buttonText}
+    </LoadingButton>
   )
 }
 
