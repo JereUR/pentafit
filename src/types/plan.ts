@@ -1,3 +1,4 @@
+import { daysOfWeek } from "@/lib/utils"
 import { PaymentType, PlanType } from "@prisma/client"
 
 export const columnsPlans: { key: keyof PlanData; label: string }[] = [
@@ -41,6 +42,21 @@ export interface PlanData {
   diaryPlans: DiaryPlanData[]
 }
 
+export interface PlanDataExport {
+  name: string
+  description: string
+  price: number
+  startDate: Date
+  endDate: Date
+  expirationPeriod: number
+  generateInvoice: boolean
+  paymentTypes: PaymentType[]
+  planType: PlanType
+  freeTest: boolean
+  current: boolean
+  diaryPlans: string
+}
+
 export interface SelectOption {
   key: string
   value: string
@@ -57,3 +73,25 @@ export const paymentTypeOptions: SelectOption[] = [
   { key: PaymentType.TRANSFERENCIA, value: "Transferencia" },
   { key: PaymentType.DEBITO_AUTOMATICO, value: "Débito automático" },
 ]
+
+export const formatDiaryPlans = (
+  diaryPlans: {
+    id: string
+    name: string
+    daysOfWeek: boolean[]
+    sessionsPerWeek: number
+    planId: string
+    activityId: string
+  }[],
+): string => {
+  return diaryPlans
+    .map((plan) => {
+      const days = plan.daysOfWeek
+        .map((active, index) => (active ? daysOfWeek[index] : null))
+        .filter(Boolean)
+        .join(", ")
+
+      return `${plan.name} (${days})`
+    })
+    .join(" - ")
+}
