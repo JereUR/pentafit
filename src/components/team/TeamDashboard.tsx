@@ -101,7 +101,7 @@ export default function TeamDashboard() {
         onDeleteSelected={handleDeleteSelected}
         columns={columnsTeam}
         visibleColumns={visibleColumns}
-        onToggleColumn={toggleColumn}
+        onToggleColumn={(column) => toggleColumn(column as keyof TeamData)}
         isDeleting={isDeleting}
         search={search}
         setSearch={setSearch}

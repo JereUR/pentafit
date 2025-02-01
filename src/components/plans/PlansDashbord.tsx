@@ -120,7 +120,7 @@ export default function PlansDashboard({ userId }: { userId: string }) {
         onReplicateToFacility={handleReplicateToFacility}
         columns={columnsPlans}
         visibleColumns={visibleColumns}
-        onToggleColumn={toggleColumn}
+        onToggleColumn={(column) => toggleColumn(column as keyof PlanData)}
         isDeleting={isDeleting}
         isReplicating={isReplicating}
         search={search}
