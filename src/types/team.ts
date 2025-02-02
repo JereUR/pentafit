@@ -51,3 +51,29 @@ export type TeamData = {
   }[]
   facilityId: string
 }
+
+export type TeamExportData = {
+  firstName: string
+  lastName: string
+  email: string
+  birthday: string
+  gender: string
+  role: Role
+  facilities: string
+}
+
+export const formatFacilities = (
+  facilities: {
+    facility: {
+      id: string
+      name: string
+      logoUrl: string | null
+    }
+  }[],
+): string => {
+  return facilities
+    .map((facility) => {
+      return facility.facility.name
+    })
+    .join(" - ")
+}
