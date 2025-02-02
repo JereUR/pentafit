@@ -14,3 +14,15 @@ export const formatBirthday = (birthday: string) => {
 }
 
 export const daysOfWeek = ["Lun", "Mar", "Mie", "Jue", "Vie", "Sab", "Dom"]
+
+export interface SelectOption {
+  key: string
+  value: string
+}
+
+export const mapEnumToValue = <T extends { key: string; value: string }>(
+  options: T[],
+  key: string,
+): string => {
+  return options.find((option) => option.key === key)?.value || key
+}
