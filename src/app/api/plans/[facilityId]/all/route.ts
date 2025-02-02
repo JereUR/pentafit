@@ -1,6 +1,13 @@
 import { type NextRequest, NextResponse } from "next/server"
+
 import prisma from "@/lib/prisma"
-import { formatDiaryPlans, PlanDataExport } from "@/types/plan"
+import {
+  formatDiaryPlans,
+  paymentTypeOptions,
+  PlanDataExport,
+  planTypeOptions,
+} from "@/types/plan"
+import { mapEnumToValue } from "@/lib/utils"
 
 export async function GET(
   request: NextRequest,
@@ -39,14 +46,16 @@ export async function GET(
       name: plan.name,
       description: plan.description,
       price: plan.price,
-      startDate: plan.startDate,
-      endDate: plan.endDate,
+      startDate: plan.startDate.toLocaleDateString(),
+      endDate: plan.endDate.toLocaleDateString(),
       expirationPeriod: plan.expirationPeriod,
-      generateInvoice: plan.generateInvoice,
-      paymentTypes: plan.paymentTypes,
-      planType: plan.planType,
-      freeTest: plan.freeTest,
-      current: plan.current,
+      generateInvoice: plan.generateInvoice ? "Si" : "No",
+      paymentTypes: plan.paymentTypes
+        .map((pt) => mapEnumToValue(paymentTypeOptions, pt))
+        .join(" - "),
+      planType: mapEnumToValue(planTypeOptions, plan.planType),
+      freeTest: plan.freeTest ? "Si" : "No",
+      current: plan.current ? "Si" : "No",
       facilityId: id,
       diaryPlans: formatDiaryPlans(plan.diaryPlans),
     }))
