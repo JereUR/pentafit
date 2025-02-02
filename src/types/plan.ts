@@ -1,4 +1,4 @@
-import { daysOfWeek } from "@/lib/utils"
+import { daysOfWeek, SelectOption } from "@/lib/utils"
 import { PaymentType, PlanType } from "@prisma/client"
 
 export const columnsPlans: { key: keyof PlanData; label: string }[] = [
@@ -46,20 +46,15 @@ export interface PlanDataExport {
   name: string
   description: string
   price: number
-  startDate: Date
-  endDate: Date
+  startDate: string
+  endDate: string
   expirationPeriod: number
-  generateInvoice: boolean
-  paymentTypes: PaymentType[]
-  planType: PlanType
-  freeTest: boolean
-  current: boolean
+  generateInvoice: string
+  paymentTypes: string
+  planType: string
+  freeTest: string
+  current: string
   diaryPlans: string
-}
-
-export interface SelectOption {
-  key: string
-  value: string
 }
 
 export const planTypeOptions: SelectOption[] = [
@@ -91,7 +86,7 @@ export const formatDiaryPlans = (
         .filter(Boolean)
         .join(", ")
 
-      return `${plan.name} (${days})`
+      return `${plan.name} - ${plan.sessionsPerWeek} sesiones máximas por semana (${days})`
     })
-    .join(" - ")
+    .join("\n")
 }
