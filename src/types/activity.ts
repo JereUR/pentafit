@@ -38,3 +38,18 @@ export type ActivityData = {
   activityType: string
   facilityId: string
 }
+
+export type ActivityExportData = {
+  name: string
+  description: string
+  price: number
+  isPublic: string
+  publicName: string
+  generateInvoice: string
+  maxSessions: number
+  mpAvailable: string
+  startDate: string
+  endDate: string
+  paymentType: string
+  activityType: string
+}
