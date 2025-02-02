@@ -60,11 +60,17 @@ export default function PlanForm({ userId, planData }: PlanFormProps) {
       current: false,
       diaryPlans: [
         {
-          name: "Test",
+          name: "Actividad 1",
           daysOfWeek: [true, true, true, true, true, false, false],
           sessionsPerWeek: 4,
           activityId: "52205e28-abab-4dfd-9920-7a4f6f8b8ed0",
         },
+        {
+          name: "Actividad 2",
+          daysOfWeek: [false, false, false, false, false, true, true],
+          sessionsPerWeek: 1,
+          activityId: "52205e28-abab-4dfd-9920-7a4f6f8b8ed0",
+        }
       ],
       facilityId: workingFacility?.id || "",
     },
