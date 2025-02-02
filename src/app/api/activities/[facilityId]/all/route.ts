@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
-import { ActivityData } from "@/types/activity"
+import { ActivityExportData } from "@/types/activity"
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ facilityId: string }> },
-): Promise<NextResponse<ActivityData[] | { error: string }>> {
+): Promise<NextResponse<ActivityExportData[] | { error: string }>> {
   try {
     const id = (await params).facilityId
 
@@ -35,7 +35,26 @@ export async function GET(
       return NextResponse.json([])
     }
 
-    return NextResponse.json(allActivities)
+    const formattedAllActivities: ActivityExportData[] = allActivities.map(
+      (activity) => {
+        return {
+          name: activity.name,
+          description: activity.description || "-",
+          price: activity.price,
+          isPublic: activity.isPublic ? "Si" : "No",
+          publicName: activity.publicName || "-",
+          generateInvoice: activity.generateInvoice ? "Si" : "No",
+          maxSessions: activity.maxSessions,
+          mpAvailable: activity.mpAvailable ? "Si" : "No",
+          startDate: activity.startDate.toLocaleDateString(),
+          endDate: activity.endDate.toLocaleDateString(),
+          paymentType: activity.paymentType,
+          activityType: activity.activityType,
+        }
+      },
+    )
+
+    return NextResponse.json(formattedAllActivities)
   } catch (error) {
     console.error("Error fetching activities:", error)
     return NextResponse.json(
