@@ -2,13 +2,13 @@ import { NextRequest, NextResponse } from "next/server"
 
 import prisma from "@/lib/prisma"
 import { validateRole } from "@/auth"
-import { TeamData } from "@/types/team"
+import { formatFacilities, TeamExportData } from "@/types/team"
 import { Role } from "@prisma/client"
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ facilityId: string }> },
-): Promise<NextResponse<TeamData[] | { error: string }>> {
+): Promise<NextResponse<TeamExportData[] | { error: string }>> {
   const roleResult = await validateRole()
 
   if (!roleResult) {
@@ -59,17 +59,14 @@ export async function GET(
       return NextResponse.json([])
     }
 
-    const allMembers: TeamData[] = allUsers.map(({ user }) => ({
-      ...user,
-      facilityId: id,
+    const allMembers: TeamExportData[] = allUsers.map(({ user }) => ({
+      firstName: user.firstName,
+      lastName: user.lastName,
       email: user.email || "",
-      birthday: new Date(user.birthday),
-      avatarUrl: user.avatarUrl || "",
-      facilities: user.facilities.map((f) => ({
-        id: f.facility.id,
-        name: f.facility.name,
-        logoUrl: f.facility.logoUrl || "",
-      })),
+      gender: user.gender,
+      role: user.role,
+      birthday: new Date(user.birthday).toLocaleDateString(),
+      facilities: formatFacilities(user.facilities),
     }))
 
     return NextResponse.json(allMembers)
