@@ -105,8 +105,8 @@ export default function TeamDashboard() {
         isDeleting={isDeleting}
         search={search}
         setSearch={setSearch}
-        addButtonLabel="Agregar Miembro"
-        searchPlaceholder="Buscar miembros..."
+        addButtonLabel="Agregar Integrante"
+        searchPlaceholder="Buscar integrante..."
         showReplicate={false}
         exportApiRoute={`/api/team/${workingFacility?.id}/all`}
         exportFileName={`Equipo_${workingFacility?.name}`}
