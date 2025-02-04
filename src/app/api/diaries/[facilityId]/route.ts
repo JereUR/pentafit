@@ -1,0 +1,70 @@
+import { NextRequest, NextResponse } from "next/server"
+import prisma from "@/lib/prisma"
+import { DiaryData } from "@/types/diary"
+
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ facilityId: string }> },
+): Promise<
+  NextResponse<{ diaries: DiaryData[]; total: number } | { error: string }>
+> {
+  try {
+    const id = (await params).facilityId
+    const { searchParams } = request.nextUrl
+    const page = parseInt(searchParams.get("page") || "1", 10)
+    const pageSize = parseInt(searchParams.get("pageSize") || "10", 10)
+    const search = searchParams.get("search") || ""
+    const skip = (page - 1) * pageSize
+
+    const [diaries, total] = await Promise.all([
+      prisma.diary.findMany({
+        where: {
+          facilityId: id,
+          name: {
+            contains: search,
+            mode: "insensitive",
+          },
+        },
+        select: {
+          id: true,
+          name: true,
+          typeSchedule: true,
+          dateFrom: true,
+          dateUntil: true,
+          repeatFor: true,
+          offerDays: true,
+          termDuration: true,
+          amountOfPeople: true,
+          isActive: true,
+          genreExclusive: true,
+          worksHolidays: true,
+          observations: true,
+          facilityId: true,
+        },
+        skip,
+        take: pageSize,
+      }),
+      prisma.diary.count({
+        where: {
+          facilityId: id,
+          name: {
+            contains: search,
+            mode: "insensitive",
+          },
+        },
+      }),
+    ])
+
+    if (!diaries) {
+      return NextResponse.json({ diaries: [], total: 0 })
+    }
+
+    return NextResponse.json({ diaries: diaries, total })
+  } catch (error) {
+    console.error("Error fetching diaries:", error)
+    return NextResponse.json(
+      { error: "Error al cargar las actividades" },
+      { status: 500 },
+    )
+  }
+}
