@@ -191,9 +191,9 @@ model DiaryPlan {
 }
 
 model DayAvailable {
-  id        Int     @id @default(autoincrement())
-  diaryId   Int
-  active    Boolean
+  id        String  @id @default(uuid())
+  diaryId   String
+  available Boolean
   timeStart String
   timeEnd   String
 
@@ -214,7 +214,7 @@ enum genreExclusive {
 }
 
 model Diary {
-  id             Int            @id @default(autoincrement())
+  id             String         @id @default(uuid())
   facilityId     String
   activityId     String
   name           String
