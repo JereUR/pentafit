@@ -39,8 +39,8 @@ export type DiaryExportData = {
   DateUntil: string
   repeatFor: string
   offerDays: string
-  termDuration: string
-  amountOfPeople: string
+  termDuration: number
+  amountOfPeople: number
   isActive: string
   genreExclusive: string
   worksHolidays: string
