@@ -130,7 +130,7 @@ export default function ActivitiesDashboard({ userId }: { userId: string }) {
         userId={userId}
         addButtonLabel="Agregar Actividad"
         searchPlaceholder="Buscar actividades..."
-        exportApiRoute={`/api/activities/${workingFacility?.id}/all`}
+        exportApiRoute={`/api/activities/${workingFacility?.id}/all-export`}
         exportFileName={`Actividades_${workingFacility?.name}`}
       />
       <ActivitiesTable

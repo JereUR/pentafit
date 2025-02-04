@@ -1,15 +1,15 @@
 import { NextRequest, NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
-import { ActivityExportData } from "@/types/activity"
+import { ActivityData } from "@/types/activity"
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ facilityId: string }> },
-): Promise<NextResponse<ActivityExportData[] | { error: string }>> {
+): Promise<NextResponse<{ activities: ActivityData[] } | { error: string }>> {
   try {
     const id = (await params).facilityId
 
-    const allActivities = await prisma.activity.findMany({
+    const activities = await prisma.activity.findMany({
       where: {
         facilityId: id,
       },
@@ -31,30 +31,11 @@ export async function GET(
       },
     })
 
-    if (!allActivities) {
-      return NextResponse.json([])
+    if (!activities) {
+      return NextResponse.json({ activities: [], total: 0 })
     }
 
-    const formattedAllActivities: ActivityExportData[] = allActivities.map(
-      (activity) => {
-        return {
-          name: activity.name,
-          description: activity.description || "-",
-          price: activity.price,
-          isPublic: activity.isPublic ? "Si" : "No",
-          publicName: activity.publicName || "-",
-          generateInvoice: activity.generateInvoice ? "Si" : "No",
-          maxSessions: activity.maxSessions,
-          mpAvailable: activity.mpAvailable ? "Si" : "No",
-          startDate: activity.startDate.toLocaleDateString(),
-          endDate: activity.endDate.toLocaleDateString(),
-          paymentType: activity.paymentType,
-          activityType: activity.activityType,
-        }
-      },
-    )
-
-    return NextResponse.json(formattedAllActivities)
+    return NextResponse.json({ activities: activities })
   } catch (error) {
     console.error("Error fetching activities:", error)
     return NextResponse.json(
