@@ -5,7 +5,7 @@ export const columnsDiaries: { key: keyof DiaryData; label: string }[] = [
   { key: "typeSchedule", label: "Tipo de agenda" },
   { key: "dateFrom", label: "Fecha desde" },
   { key: "dateUntil", label: "Fecha hasta" },
-  { key: "repeatFor", label: "Repetir cada (días)" },
+  { key: "repeatFor", label: "Repetir cada (semanas)" },
   { key: "offerDays", label: "Días de oferta" },
   { key: "termDuration", label: "Duración" },
   { key: "amountOfPeople", label: "Cantidad de personas por turno" },
@@ -13,7 +13,19 @@ export const columnsDiaries: { key: keyof DiaryData; label: string }[] = [
   { key: "genreExclusive", label: "Exclusividad de género" },
   { key: "worksHolidays", label: "Trabaja feriados" },
   { key: "observations", label: "Observaciones" },
+  { key: "daysAvailable", label: "Días disponibles" },
 ]
+
+export interface ScheduleWithActivity {
+  activityId: string
+  daysAvailable: Schedule[]
+}
+
+export interface Schedule {
+  available: boolean
+  timeStart: string
+  timeEnd: string
+}
 
 export type DiaryData = {
   id: string
@@ -29,6 +41,7 @@ export type DiaryData = {
   genreExclusive: genreExclusive
   worksHolidays: boolean
   observations: string | null
+  daysAvailable: Schedule[]
   facilityId: string
 }
 
@@ -45,6 +58,7 @@ export type DiaryExportData = {
   genreExclusive: string
   worksHolidays: string
   observations: string
+  daysAvailable: string
 }
 
 export const hoursOfDays = [
