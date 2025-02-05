@@ -16,7 +16,12 @@ export function useCreateDiaryMutation() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (values: DiaryValues) => {
+    mutationFn: async (values: DiaryValues | null) => {
+      if (!values) {
+        throw new Error("No se proporcionaron datos para crear la agenda")
+      }
+
+      console.log({values})
       const result = await createDiary(values)
       if (!result.success) {
         throw new Error(result.error)

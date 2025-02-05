@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache"
 import { cache } from "react"
 import { notFound } from "next/navigation"
 
-import type { DiaryValues } from "@/lib/validation"
+import { type DiaryValues } from "@/lib/validation"
 import prisma from "@/lib/prisma"
 
 export const getDiaryById = cache(
@@ -16,6 +16,7 @@ export const getDiaryById = cache(
           facility: true,
           activity: true,
           daysAvailable: true,
+          offerDays: true,
         },
       })
 
@@ -32,7 +33,10 @@ export const getDiaryById = cache(
         dateFrom: diary.dateFrom,
         dateUntil: diary.dateUntil,
         repeatFor: diary.repeatFor,
-        offerDays: diary.offerDays,
+        offerDays: diary.offerDays.map((day) => ({
+          isOffer: day.isOffer,
+          discountPercentage: day.discountPercentage,
+        })),
         termDuration: diary.termDuration,
         amountOfPeople: diary.amountOfPeople,
         isActive: diary.isActive,
@@ -54,6 +58,17 @@ export const getDiaryById = cache(
 
 export async function createDiary(values: DiaryValues) {
   try {
+    const sanitizedDaysAvailable = values.daysAvailable.map((day) => ({
+      available: day.available,
+      timeStart: day.timeStart,
+      timeEnd: day.timeEnd,
+    }))
+
+    const sanitizedOfferDays = values.offerDays.map((offer) => ({
+      isOffer: offer.isOffer,
+      discountPercentage: offer.discountPercentage ?? 0,
+    }))
+
     const diary = await prisma.diary.create({
       data: {
         facilityId: values.facilityId,
@@ -63,29 +78,27 @@ export async function createDiary(values: DiaryValues) {
         dateFrom: values.dateFrom,
         dateUntil: values.dateUntil,
         repeatFor: values.repeatFor,
-        offerDays: values.offerDays,
+        daysAvailable: {
+          createMany: {
+            data: sanitizedDaysAvailable,
+          },
+        },
+        offerDays: {
+          createMany: {
+            data: sanitizedOfferDays,
+          },
+        },
         termDuration: values.termDuration,
         amountOfPeople: values.amountOfPeople,
         isActive: values.isActive,
         genreExclusive: values.genreExclusive,
         worksHolidays: values.worksHolidays,
         observations: values.observations,
-        daysAvailable: {
-          create: values.daysAvailable.map((day) => ({
-            available: day.available,
-            timeStart: day.timeStart,
-            timeEnd: day.timeEnd,
-          })),
-        },
-      },
-      include: {
-        facility: true,
-        activity: true,
-        daysAvailable: true,
       },
     })
 
-    revalidatePath(`/diaries`)
+    console.log("Diary created:", diary)
+    revalidatePath(`/agenda`)
     return { success: true, diary }
   } catch (error) {
     console.error("Error creating diary:", error)
@@ -108,7 +121,13 @@ export async function updateDiary(id: string, values: DiaryValues) {
         dateFrom: values.dateFrom,
         dateUntil: values.dateUntil,
         repeatFor: values.repeatFor,
-        offerDays: values.offerDays,
+        offerDays: {
+          deleteMany: {},
+          create: values.offerDays.map((day) => ({
+            isOffer: day.isOffer,
+            discountPercentage: day.discountPercentage,
+          })),
+        },
         termDuration: values.termDuration,
         amountOfPeople: values.amountOfPeople,
         isActive: values.isActive,
@@ -131,7 +150,7 @@ export async function updateDiary(id: string, values: DiaryValues) {
       },
     })
 
-    revalidatePath(`/diaries`)
+    revalidatePath(`/agenda`)
     return { success: true, diary }
   } catch (error) {
     console.error(error)
@@ -221,7 +240,7 @@ export async function replicateDiaries(
 
     const flattenedDiaries = replicatedDiaries.flat()
 
-    revalidatePath(`/diaries`)
+    revalidatePath(`/agenda`)
     return {
       success: true,
       message: `Se han replicado ${flattenedDiaries.length} agendas en ${targetFacilityIds.length} establecimientos.`,
