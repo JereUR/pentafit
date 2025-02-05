@@ -202,6 +202,17 @@ model DayAvailable {
   @@map("days_available")
 }
 
+model OfferDay {
+  id                 String  @id @default(uuid())
+  diaryId            String
+  isOffer            Boolean
+  discountPercentage Float?
+
+  diary Diary @relation(fields: [diaryId], references: [id])
+
+  @@map("offer_days")
+}
+
 enum typeSchedule {
   TURNOS
   LIBRE
@@ -222,7 +233,6 @@ model Diary {
   dateFrom       DateTime
   dateUntil      DateTime
   repeatFor      Int?
-  offerDays      Boolean[]
   termDuration   Int
   amountOfPeople Int
   isActive       Boolean
@@ -233,6 +243,7 @@ model Diary {
   facility      Facility       @relation(fields: [facilityId], references: [id])
   activity      Activity       @relation(fields: [activityId], references: [id])
   daysAvailable DayAvailable[]
+  offerDays     OfferDay[]
 
   @@map("diaries")
 }
