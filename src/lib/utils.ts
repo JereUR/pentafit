@@ -15,6 +15,16 @@ export const formatBirthday = (birthday: string) => {
 
 export const daysOfWeek = ["Lun", "Mar", "Mie", "Jue", "Vie", "Sab", "Dom"]
 
+export const daysOfWeekFull = [
+  "Lunes",
+  "Martes",
+  "Miércoles",
+  "Jueves",
+  "Viernes",
+  "Sábado",
+  "Domingo",
+]
+
 export interface SelectOption {
   key: string
   value: string
