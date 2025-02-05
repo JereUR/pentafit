@@ -56,7 +56,10 @@ export default function DiaryForm({ userId, diaryData }: DiaryFormProps) {
       dateFrom: new Date(),
       dateUntil: new Date(),
       repeatFor: null,
-      offerDays: [false, false, false, false, false, false, false],
+      offerDays: Array(7).fill({
+        isOffer: false,
+        discountPercentage: 0
+      }),
       termDuration: 60,
       amountOfPeople: 1,
       isActive: false,
@@ -72,13 +75,15 @@ export default function DiaryForm({ userId, diaryData }: DiaryFormProps) {
     },
   })
 
-  console.log(form.formState.errors)
-
   useEffect(() => {
     if (diaryData) {
       form.reset(diaryData)
     }
-  }, [diaryData, form])
+
+    if (workingFacility) {
+      form.setValue("facilityId", workingFacility.id)
+    }
+  }, [diaryData, form, workingFacility])
 
   async function onSubmit(values: DiaryValues) {
     setError(undefined)
@@ -111,6 +116,8 @@ export default function DiaryForm({ userId, diaryData }: DiaryFormProps) {
       })
     }
   }
+
+  console.log(form.formState.errors)
 
   const mutationError = isEditing ? updateError : createError
   const isPending = isEditing ? isUpdating : isCreating

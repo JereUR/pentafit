@@ -24,24 +24,9 @@ export function GeneralInfoTabDiaryForm({ control }: GeneralInfoTabDiaryFormProp
   const { workingFacility } = useWorkingFacility()
   const { data: activitiesData } = useAllActivities(workingFacility?.id)
 
-  console.log({ activitiesData })
-
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <FormField
-          control={control}
-          name="name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Nombre</FormLabel>
-              <FormControl>
-                <Input placeholder="Nombre de la agenda" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
         <FormField
           control={control}
           name="activityId"
@@ -56,12 +41,25 @@ export function GeneralInfoTabDiaryForm({ control }: GeneralInfoTabDiaryFormProp
                 </FormControl>
                 <SelectContent>
                   {activitiesData?.activities.map((activity) => (
-                    <SelectItem key={activity.id} value={activity.id}>
+                    <SelectItem key={activity.id} value={activity.id} className='cursor-pointer hover:bg-primary rounded-full'>
                       {activity.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={control}
+          name="name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Nombre</FormLabel>
+              <FormControl>
+                <Input placeholder="Nombre de la agenda" {...field} />
+              </FormControl>
               <FormMessage />
             </FormItem>
           )}
@@ -239,21 +237,6 @@ export function GeneralInfoTabDiaryForm({ control }: GeneralInfoTabDiaryFormProp
           )}
         />
         <FormField
-          control={control}
-          name="worksHolidays"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-              <div className="space-y-0.5">
-                <FormLabel className="text-base">Trabaja en feriados</FormLabel>
-              </div>
-              <FormControl>
-                <Switch checked={field.value} onCheckedChange={field.onChange} />
-              </FormControl>
-            </FormItem>
-          )}
-        />
-      </div>
-      <FormField
         control={control}
         name="observations"
         render={({ field }) => (
@@ -271,6 +254,8 @@ export function GeneralInfoTabDiaryForm({ control }: GeneralInfoTabDiaryFormProp
           </FormItem>
         )}
       />
+      </div>
+      
     </div>
   )
 }
