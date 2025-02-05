@@ -241,30 +241,48 @@ const dayAvailableSchema = z.object({
     .regex(/^([01]\d|2[0-3]):([0-5]\d)$/, "Formato de hora inválido"),
 })
 
-export const diarySchema = z.object({
-  facilityId: z.string().uuid("ID de establecimiento inválido"),
-  activityId: z.string().uuid("ID de actividad inválido"),
-  name: z.string().min(1, "El nombre es requerido"),
-  typeSchedule: z.nativeEnum(typeSchedule),
-  dateFrom: z.date(),
-  dateUntil: z.date(),
-  repeatFor: z.number().int().min(0).nullable(),
-  offerDays: z.array(z.boolean()).length(7),
-  termDuration: z
-    .number()
-    .int()
-    .positive("La duración del turno debe ser positiva"),
-  amountOfPeople: z
-    .number()
-    .int()
-    .positive("La cantidad de personas debe ser positiva"),
-  isActive: z.boolean(),
-  genreExclusive: z.nativeEnum(genreExclusive),
-  worksHolidays: z.boolean(),
-  observations: z.string().nullable(),
-  daysAvailable: z
-    .array(dayAvailableSchema)
-    .length(7, "Debe proporcionar disponibilidad para los 7 días de la semana"),
+const offerDaySchema = z.object({
+  isOffer: z.boolean(),
+  discountPercentage: z.number().min(0).max(100).nullable(),
 })
+
+export const diarySchema = z
+  .object({
+    facilityId: z.string().uuid("ID de establecimiento inválido"),
+    activityId: z.string().uuid("ID de actividad inválido"),
+    name: z.string().min(1, "El nombre es requerido"),
+    typeSchedule: z.nativeEnum(typeSchedule),
+    dateFrom: z.date(),
+    dateUntil: z.date(),
+    repeatFor: z.number().int().min(0).nullable(),
+    offerDays: z
+      .array(offerDaySchema)
+      .length(
+        7,
+        "Debe proporcionar información de oferta para los 7 días de la semana",
+      ),
+    termDuration: z
+      .number()
+      .int()
+      .positive("La duración del turno debe ser positiva"),
+    amountOfPeople: z
+      .number()
+      .int()
+      .positive("La cantidad de personas debe ser positiva"),
+    isActive: z.boolean(),
+    genreExclusive: z.nativeEnum(genreExclusive),
+    worksHolidays: z.boolean(),
+    observations: z.string().nullable(),
+    daysAvailable: z
+      .array(dayAvailableSchema)
+      .length(
+        7,
+        "Debe proporcionar disponibilidad para los 7 días de la semana",
+      ),
+  })
+  .refine((data) => data.daysAvailable.some((day) => day.available), {
+    message: "Al menos un día debe estar marcado como disponible",
+    path: ["daysAvailable"],
+  })
 
 export type DiaryValues = z.infer<typeof diarySchema>
