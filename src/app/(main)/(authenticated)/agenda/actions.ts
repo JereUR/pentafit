@@ -6,6 +6,7 @@ import { notFound } from "next/navigation"
 
 import { type DiaryValues } from "@/lib/validation"
 import prisma from "@/lib/prisma"
+import { Schedule } from "@/types/diary"
 
 export const getDiaryById = cache(
   async (id: string): Promise<DiaryValues & { id: string }> => {
@@ -56,56 +57,79 @@ export const getDiaryById = cache(
   },
 )
 
-export async function createDiary(values: DiaryValues) {
+export async function createDiary(data: DiaryValues) {
   try {
-    const sanitizedDaysAvailable = values.daysAvailable.map((day) => ({
-      available: day.available,
-      timeStart: day.timeStart,
-      timeEnd: day.timeEnd,
-    }))
+    if (!data.facilityId || !data.activityId || !data.name) {
+      throw new Error(
+        "Missing required fields: facilityId, activityId, or name",
+      )
+    }
 
-    const sanitizedOfferDays = values.offerDays.map((offer) => ({
-      isOffer: offer.isOffer,
-      discountPercentage: offer.discountPercentage ?? 0,
-    }))
+    const sanitizedDaysAvailable =
+      data.daysAvailable?.map((day: Schedule) => ({
+        available: day.available,
+        timeStart: day.timeStart,
+        timeEnd: day.timeEnd,
+      })) ?? []
+
+    const sanitizedOfferDays =
+      data.offerDays?.map(
+        (offer: { isOffer: boolean; discountPercentage: number | null }) => ({
+          isOffer: offer.isOffer,
+          discountPercentage: offer.discountPercentage,
+        }),
+      ) ?? []
+
+    const diaryData = {
+      facilityId: data.facilityId,
+      activityId: data.activityId,
+      name: data.name,
+      typeSchedule: data.typeSchedule,
+      dateFrom: data.dateFrom,
+      dateUntil: data.dateUntil,
+      repeatFor: data.repeatFor,
+      termDuration: data.termDuration,
+      amountOfPeople: data.amountOfPeople,
+      isActive: data.isActive,
+      genreExclusive: data.genreExclusive,
+      worksHolidays: data.worksHolidays,
+      observations: data.observations,
+      daysAvailable:
+        sanitizedDaysAvailable.length > 0
+          ? {
+              createMany: { data: sanitizedDaysAvailable },
+            }
+          : undefined,
+      offerDays:
+        sanitizedOfferDays.length > 0
+          ? {
+              createMany: { data: sanitizedOfferDays },
+            }
+          : undefined,
+    }
+
+    if (!diaryData) {
+      throw new Error("Payload for diary creation is null or undefined.")
+    }
 
     const diary = await prisma.diary.create({
-      data: {
-        facilityId: values.facilityId,
-        activityId: values.activityId,
-        name: values.name,
-        typeSchedule: values.typeSchedule,
-        dateFrom: values.dateFrom,
-        dateUntil: values.dateUntil,
-        repeatFor: values.repeatFor,
-        daysAvailable: {
-          createMany: {
-            data: sanitizedDaysAvailable,
-          },
-        },
-        offerDays: {
-          createMany: {
-            data: sanitizedOfferDays,
-          },
-        },
-        termDuration: values.termDuration,
-        amountOfPeople: values.amountOfPeople,
-        isActive: values.isActive,
-        genreExclusive: values.genreExclusive,
-        worksHolidays: values.worksHolidays,
-        observations: values.observations,
+      data: diaryData,
+      include: {
+        daysAvailable: true,
+        offerDays: true,
       },
     })
 
-    console.log("Diary created:", diary)
-    revalidatePath(`/agenda`)
     return { success: true, diary }
   } catch (error) {
     console.error("Error creating diary:", error)
+
     if (error instanceof Error) {
+      console.error("Error stack:", error.stack)
       return { success: false, error: error.message }
     }
-    return { success: false, error: "Error al crear la agenda" }
+
+    return { success: false, error: "Unknown error" }
   }
 }
 
