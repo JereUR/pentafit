@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
-import { DiaryExportData } from "@/types/diary"
+import {
+  DiaryExportData,
+  formatDaysAvailable,
+  formatOfferDays,
+} from "@/types/diary"
 
 export async function GET(
   request: NextRequest,
@@ -28,6 +32,7 @@ export async function GET(
         worksHolidays: true,
         observations: true,
         facilityId: true,
+        daysAvailable: true,
       },
     })
 
@@ -38,16 +43,17 @@ export async function GET(
     const formattedAllDiaries: DiaryExportData[] = allDiaries.map((d) => ({
       name: d.name,
       typeSchedule: d.typeSchedule,
-      DateFrom: d.dateFrom.toISOString().split("T")[0],
-      DateUntil: d.dateUntil.toISOString().split("T")[0],
+      dateFrom: d.dateFrom.toISOString().split("T")[0],
+      dateUntil: d.dateUntil.toISOString().split("T")[0],
       repeatFor: d.repeatFor ? d.repeatFor.toString() : "-",
-      offerDays: d.offerDays.join(", "),
+      offerDays: formatOfferDays(d.offerDays),
       termDuration: d.termDuration,
       amountOfPeople: d.amountOfPeople,
       isActive: d.isActive ? "Si" : "No",
       genreExclusive: d.genreExclusive ? "Si" : "No",
       worksHolidays: d.worksHolidays ? "Si" : "No",
       observations: d.observations || "-",
+      daysAvailable: formatDaysAvailable(d.daysAvailable),
     }))
 
     return NextResponse.json(formattedAllDiaries)

@@ -40,6 +40,7 @@ export async function GET(
           worksHolidays: true,
           observations: true,
           facilityId: true,
+          daysAvailable: true,
         },
         skip,
         take: pageSize,
@@ -59,7 +60,32 @@ export async function GET(
       return NextResponse.json({ diaries: [], total: 0 })
     }
 
-    return NextResponse.json({ diaries: diaries, total })
+    const formattedDiaries: DiaryData[] = diaries.map((diary) => ({
+      id: diary.id,
+      name: diary.name,
+      typeSchedule: diary.typeSchedule,
+      dateFrom: diary.dateFrom,
+      dateUntil: diary.dateUntil,
+      repeatFor: diary.repeatFor,
+      offerDays: diary.offerDays.map((day) => ({
+        isOffer: day.isOffer,
+        discountPercentage: day.discountPercentage,
+      })),
+      termDuration: diary.termDuration,
+      amountOfPeople: diary.amountOfPeople,
+      isActive: diary.isActive,
+      genreExclusive: diary.genreExclusive,
+      worksHolidays: diary.worksHolidays,
+      observations: diary.observations,
+      facilityId: diary.facilityId,
+      daysAvailable: diary.daysAvailable.map((day) => ({
+        available: day.available,
+        timeStart: day.timeStart,
+        timeEnd: day.timeEnd,
+      })),
+    }))
+
+    return NextResponse.json({ diaries: formattedDiaries, total })
   } catch (error) {
     console.error("Error fetching diaries:", error)
     return NextResponse.json(
