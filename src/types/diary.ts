@@ -1,3 +1,4 @@
+import { daysOfWeekFull } from "@/lib/utils"
 import { genreExclusive, typeSchedule } from "@prisma/client"
 
 export const columnsDiaries: { key: keyof DiaryData; label: string }[] = [
@@ -27,6 +28,11 @@ export interface Schedule {
   timeEnd: string
 }
 
+export interface OfferDays {
+  isOffer: boolean
+  discountPercentage: number | null
+}
+
 export type DiaryData = {
   id: string
   name: string
@@ -34,7 +40,7 @@ export type DiaryData = {
   dateFrom: Date
   dateUntil: Date
   repeatFor: number | null
-  offerDays: boolean[]
+  offerDays: OfferDays[]
   termDuration: number
   amountOfPeople: number
   isActive: boolean
@@ -48,8 +54,8 @@ export type DiaryData = {
 export type DiaryExportData = {
   name: string
   typeSchedule: string
-  DateFrom: string
-  DateUntil: string
+  dateFrom: string
+  dateUntil: string
   repeatFor: string
   offerDays: string
   termDuration: number
@@ -100,3 +106,28 @@ export const hoursOfDays = [
   "23:30",
   "00:00",
 ]
+
+export function formatDaysAvailable(
+  daysAvailable: { available: boolean; timeStart: string; timeEnd: string }[],
+): string {
+  return daysAvailable
+    .map((day, index) =>
+      day.available
+        ? `${daysOfWeekFull[index]} (${day.timeStart}hs - ${day.timeEnd}hs)`
+        : "",
+    )
+    .filter(Boolean)
+    .join(" - ")
+}
+
+export function formatOfferDays(
+  offerDays: { isOffer: boolean; discountPercentage: number | null }[],
+): string {
+  return offerDays
+    .filter((o) => o.isOffer)
+    .map(
+      (o, index) =>
+        `${daysOfWeekFull[index]} (- ${o.discountPercentage ?? 0}%)`,
+    )
+    .join(" - ")
+}
