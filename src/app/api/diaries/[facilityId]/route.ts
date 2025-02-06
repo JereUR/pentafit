@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
-import { DiaryData } from "@/types/diary"
+import {
+  DiaryData,
+  genreExclusiveOptions,
+  typeScheduleOptions,
+} from "@/types/diary"
 
 export async function GET(
   request: NextRequest,
@@ -63,7 +67,9 @@ export async function GET(
     const formattedDiaries: DiaryData[] = diaries.map((diary) => ({
       id: diary.id,
       name: diary.name,
-      typeSchedule: diary.typeSchedule,
+      typeSchedule:
+        typeScheduleOptions.find((type) => type.key === diary.typeSchedule)
+          ?.value || "",
       dateFrom: diary.dateFrom,
       dateUntil: diary.dateUntil,
       repeatFor: diary.repeatFor,
@@ -74,7 +80,10 @@ export async function GET(
       termDuration: diary.termDuration,
       amountOfPeople: diary.amountOfPeople,
       isActive: diary.isActive,
-      genreExclusive: diary.genreExclusive,
+      genreExclusive:
+        genreExclusiveOptions.find(
+          (genre) => genre.key === diary.genreExclusive,
+        )?.value || "",
       worksHolidays: diary.worksHolidays,
       observations: diary.observations,
       facilityId: diary.facilityId,

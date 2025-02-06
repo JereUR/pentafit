@@ -1,4 +1,4 @@
-import { daysOfWeekFull } from "@/lib/utils"
+import { daysOfWeekFull, SelectOption } from "@/lib/utils"
 import { genreExclusive, typeSchedule } from "@prisma/client"
 
 export const columnsDiaries: { key: keyof DiaryData; label: string }[] = [
@@ -15,6 +15,17 @@ export const columnsDiaries: { key: keyof DiaryData; label: string }[] = [
   { key: "worksHolidays", label: "Trabaja feriados" },
   { key: "observations", label: "Observaciones" },
   { key: "daysAvailable", label: "Días disponibles" },
+]
+
+export const typeScheduleOptions: SelectOption[] = [
+  { key: typeSchedule.TURNOS, value: "Por turnos" },
+  { key: typeSchedule.LIBRE, value: "Libre" },
+]
+
+export const genreExclusiveOptions: SelectOption[] = [
+  { key: genreExclusive.NO, value: "No" },
+  { key: genreExclusive.MASCULINO, value: "Masculino" },
+  { key: genreExclusive.FEMENINO, value: "Femenino" },
 ]
 
 export interface ScheduleWithActivity {
@@ -36,7 +47,7 @@ export interface OfferDays {
 export type DiaryData = {
   id: string
   name: string
-  typeSchedule: typeSchedule
+  typeSchedule: string
   dateFrom: Date
   dateUntil: Date
   repeatFor: number | null
@@ -44,7 +55,7 @@ export type DiaryData = {
   termDuration: number
   amountOfPeople: number
   isActive: boolean
-  genreExclusive: genreExclusive
+  genreExclusive: string
   worksHolidays: boolean
   observations: string | null
   daysAvailable: Schedule[]
