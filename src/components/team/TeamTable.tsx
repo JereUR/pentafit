@@ -41,9 +41,7 @@ export default function TeamTable({
   isLoading,
 }: TeamTableProps) {
   return (
-    <div className="w-[90vw] lg:w-full overflow-x-auto border rounded-md scrollbar-thin mx-auto md:mx-0">
-      <div className="min-w-full inline-block align-middle">
-        <div className="overflow-hidden">
+    <div className="w-full overflow-x-auto border rounded-md px-2 sm:px-4 py-4 sm:py-8">
           <Table className="w-full lg:table-fixed lg:overflow-x-auto">
             <TableHeader>
               <TableRow className="bg-muted/50">
@@ -99,8 +97,6 @@ export default function TeamTable({
             </TableBody>
           </Table>
         </div>
-      </div>
-    </div>
   )
 }
 

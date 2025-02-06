@@ -93,7 +93,7 @@ export default function TeamDashboard() {
   const totalPages = Math.ceil(data ? data.total / PAGE_SIZE : 0)
 
   return (
-    <div className="w-full space-y-6">
+    <div className="w-full space-y-6 overflow-x-auto">
       <GenericDataHeader
         title="Equipo"
         selectedCount={selectedCount}

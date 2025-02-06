@@ -15,8 +15,8 @@ export default async function ActivitiesPage() {
   if (!user) return null
 
   return (
-    <main className="flex container gap-5 md:p-5">
-      <div className="flex flex-col gap-5">
+    <main className="w-full max-w-full overflow-x-hidden">
+      <div className="flex flex-col gap-5 md:p-5">
         <section className="w-full flex justify-center md:justify-start">
           <Suspense fallback={<Loader2 className="mx-auto animate-spin" />}>
             <WorkingFacility userId={user.id} />
