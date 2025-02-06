@@ -14,6 +14,7 @@ import { TableSkeleton } from "../skeletons/TableSkeleton"
 import NoWorkingFacilityMessage from "../NoWorkingFacilityMessage"
 import GenericDataHeader from "../GenericDataHeader"
 import { useDeleteDiaryMutation, useReplicateDiaryMutation } from "@/app/(main)/(authenticated)/agenda/mutations"
+import WeeklyScheduleDashboard from "./WeeklyScheduleDashboard"
 
 export default function DiariesDashboard({ userId }: { userId: string }) {
   const router = useRouter()
@@ -30,7 +31,7 @@ export default function DiariesDashboard({ userId }: { userId: string }) {
   const { mutate: replicateDiary, isPending: isReplicating } = useReplicateDiaryMutation()
   const { toast } = useToast()
 
-  console.log({data})
+  console.log({ data })
 
   useEffect(() => {
     setSelectedCount(selectedRows.length)
@@ -113,7 +114,7 @@ export default function DiariesDashboard({ userId }: { userId: string }) {
   const totalPages = Math.ceil(data ? data.total / PAGE_SIZE : 0)
 
   return (
-    <div className="w-full space-y-6">
+    <div className="w-full space-y-6 overflow-x-auto">
       <GenericDataHeader
         title="Agenda"
         selectedCount={selectedCount}
@@ -135,6 +136,7 @@ export default function DiariesDashboard({ userId }: { userId: string }) {
         exportFileName={`Agenda_${workingFacility?.name}`}
       />
       <Pagination currentPage={page} totalPages={totalPages} onPageChange={setPage} />
+      <WeeklyScheduleDashboard diaryData={data ? data.diaries : []} />
     </div>
   )
 }
