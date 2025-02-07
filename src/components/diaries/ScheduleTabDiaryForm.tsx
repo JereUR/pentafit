@@ -1,7 +1,6 @@
 "use client"
 
 import { type Control, useWatch } from "react-hook-form"
-
 import { FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -25,13 +24,13 @@ export function ScheduleTabDiaryForm({ control }: ScheduleTabDiaryFormProps) {
 
   return (
     <Card className="w-full">
-      <CardContent className="p-6 space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <CardContent className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+        <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
           <FormField
             control={control}
             name="repeatFor"
             render={({ field }) => (
-              <FormItem>
+              <FormItem className="flex-1">
                 <FormLabel>Repetir por (semanas)</FormLabel>
                 <FormControl>
                   <Input
@@ -49,7 +48,7 @@ export function ScheduleTabDiaryForm({ control }: ScheduleTabDiaryFormProps) {
             control={control}
             name="worksHolidays"
             render={({ field }) => (
-              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 flex-1">
                 <div className="space-y-0.5">
                   <FormLabel className="text-base">Trabaja en feriados</FormLabel>
                 </div>
@@ -61,38 +60,38 @@ export function ScheduleTabDiaryForm({ control }: ScheduleTabDiaryFormProps) {
           />
         </div>
 
-        <Separator />
+        <Separator className="hidden sm:block" />
 
-        <div className="space-y-6 bg-secondary/20 p-6 rounded-lg">
-          <h3 className="text-lg font-medium mb-4">Configuración de días</h3>
+        <div className="space-y-4 sm:space-y-6 bg-secondary/20 p-4 sm:p-6 rounded-lg">
+          <h3 className="text-lg font-medium mb-2 sm:mb-4">Configuración de días</h3>
 
           <Card className="border-primary/20">
-            <CardContent className="p-4">
-              <div className="space-y-4">
-                <div>
-                  <div className="grid grid-cols-7 gap-4">
-                    {daysOfWeekFull.map((day) => (
-                      <div key={day} className="flex flex-col items-center">
-                        <FormLabel className="mb-1 text-center">{day}</FormLabel>
-                      </div>
-                    ))}
-                  </div>
+            <CardContent className="p-2 sm:p-4">
+              <div className="space-y-2 sm:space-y-4">
+                <div className="flex flex-row overflow-x-auto sm:overflow-x-visible">
+                  {daysOfWeekFull.map((day) => (
+                    <div key={day} className="flex-1 flex flex-col items-center min-w-[40px] sm:min-w-0">
+                      <FormLabel className="mb-1 text-center text-xs sm:text-sm whitespace-nowrap">
+                        {day.slice(0, 3)}
+                      </FormLabel>
+                    </div>
+                  ))}
                 </div>
 
-                <Separator />
+                <Separator className="hidden sm:block" />
 
                 <div>
-                  <h4 className="text-sm font-medium mb-2 text-muted-foreground">Días de oferta</h4>
-                  <div className="grid grid-cols-7 gap-4">
+                  <h4 className="text-xs sm:text-sm font-medium mb-2 text-muted-foreground">Días de oferta</h4>
+                  <div className="flex flex-row overflow-x-auto sm:overflow-x-visible">
                     {daysOfWeekFull.map((day, index) => (
                       <FormField
                         key={`offer-${day}`}
                         control={control}
                         name={`offerDays.${index}`}
                         render={({ field }) => (
-                          <FormItem className="flex flex-col items-center">
+                          <FormItem className="flex-1 flex flex-col items-center min-w-[40px] sm:min-w-0">
                             <FormControl>
-                              <div className="space-y-2">
+                              <div className="space-y-1 sm:space-y-2">
                                 <Switch
                                   checked={field.value.isOffer}
                                   onCheckedChange={(checked) => field.onChange({ ...field.value, isOffer: checked })}
@@ -110,7 +109,7 @@ export function ScheduleTabDiaryForm({ control }: ScheduleTabDiaryFormProps) {
                                         discountPercentage: e.target.value ? Number(e.target.value) : null,
                                       })
                                     }
-                                    className="w-16 text-center"
+                                    className="w-10 sm:w-16 text-center text-xs sm:text-sm"
                                     placeholder="%"
                                   />
                                 )}
@@ -123,20 +122,24 @@ export function ScheduleTabDiaryForm({ control }: ScheduleTabDiaryFormProps) {
                   </div>
                 </div>
 
-                <Separator />
+                <Separator className="hidden sm:block" />
 
                 <div>
-                  <h4 className="text-sm font-medium mb-2 text-muted-foreground">Días Disponibles</h4>
-                  <div className="grid grid-cols-7 gap-4">
+                  <h4 className="text-xs sm:text-sm font-medium mb-2 text-muted-foreground">Días Disponibles</h4>
+                  <div className="flex flex-row overflow-x-auto sm:overflow-x-visible">
                     {daysOfWeekFull.map((day, index) => (
                       <FormField
                         key={`available-${day}`}
                         control={control}
                         name={`daysAvailable.${index}.available`}
                         render={({ field }) => (
-                          <FormItem className="flex flex-col items-center">
+                          <FormItem className="flex-1 flex flex-col items-center min-w-[40px] sm:min-w-0">
                             <FormControl>
-                              <Checkbox checked={field.value} onCheckedChange={field.onChange} className="h-6 w-6" />
+                              <Checkbox
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                                className="h-4 w-4 sm:h-6 sm:w-6"
+                              />
                             </FormControl>
                           </FormItem>
                         )}
@@ -149,7 +152,7 @@ export function ScheduleTabDiaryForm({ control }: ScheduleTabDiaryFormProps) {
           </Card>
         </div>
 
-        <Separator />
+        <Separator className="hidden sm:block" />
 
         <div className="space-y-4">
           <h3 className="text-lg font-medium">Horarios por día</h3>
@@ -159,13 +162,13 @@ export function ScheduleTabDiaryForm({ control }: ScheduleTabDiaryFormProps) {
                 <Card key={index} className="border-primary/20">
                   <CardContent className="p-4">
                     <h4 className="font-medium mb-3">{daysOfWeekFull[index]}</h4>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="flex flex-col sm:flex-row gap-4">
                       <FormField
                         control={control}
                         name={`daysAvailable.${index}.timeStart`}
                         render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Hora de inicio</FormLabel>
+                          <FormItem className="flex-1">
+                            <FormLabel className="text-sm">Hora de inicio</FormLabel>
                             <Select onValueChange={field.onChange} value={field.value}>
                               <FormControl>
                                 <SelectTrigger>
@@ -187,8 +190,8 @@ export function ScheduleTabDiaryForm({ control }: ScheduleTabDiaryFormProps) {
                         control={control}
                         name={`daysAvailable.${index}.timeEnd`}
                         render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Hora de fin</FormLabel>
+                          <FormItem className="flex-1">
+                            <FormLabel className="text-sm">Hora de fin</FormLabel>
                             <Select onValueChange={field.onChange} value={field.value}>
                               <FormControl>
                                 <SelectTrigger>

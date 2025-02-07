@@ -159,7 +159,7 @@ export default function DiaryForm({ userId, diaryData }: DiaryFormProps) {
               )}
               <Tabs defaultValue="general" className="w-full">
                 <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="general">Información General</TabsTrigger>
+                  {window.innerWidth > 700 ? <TabsTrigger value="general">Información General</TabsTrigger> : <TabsTrigger value="general">Inf General</TabsTrigger>}
                   <TabsTrigger value="schedule">Horarios</TabsTrigger>
                 </TabsList>
                 <TabsContent value="general">
