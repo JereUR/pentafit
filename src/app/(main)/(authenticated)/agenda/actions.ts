@@ -197,6 +197,12 @@ export async function deleteDiaries(diaryIds: string[]) {
       },
     })
 
+    await prisma.offerDay.deleteMany({
+      where: {
+        diaryId: { in: diaryIds },
+      },
+    })
+
     const { count } = await prisma.diary.deleteMany({
       where: {
         id: { in: diaryIds },
@@ -218,6 +224,7 @@ export async function deleteDiaries(diaryIds: string[]) {
       deletedCount: count,
     }
   } catch (error) {
+    console.error("Error al eliminar las agendas:", error)
     return {
       success: false,
       message:
