@@ -111,10 +111,10 @@ export default function TeamRow({
           </TableCell>
         ))}
       <TableCell className="text-center">
-        <div className="flex flex-col items-center-center gap-2 text-xs md:text-sm">
+        <div className="flex flex-col items-center-center gap-2 text-xs">
           <Button asChild variant="outline" className="w-full break-words" onClick={(e) => e.stopPropagation()}>
             <Link href={`/equipo/editar/${member.id}`}>
-              <Edit className="h-4 w-4" /> Editar
+              <Edit className="h-3 w-3" /> Editar
             </Link>
           </Button>
           <DeleteConfirmationDialog

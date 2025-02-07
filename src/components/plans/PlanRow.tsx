@@ -20,17 +20,17 @@ interface PlanRowProps {
   isSelected: boolean
   onToggleRow: (id: string) => void
   deletePlan: UseMutateFunction<
-    { 
-      facilityId: string 
-      success: boolean 
-      message: string 
-      deletedCount?: number 
-    }, 
-    Error, 
-    { 
-      plansIds: string | string[] 
-      facilityId: string 
-    }, 
+    {
+      facilityId: string
+      success: boolean
+      message: string
+      deletedCount?: number
+    },
+    Error,
+    {
+      plansIds: string | string[]
+      facilityId: string
+    },
     unknown
   >
   isDeleting: boolean
@@ -105,10 +105,10 @@ export default function PlanRow({
           </TableCell>
         ))}
       <TableCell className="text-center">
-        <div className="flex flex-col items-center-center gap-2 text-xs md:text-sm">
+        <div className="flex flex-col items-center-center gap-2 text-xs">
           <Button asChild variant="outline" className="w-auto" onClick={(e) => e.stopPropagation()}>
             <Link href={`/planes/editar/${plan.id}`}>
-              <Edit className="mr-2 h-4 w-4" /> Editar
+              <Edit className="h-3 w-3" /> Editar
             </Link>
           </Button>
           <DeleteConfirmationDialog itemName={`el plan ${plan.name}`} onDelete={handleDelete} isDeleting={isDeleting} />

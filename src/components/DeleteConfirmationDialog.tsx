@@ -41,7 +41,7 @@ export function DeleteConfirmationDialog({
     <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
       <AlertDialogTrigger asChild>
         <Button variant="destructive" className={buttonClassName} onClick={(e) => e.stopPropagation()}>
-          <Trash2 className="mr-2 h-4 w-4" /> Eliminar {count && `(${count})`}
+          <Trash2 className="h-3 w-3" /> Eliminar {count && `(${count})`}
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
