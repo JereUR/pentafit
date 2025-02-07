@@ -15,6 +15,7 @@ import NoWorkingFacilityMessage from "../NoWorkingFacilityMessage"
 import GenericDataHeader from "../GenericDataHeader"
 import { useDeleteDiaryMutation, useReplicateDiaryMutation } from "@/app/(main)/(authenticated)/agenda/mutations"
 import WeeklyScheduleDashboard from "./WeeklyScheduleDashboard"
+import DiariesTable from "./DiariesTable"
 
 export default function DiariesDashboard({ userId }: { userId: string }) {
   const router = useRouter()
@@ -57,23 +58,23 @@ export default function DiariesDashboard({ userId }: { userId: string }) {
     })
   }
 
-  /*  const toggleRowSelection = (id: string) => {
-     setSelectedRows((prev) => {
-       if (prev.includes(id)) {
-         return prev.filter((rowId) => rowId !== id)
-       }
-       return [...prev, id]
-     })
-   }
- 
-   const toggleAllRows = () => {
-     setSelectedRows((prev) => {
-       if (prev.length === data?.Diaries.length) {
-         return []
-       }
-       return data ? data.Diaries.map((Diary) => Diary.id) : []
-     })
-   } */
+  const toggleRowSelection = (id: string) => {
+    setSelectedRows((prev) => {
+      if (prev.includes(id)) {
+        return prev.filter((rowId) => rowId !== id)
+      }
+      return [...prev, id]
+    })
+  }
+
+  const toggleAllRows = () => {
+    setSelectedRows((prev) => {
+      if (prev.length === data?.diaries.length) {
+        return []
+      }
+      return data ? data.diaries.map((diary) => diary.id) : []
+    })
+  }
 
   const handleDeleteSelected = () => {
     deleteDiary(
@@ -85,7 +86,7 @@ export default function DiariesDashboard({ userId }: { userId: string }) {
         onError: (error) => {
           toast({
             variant: "destructive",
-            title: "Error al eliminar la actividad",
+            title: "Error al eliminar la agenda",
             description: error.message,
           })
         },
@@ -103,7 +104,7 @@ export default function DiariesDashboard({ userId }: { userId: string }) {
         onError: (error) => {
           toast({
             variant: "destructive",
-            title: "Error al replicar las actividades",
+            title: "Error al replicar las agendas",
             description: error.message,
           })
         },
@@ -134,6 +135,16 @@ export default function DiariesDashboard({ userId }: { userId: string }) {
         searchPlaceholder="Buscar agendas..."
         exportApiRoute={`/api/diaries/${workingFacility?.id}/all`}
         exportFileName={`Agenda_${workingFacility?.name}`}
+      />
+      <DiariesTable
+        diaries={data ? data.diaries : []}
+        visibleColumns={visibleColumns}
+        selectedRows={selectedRows}
+        onToggleRow={toggleRowSelection}
+        onToggleAllRows={toggleAllRows}
+        deleteDiary={deleteDiary}
+        isDeleting={isDeleting}
+        isLoading={isLoading}
       />
       <Pagination currentPage={page} totalPages={totalPages} onPageChange={setPage} />
       <WeeklyScheduleDashboard diaryData={data ? data.diaries : []} />
