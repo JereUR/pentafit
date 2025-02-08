@@ -8,14 +8,14 @@ export default function GoogleSignInButton() {
       asChild
       disabled
     >
-      <a
+      {/* <a
         href="/iniciar-sesion/google"
         className="flex w-full items-center gap-2"
 
-      >
-        <GoogleIcon />
-        Iniciar sesión con Google
-      </a>
+      > */}
+      <GoogleIcon />
+      Iniciar sesión con Google
+      {/* </a> */}
     </Button>
   )
 }
