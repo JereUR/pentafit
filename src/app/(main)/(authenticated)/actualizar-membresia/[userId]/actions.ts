@@ -1,6 +1,6 @@
 "use server"
 
-import { PrismaClient } from "@prisma/client"
+import { PrismaClient, Role } from "@prisma/client"
 
 import { validateRequest } from "@/auth"
 import {
@@ -21,6 +21,7 @@ export async function updateMembership(values: MembershipUpdateValues) {
     where: { id: user.id },
     data: {
       membershipLevel: validatedValues.membershipLevel,
+      role: Role.SUPER_ADMIN,
     },
     select: {
       id: true,
