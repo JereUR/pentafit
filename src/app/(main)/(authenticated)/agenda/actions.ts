@@ -244,6 +244,7 @@ export async function replicateDiaries(
       where: { id: { in: diaryIds } },
       include: {
         daysAvailable: true,
+        offerDays: true,
       },
     })
 
@@ -259,6 +260,13 @@ export async function replicateDiaries(
               daysAvailable: {
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 create: diary.daysAvailable.map(
+                  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                  ({ id, diaryId, ...dayData }) => dayData,
+                ),
+              },
+              offerDays: {
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                create: diary.offerDays.map(
                   // eslint-disable-next-line @typescript-eslint/no-unused-vars
                   ({ id, diaryId, ...dayData }) => dayData,
                 ),
