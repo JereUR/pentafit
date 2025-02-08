@@ -58,7 +58,7 @@ export default function DiaryForm({ userId, diaryData }: DiaryFormProps) {
       repeatFor: null,
       offerDays: Array(7).fill({
         isOffer: false,
-        discountPercentage: 0
+        discountPercentage: null,
       }),
       termDuration: 60,
       amountOfPeople: 1,
@@ -67,7 +67,6 @@ export default function DiaryForm({ userId, diaryData }: DiaryFormProps) {
       worksHolidays: false,
       observations: "",
       daysAvailable: Array(7).fill({
-        dayOfWeek: 0,
         available: false,
         timeStart: "08:00",
         timeEnd: "09:00"
@@ -77,7 +76,14 @@ export default function DiaryForm({ userId, diaryData }: DiaryFormProps) {
 
   useEffect(() => {
     if (diaryData) {
-      form.reset(diaryData)
+      const formattedDiaryData = {
+        ...diaryData,
+        offerDays: diaryData.offerDays.map((day) => ({
+          isOffer: day.isOffer,
+          discountPercentage: day.discountPercentage || null,
+        })),
+      }
+      form.reset(formattedDiaryData)
     }
 
     if (workingFacility) {
@@ -116,8 +122,6 @@ export default function DiaryForm({ userId, diaryData }: DiaryFormProps) {
       })
     }
   }
-
-  console.log(form.formState.errors)
 
   const mutationError = isEditing ? updateError : createError
   const isPending = isEditing ? isUpdating : isCreating

@@ -1,6 +1,7 @@
 "use client"
 
 import { type Control, useWatch } from "react-hook-form"
+
 import { FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -93,11 +94,11 @@ export function ScheduleTabDiaryForm({ control }: ScheduleTabDiaryFormProps) {
                             <FormControl>
                               <div className="space-y-1 sm:space-y-2">
                                 <Switch
-                                  checked={field.value.isOffer}
+                                  checked={field.value?.isOffer || false}
                                   onCheckedChange={(checked) => field.onChange({ ...field.value, isOffer: checked })}
                                   className="data-[state=checked]:bg-primary"
                                 />
-                                {field.value.isOffer && (
+                                {field.value?.isOffer && (
                                   <Input
                                     type="number"
                                     min="0"
