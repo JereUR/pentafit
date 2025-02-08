@@ -55,9 +55,9 @@ export async function GET(req: NextRequest) {
         family_name: string
       }>()
 
-    const existingUser = await prisma.user.findUnique({
+    const existingUser = await prisma.user.findFirst({
       where: {
-        googleId: googleUser.id,
+        OR: [{ googleId: googleUser.id }, { email: googleUser.email }],
       },
     })
 

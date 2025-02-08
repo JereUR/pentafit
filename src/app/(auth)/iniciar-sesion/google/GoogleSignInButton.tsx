@@ -6,7 +6,6 @@ export default function GoogleSignInButton() {
       variant="outline"
       className="bg-white text-black hover:bg-gray-100 hover:text-black"
       asChild
-      disabled
     >
       <a
         href="/iniciar-sesion/google"
