@@ -6,10 +6,12 @@ export default function GoogleSignInButton() {
       variant="outline"
       className="bg-white text-black hover:bg-gray-100 hover:text-black"
       asChild
+      disabled
     >
       <a
         href="/iniciar-sesion/google"
         className="flex w-full items-center gap-2"
+
       >
         <GoogleIcon />
         Iniciar sesión con Google
