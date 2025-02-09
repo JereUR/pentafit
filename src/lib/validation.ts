@@ -1,6 +1,7 @@
 import {
   genreExclusive,
   MembershipLevel,
+  NotificationType,
   PaymentType,
   PlanType,
   Role,
@@ -73,6 +74,28 @@ export const membershipUpdateSchema = z.object({
 })
 
 export type MembershipUpdateValues = z.infer<typeof membershipUpdateSchema>
+
+export const notificationSchema = z.object({
+  recipientId: z.string().uuid("ID de destinatario inválido"),
+  issuerId: z.string().uuid("ID de emisor inválido"),
+  facilityId: z.string().uuid("ID de establecimiento inválido"),
+  type: z.nativeEnum(NotificationType),
+  activityId: z.string().uuid("ID de actividad inválido").optional(),
+  planId: z.string().uuid("ID de plan inválido").optional(),
+  diaryId: z.string().uuid("ID de agenda inválido").optional(),
+  userId: z.string().uuid("ID de usuario inválido").optional(),
+  read: z.boolean().default(false),
+})
+
+export type NotificationValues = z.infer<typeof notificationSchema>
+
+export const replicateActionSchema = z.object({
+  ids: z.array(z.string().uuid()),
+  targetFacilityIds: z.array(z.string().uuid()),
+  issuerId: z.string().uuid("ID de emisor inválido"),
+})
+
+export type ReplicateActionValues = z.infer<typeof replicateActionSchema>
 
 export const facilitySchema = z.object({
   name: z.string().min(1, "El nombre es requerido"),
