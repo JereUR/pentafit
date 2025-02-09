@@ -54,7 +54,7 @@ export function DeleteConfirmationDialog({
             {associatedItemsWarning && (
               <>
                 <br /><br />
-                <strong>Advertencia:</strong> {associatedItemsWarning}
+                <strong className='text-destructive'>Advertencia:</strong> {associatedItemsWarning}
               </>
             )}
           </AlertDialogDescription>
