@@ -29,20 +29,22 @@ enum MembershipLevel {
 }
 
 model User {
-  id              String          @id @default(uuid())
-  firstName       String
-  lastName        String
-  email           String?         @unique
-  birthday        String
-  gender          String
-  role            Role            @default(CLIENT)
-  passwordHash    String?
-  googleId        String?         @unique
-  avatarUrl       String?
-  membershipLevel MembershipLevel @default(NONE)
-  sessions        Session[]
-  resetTokens     ResetToken[]
-  facilities      UserFacility[]
+  id                    String          @id @default(uuid())
+  firstName             String
+  lastName              String
+  email                 String?         @unique
+  birthday              String
+  gender                String
+  role                  Role            @default(CLIENT)
+  passwordHash          String?
+  googleId              String?         @unique
+  avatarUrl             String?
+  membershipLevel       MembershipLevel @default(NONE)
+  sessions              Session[]
+  resetTokens           ResetToken[]
+  facilities            UserFacility[]
+  receivedNotifications Notification[]  @relation("RecipientNotifications")
+  issuedNotifications   Notification[]  @relation("IssuerNotifications")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -70,22 +72,23 @@ model Session {
 }
 
 model Facility {
-  id          String            @id @default(uuid())
-  name        String
-  description String?
-  email       String?
-  address     String?
-  phone       String?
-  instagram   String?
-  facebook    String?
-  isActive    Boolean           @default(false)
-  isWorking   Boolean           @default(false)
-  logoUrl     String?
-  metadata    FacilityMetadata?
-  users       UserFacility[]
-  activities  Activity[]
-  plans       Plan[]
-  diaries     Diary[]
+  id            String            @id @default(uuid())
+  name          String
+  description   String?
+  email         String?
+  address       String?
+  phone         String?
+  instagram     String?
+  facebook      String?
+  isActive      Boolean           @default(false)
+  isWorking     Boolean           @default(false)
+  logoUrl       String?
+  metadata      FacilityMetadata?
+  users         UserFacility[]
+  notifications Notification[]
+  activities    Activity[]
+  plans         Plan[]
+  diaries       Diary[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -117,8 +120,48 @@ model FacilityMetadata {
   @@map("facility_metadata")
 }
 
+enum NotificationType {
+  ACTIVITY_CREATED
+  ACTIVITY_UPDATED
+  ACTIVITY_DELETED
+  ACTIVITY_REPLICATED
+  PLAN_CREATED
+  PLAN_UPDATED
+  PLAN_DELETED
+  PLAN_REPLICATED
+  DIARY_CREATED
+  DIARY_UPDATED
+  DIARY_DELETED
+  DIARY_REPLICATED
+  USER_CREATED
+  USER_UPDATED
+  USER_DELETED
+  USER_REPLICATED
+}
+
+model Notification {
+  id          String           @id @default(uuid())
+  recipientId String
+  recipient   User             @relation("RecipientNotifications", fields: [recipientId], references: [id], onDelete: Cascade)
+  issuerId    String
+  issuer      User             @relation("IssuerNotifications", fields: [issuerId], references: [id], onDelete: Cascade)
+  facilityId  String
+  facility    Facility         @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  activityId  String?
+  activity    Activity?        @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  planId      String?
+  plan        Plan?            @relation(fields: [planId], references: [id], onDelete: Cascade)
+  diaryId     String?
+  diary       Diary?           @relation(fields: [diaryId], references: [id], onDelete: Cascade)
+  type        NotificationType
+  read        Boolean          @default(false)
+  createdAt   DateTime         @default(now())
+
+  @@map("notifications")
+}
+
 model Activity {
-  id              String      @id @default(uuid())
+  id              String         @id @default(uuid())
   name            String
   description     String?
   price           Float
@@ -132,7 +175,8 @@ model Activity {
   paymentType     String
   activityType    String
   facilityId      String
-  facility        Facility    @relation(fields: [facilityId], references: [id])
+  facility        Facility       @relation(fields: [facilityId], references: [id])
+  notifications   Notification[]
   diaryPlans      DiaryPlan[]
   diaries         Diary[]
 
@@ -155,7 +199,7 @@ enum PaymentType {
 }
 
 model Plan {
-  id               String        @id @default(uuid())
+  id               String         @id @default(uuid())
   name             String
   description      String
   price            Float
@@ -168,8 +212,9 @@ model Plan {
   freeTest         Boolean
   current          Boolean
   facilityId       String
-  facility         Facility      @relation(fields: [facilityId], references: [id])
+  facility         Facility       @relation(fields: [facilityId], references: [id])
   diaryPlans       DiaryPlan[]
+  notifications    Notification[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -244,6 +289,7 @@ model Diary {
   activity      Activity       @relation(fields: [activityId], references: [id])
   daysAvailable DayAvailable[]
   offerDays     OfferDay[]
+  notifications Notification[]
 
   @@map("diaries")
 }
