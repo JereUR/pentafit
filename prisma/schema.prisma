@@ -286,7 +286,7 @@ model Diary {
   observations   String?
 
   facility      Facility       @relation(fields: [facilityId], references: [id])
-  activity      Activity       @relation(fields: [activityId], references: [id])
+  activity      Activity       @relation(fields: [activityId], references: [id], onDelete: Cascade)
   daysAvailable DayAvailable[]
   offerDays     OfferDay[]
   notifications Notification[]

@@ -171,6 +171,12 @@ export async function deleteActivities(
 
   return await prisma.$transaction(async (tx) => {
     try {
+      const diariesCount = await tx.diary.count({
+        where: {
+          activityId: { in: activityIds },
+        },
+      })
+
       const { count } = await tx.activity.deleteMany({
         where: {
           id: { in: activityIds },
@@ -194,8 +200,9 @@ export async function deleteActivities(
       revalidatePath(`/actividades`)
       return {
         success: true,
-        message: `Se ${count === 1 ? "ha" : "han"} eliminado ${count} ${count === 1 ? "actividad" : "actividades"} correctamente`,
+        message: `Se ${count === 1 ? "ha" : "han"} eliminado ${count} ${count === 1 ? "actividad" : "actividades"} y ${diariesCount} ${diariesCount === 1 ? "diario asociado" : "diarios asociados"} correctamente`,
         deletedCount: count,
+        deletedDiariesCount: diariesCount,
       }
     } catch (error) {
       console.error("Error deleting activities:", error)
