@@ -27,6 +27,7 @@ interface GenericDataHeaderProps<T extends { [key: string]: unknown }> {
   showReplicate?: boolean
   exportApiRoute?: string
   exportFileName?: string
+  associatedItemsWarning?: string
 }
 
 export default function GenericDataHeader<T extends { [key: string]: unknown }>({
@@ -48,7 +49,8 @@ export default function GenericDataHeader<T extends { [key: string]: unknown }>(
   searchPlaceholder,
   showReplicate = true,
   exportApiRoute,
-  exportFileName
+  exportFileName,
+  associatedItemsWarning
 }: GenericDataHeaderProps<T>) {
   return (
     <div className="flex flex-col items-start gap-4 mb-4">
@@ -82,6 +84,7 @@ export default function GenericDataHeader<T extends { [key: string]: unknown }>(
                 onDelete={onDeleteSelected}
                 isDeleting={isDeleting}
                 count={selectedCount}
+                associatedItemsWarning={associatedItemsWarning}
               />
               {showReplicate && (
                 <ReplicateConfirmationDialog

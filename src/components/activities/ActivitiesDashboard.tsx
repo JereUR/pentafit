@@ -132,6 +132,7 @@ export default function ActivitiesDashboard({ userId }: { userId: string }) {
         searchPlaceholder="Buscar actividades..."
         exportApiRoute={`/api/activities/${workingFacility?.id}/all-export`}
         exportFileName={`Actividades_${workingFacility?.name}`}
+        associatedItemsWarning={`Esta acción también eliminará todas las agendas asociadas ${selectedCount === 1 ? 'a esta actividad' : 'a estas actividades'}."`}
       />
       <ActivitiesTable
         activities={data ? data.activities : []}
