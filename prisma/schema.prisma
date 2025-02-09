@@ -242,7 +242,7 @@ model DayAvailable {
   timeStart String
   timeEnd   String
 
-  diary Diary @relation(fields: [diaryId], references: [id])
+  diary Diary @relation(fields: [diaryId], references: [id], onDelete: Cascade)
 
   @@map("days_available")
 }
@@ -253,7 +253,7 @@ model OfferDay {
   isOffer            Boolean
   discountPercentage Float?
 
-  diary Diary @relation(fields: [diaryId], references: [id])
+  diary Diary @relation(fields: [diaryId], references: [id], onDelete: Cascade)
 
   @@map("offer_days")
 }
