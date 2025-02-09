@@ -21,6 +21,7 @@ interface DeleteConfirmationDialogProps {
   isDeleting: boolean
   buttonClassName?: string
   count?: number
+  associatedItemsWarning?: string
 }
 
 export function DeleteConfirmationDialog({
@@ -28,7 +29,8 @@ export function DeleteConfirmationDialog({
   onDelete,
   isDeleting,
   buttonClassName = "w-full sm:w-auto",
-  count
+  count,
+  associatedItemsWarning
 }: DeleteConfirmationDialogProps) {
   const [isOpen, setIsOpen] = useState(false)
 
@@ -49,6 +51,12 @@ export function DeleteConfirmationDialog({
           <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
           <AlertDialogDescription>
             Esta acción no se puede deshacer. Esto eliminará permanentemente {itemName}.
+            {associatedItemsWarning && (
+              <>
+                <br /><br />
+                <strong>Advertencia:</strong> {associatedItemsWarning}
+              </>
+            )}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className="flex-col sm:flex-row gap-2">

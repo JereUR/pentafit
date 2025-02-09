@@ -78,6 +78,7 @@ export default function ActivityRow({
             itemName={`la actividad ${activity.name}`}
             onDelete={handleDelete}
             isDeleting={isDeleting}
+            associatedItemsWarning="Esta acción también eliminará todos los diarios asociados a esta actividad."
           />
         </div>
       </TableCell>
