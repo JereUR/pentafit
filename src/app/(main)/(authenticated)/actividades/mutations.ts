@@ -1,10 +1,14 @@
 "use client"
 
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-
 import { useToast } from "@/hooks/use-toast"
 import { ActivityValues } from "@/lib/validation"
-import { createActivity, deleteActivities, updateActivity, replicateActivities } from "./actions"
+import {
+  createActivity,
+  deleteActivities,
+  updateActivity,
+  replicateActivities,
+} from "./actions"
 
 export function useCreateActivityMutation() {
   const { toast } = useToast()
@@ -13,8 +17,10 @@ export function useCreateActivityMutation() {
   return useMutation({
     mutationFn: async (values: ActivityValues) => {
       const result = await createActivity(values)
-      if (result.error) {
-        throw new Error(result.error)
+      if (!result.success || result.error) {
+        throw new Error(
+          result.error || "Error desconocido al crear la actividad",
+        )
       }
       return result.activity
     },
@@ -49,8 +55,10 @@ export function useUpdateActivityMutation() {
       values: ActivityValues
     }) => {
       const result = await updateActivity(id, values)
-      if (result.error) {
-        throw new Error(result.error)
+      if (!result.success || result.error) {
+        throw new Error(
+          result.error || "Error desconocido al editar la actividad",
+        )
       }
       return result.activity
     },
@@ -85,14 +93,16 @@ export function useDeleteActivityMutation() {
       facilityId: string
     }) => {
       const idsArray = Array.isArray(activityIds) ? activityIds : [activityIds]
-      const result = await deleteActivities(idsArray)
+      const result = await deleteActivities(idsArray, facilityId)
       if (!result.success) {
         throw new Error(result.message)
       }
 
-      const { message, deletedCount } = result
-
-      return { message, deletedCount, facilityId }
+      return {
+        message: result.message,
+        deletedCount: result.deletedCount,
+        facilityId,
+      }
     },
     onSuccess: (message) => {
       const { message: description, deletedCount, facilityId } = message
