@@ -1,6 +1,8 @@
 "use client"
 
 import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { useRouter } from "next/navigation"
+
 import { useToast } from "@/hooks/use-toast"
 import { ActivityValues } from "@/lib/validation"
 import {
@@ -13,6 +15,7 @@ import {
 export function useCreateActivityMutation() {
   const { toast } = useToast()
   const queryClient = useQueryClient()
+  const router = useRouter()
 
   return useMutation({
     mutationFn: async (values: ActivityValues) => {
@@ -31,6 +34,7 @@ export function useCreateActivityMutation() {
       queryClient.invalidateQueries({
         queryKey: ["activities", newActivity?.facilityId],
       })
+      router.push("/actividades")
     },
     onError: (error: Error) => {
       toast({
@@ -45,6 +49,7 @@ export function useCreateActivityMutation() {
 export function useUpdateActivityMutation() {
   const { toast } = useToast()
   const queryClient = useQueryClient()
+  const router = useRouter()
 
   return useMutation({
     mutationFn: async ({
@@ -69,6 +74,7 @@ export function useUpdateActivityMutation() {
       queryClient.invalidateQueries({
         queryKey: ["activities", updatedActivity?.facilityId],
       })
+      router.push("/actividades")
     },
     onError: (error: Error) => {
       toast({

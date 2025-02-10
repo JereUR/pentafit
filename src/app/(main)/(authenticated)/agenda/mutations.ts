@@ -1,6 +1,7 @@
 "use client"
 
 import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { useRouter } from "next/navigation"
 
 import { useToast } from "@/hooks/use-toast"
 import type { DiaryValues } from "@/lib/validation"
@@ -14,6 +15,7 @@ import {
 export function useCreateDiaryMutation() {
   const { toast } = useToast()
   const queryClient = useQueryClient()
+  const router = useRouter()
 
   return useMutation({
     mutationFn: async (values: DiaryValues | null) => {
@@ -35,6 +37,7 @@ export function useCreateDiaryMutation() {
           queryKey: ["diaries"],
         })
       }
+      router.push("/agenda")
     },
     onError: (error: Error) => {
       toast({
@@ -49,6 +52,7 @@ export function useCreateDiaryMutation() {
 export function useUpdateDiaryMutation() {
   const { toast } = useToast()
   const queryClient = useQueryClient()
+  const router = useRouter()
 
   return useMutation({
     mutationFn: ({ id, values }: { id: string; values: DiaryValues }) =>
@@ -61,6 +65,7 @@ export function useUpdateDiaryMutation() {
         queryClient.invalidateQueries({
           queryKey: ["diaries"],
         })
+        router.push("/agenda")
       } else {
         throw new Error(
           result.error || "Error desconocido al actualizar la agenda",

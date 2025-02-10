@@ -1,6 +1,7 @@
 "use client"
 
 import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { useRouter } from "next/navigation"
 
 import { useToast } from "@/hooks/use-toast"
 import type { PlanValues } from "@/lib/validation"
@@ -9,6 +10,7 @@ import { createPlan, deletePlans, updatePlan, replicatePlans } from "./actions"
 export function useCreatePlanMutation() {
   const { toast } = useToast()
   const queryClient = useQueryClient()
+  const router = useRouter()
 
   return useMutation({
     mutationFn: async (values: PlanValues) => {
@@ -27,6 +29,7 @@ export function useCreatePlanMutation() {
           queryKey: ["plans"],
         })
       }
+      router.push("/planes")
     },
     onError: (error: Error) => {
       toast({
@@ -41,6 +44,7 @@ export function useCreatePlanMutation() {
 export function useUpdatePlanMutation() {
   const { toast } = useToast()
   const queryClient = useQueryClient()
+  const router = useRouter()
 
   return useMutation({
     mutationFn: ({ id, values }: { id: string; values: PlanValues }) =>
@@ -53,6 +57,7 @@ export function useUpdatePlanMutation() {
         queryClient.invalidateQueries({
           queryKey: ["plans"],
         })
+        router.push("/planes")
       } else {
         throw new Error(
           result.error || "Error desconocido al actualizar el plan",
