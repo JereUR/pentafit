@@ -10,34 +10,13 @@ import prisma from "@/lib/prisma"
 import { createNotification } from "@/lib/notificationHelpers"
 import { NotificationType } from "@prisma/client"
 import { validateRequest } from "@/auth"
+import { ActivityData } from "@/types/activity"
+import { DeleteEntityResult } from "@/lib/utils"
 
 type ActivityResult = {
   success: boolean
-  activity?: {
-    id: string
-    name: string
-    description: string | null
-    price: number
-    isPublic: boolean
-    publicName: string | null
-    generateInvoice: boolean
-    maxSessions: number
-    mpAvailable: boolean
-    startDate: Date
-    endDate: Date
-    paymentType: string
-    activityType: string
-    facilityId: string
-    createdAt: Date
-    updatedAt: Date
-  }
+  activity?: ActivityData
   error?: string
-}
-
-type DeleteActivityResult = {
-  success: boolean
-  message: string
-  deletedCount?: number
 }
 
 export const getActivityById = cache(
@@ -158,14 +137,14 @@ export async function updateActivity(
     })
     .catch((error) => {
       console.error(error)
-      return { success: false, error: "Error al crear la actividad" }
+      return { success: false, error: "Error al editar la actividad" }
     })
 }
 
 export async function deleteActivities(
   activityIds: string[],
   facilityId: string,
-): Promise<DeleteActivityResult> {
+): Promise<DeleteEntityResult> {
   const { user } = await validateRequest()
   if (!user) throw new Error("Usuario no autenticado")
 
