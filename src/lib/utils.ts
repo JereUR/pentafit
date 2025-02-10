@@ -36,3 +36,9 @@ export const mapEnumToValue = <T extends { key: string; value: string }>(
 ): string => {
   return options.find((option) => option.key === key)?.value || key
 }
+
+export type DeleteEntityResult = {
+  success: boolean
+  message: string
+  deletedCount?: number
+}
