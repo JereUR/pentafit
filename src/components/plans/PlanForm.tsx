@@ -29,13 +29,14 @@ import { useCreatePlanMutation, useUpdatePlanMutation } from "@/app/(main)/(auth
 import { GeneralInfoTabPlanForm } from "./GeneralInfoTabPlanForm"
 import { DetailsTabPlanForm } from "./DetailsTabPlanForm"
 import { PlanType } from "@prisma/client"
+import { withClientSideRendering } from "@/hooks/withClientSideRendering"
 
 interface PlanFormProps {
   userId: string
   planData?: PlanValues & { id: string }
 }
 
-export default function PlanForm({ userId, planData }: PlanFormProps) {
+function PlanForm({ userId, planData }: PlanFormProps) {
   const { workingFacility } = useWorkingFacility()
   const [error, setError] = useState<string>()
   const isEditing = !!planData
@@ -81,7 +82,7 @@ export default function PlanForm({ userId, planData }: PlanFormProps) {
       form.reset(planData)
     }
   }, [planData, form])
-  
+
   useEffect(() => {
     if (workingFacility && !isEditing) {
       form.setValue("facilityId", workingFacility.id)
@@ -185,3 +186,4 @@ export default function PlanForm({ userId, planData }: PlanFormProps) {
   )
 }
 
+export default withClientSideRendering(PlanForm)

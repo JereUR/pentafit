@@ -31,13 +31,14 @@ import { typeSchedule, genreExclusive } from "@prisma/client"
 import { useCreateDiaryMutation, useUpdateDiaryMutation } from "@/app/(main)/(authenticated)/agenda/mutations"
 import { GeneralInfoTabDiaryForm } from "./GeneralInfoTabDiaryForm"
 import { ScheduleTabDiaryForm } from "./ScheduleTabDiaryForm"
+import { withClientSideRendering } from "@/hooks/withClientSideRendering"
 
 interface DiaryFormProps {
   userId: string
   diaryData?: DiaryValues & { id: string }
 }
 
-export default function DiaryForm({ userId, diaryData }: DiaryFormProps) {
+function DiaryForm({ userId, diaryData }: DiaryFormProps) {
   const { workingFacility } = useWorkingFacility()
   const [error, setError] = useState<string>()
   const isEditing = !!diaryData
@@ -187,3 +188,5 @@ export default function DiaryForm({ userId, diaryData }: DiaryFormProps) {
     </div>
   )
 }
+
+export default withClientSideRendering(DiaryForm)

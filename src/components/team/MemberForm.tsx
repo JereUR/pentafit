@@ -12,15 +12,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs"
 import LoadingButton from "../LoadingButton"
 import GeneralInfoTabMemberForm from "./GeneralInfoTabMemberForm"
 import { DetailsTabMemberForm } from "./DetailsTabMemberForm"
-import { memberSchema, updateMemberSchema, UpdateMemberValues, type MemberValues } from "@/lib/validation"
+import { memberSchema, updateMemberSchema, type UpdateMemberValues, type MemberValues } from "@/lib/validation"
 import { useCreateMemberMutation, useUpdateMemberMutation } from "@/app/(main)/(authenticated)/equipo/mutations"
+import { withClientSideRendering } from "@/hooks/withClientSideRendering"
 
 interface MemberFormProps {
   userId: string
   memberData?: UpdateMemberValues & { id: string }
 }
 
-export default function MemberForm({ userId, memberData }: MemberFormProps) {
+function MemberForm({ userId, memberData }: MemberFormProps) {
   const [error, setError] = useState<string>()
   const [croppedAvatar, setCroppedAvatar] = useState<Blob | null>(null)
   const isEditing = !!memberData
@@ -68,7 +69,7 @@ export default function MemberForm({ userId, memberData }: MemberFormProps) {
           onSuccess: () => {
             setCroppedAvatar(null)
             form.reset()
-            router.push('/equipo')
+            router.push("/equipo")
           },
         },
       )
@@ -149,4 +150,6 @@ export default function MemberForm({ userId, memberData }: MemberFormProps) {
     </div>
   )
 }
+
+export default withClientSideRendering(MemberForm)
 

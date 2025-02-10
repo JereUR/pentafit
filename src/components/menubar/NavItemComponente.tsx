@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { cn } from '@/lib/utils'
 import { NavItem } from '@/types/sidebar'
+import { withClientSideRendering } from '@/hooks/withClientSideRendering'
 
 interface NavItemProps {
   item: NavItem
@@ -15,7 +16,7 @@ interface NavItemProps {
   onClose: () => void
 }
 
-export function NavItemComponent({ item, isExpanded, isOpen, onToggle, onClose }: NavItemProps) {
+function NavItemComponent({ item, isExpanded, isOpen, onToggle, onClose }: NavItemProps) {
   const pathname = usePathname()
 
   if (item.items) {
@@ -95,4 +96,6 @@ export function NavItemComponent({ item, isExpanded, isOpen, onToggle, onClose }
     </Button>
   )
 }
+
+export default withClientSideRendering(NavItemComponent)
 

@@ -28,13 +28,14 @@ import WorkingFacility from "../WorkingFacility"
 import { useCreateActivityMutation, useUpdateActivityMutation } from "@/app/(main)/(authenticated)/actividades/mutations"
 import { GeneralInfoTabActivityForm } from "./GeneralInfoTabActivityForm"
 import { DetailsTabActivityForm } from "./DetailsTabActivityForm"
+import { withClientSideRendering } from "@/hooks/withClientSideRendering"
 
 interface ActivityFormProps {
   userId: string
   activityData?: ActivityValues & { id: string }
 }
 
-export default function ActivityForm({ userId, activityData }: ActivityFormProps) {
+function ActivityForm({ userId, activityData }: ActivityFormProps) {
   const { workingFacility } = useWorkingFacility()
   const [error, setError] = useState<string>()
   const isEditing = !!activityData
@@ -166,4 +167,6 @@ export default function ActivityForm({ userId, activityData }: ActivityFormProps
     </div>
   )
 }
+
+export default withClientSideRendering(ActivityForm)
 
