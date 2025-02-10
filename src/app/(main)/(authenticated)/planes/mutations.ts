@@ -82,7 +82,7 @@ export function useDeletePlanMutation() {
       facilityId: string
     }) => {
       const idsArray = Array.isArray(plansIds) ? plansIds : [plansIds]
-      const result = await deletePlans(idsArray)
+      const result = await deletePlans(idsArray, facilityId)
 
       if (!result.success) {
         throw new Error(result.message)
@@ -123,7 +123,7 @@ export function useReplicatePlanMutation() {
     }: {
       planIds: string[]
       targetFacilityIds: string[]
-    }) => { 
+    }) => {
       const result = await replicatePlans(planIds, targetFacilityIds)
       if (!result.success) {
         throw new Error(result.message)
