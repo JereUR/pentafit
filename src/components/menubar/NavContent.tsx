@@ -7,8 +7,8 @@ import { Button } from "@/components/ui/button"
 import { navItems } from "@/config/nav"
 import { Logo } from "./Logo"
 import { ThemeToggle } from "../ThemeToggle"
-import { NavItemComponent } from "./NavItemComponente"
 import type { Role } from "@prisma/client"
+import NavItemComponente from "./NavItemComponent"
 
 interface NavContentProps {
   isExpanded: boolean
@@ -41,7 +41,7 @@ export function NavContent({ isExpanded, onExpandedChange, onClose, userRole }: 
       </div>
       <nav className="flex-1 overflow-y-auto space-y-2 p-2">
         {filteredNavItems.map((item) => (
-          <NavItemComponent
+          <NavItemComponente
             key={item.title}
             item={item}
             isExpanded={isExpanded}
