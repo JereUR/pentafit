@@ -1,6 +1,7 @@
 "use client"
 
 import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { useRouter } from "next/navigation"
 
 import { useToast } from "@/hooks/use-toast"
 import { MemberValues, UpdateMemberValues } from "@/lib/validation"
@@ -11,6 +12,7 @@ export function useCreateMemberMutation() {
   const { toast } = useToast()
   const queryClient = useQueryClient()
   const { startUpload } = useUploadThing("imageUploader")
+  const router = useRouter()
 
   return useMutation({
     mutationFn: async ({
@@ -41,6 +43,7 @@ export function useCreateMemberMutation() {
       queryClient.invalidateQueries({
         queryKey: ["team", newMember?.facilities.map((f) => f.facilityId)],
       })
+      router.push(`/equipo`)
     },
     onError: (error: Error) => {
       toast({
@@ -56,6 +59,7 @@ export function useUpdateMemberMutation() {
   const { toast } = useToast()
   const queryClient = useQueryClient()
   const { startUpload } = useUploadThing("imageUploader")
+  const router = useRouter()
 
   return useMutation({
     mutationFn: async ({
@@ -76,6 +80,7 @@ export function useUpdateMemberMutation() {
 
       const result = await updateMember(id, values)
       if (result.error) {
+        console.error("Update error:", result.error, "Details:", result.details)
         throw new Error(result.error)
       }
 
@@ -90,8 +95,9 @@ export function useUpdateMemberMutation() {
         title: "Integrante actualizado correctamente",
       })
       queryClient.invalidateQueries({
-        queryKey: ["team", updatedMember.facilities.map((f) => f.id)],
+        queryKey: ["team", updatedMember.facilities.map((f) => f.facilityId)],
       })
+      router.push(`/equipo`)
     },
     onError: (error: Error) => {
       console.error("Mutation error:", error)
