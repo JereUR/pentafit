@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use server"
 
 import { revalidatePath } from "next/cache"
@@ -6,7 +7,17 @@ import { notFound } from "next/navigation"
 
 import { type DiaryValues } from "@/lib/validation"
 import prisma from "@/lib/prisma"
-import { Schedule } from "@/types/diary"
+import { DiaryData, Schedule } from "@/types/diary"
+import { validateRequest } from "@/auth"
+import { createNotification } from "@/lib/notificationHelpers"
+import { NotificationType } from "@prisma/client"
+import { DeleteEntityResult } from "@/lib/utils"
+
+type DiaryResult = {
+  success: boolean
+  diary?: DiaryData
+  error?: string
+}
 
 export const getDiaryById = cache(
   async (id: string): Promise<DiaryValues & { id: string }> => {
@@ -57,87 +68,28 @@ export const getDiaryById = cache(
   },
 )
 
-export async function createDiary(data: DiaryValues) {
-  try {
-    if (!data.facilityId || !data.activityId || !data.name) {
-      throw new Error(
-        "Missing required fields: facilityId, activityId, or name",
-      )
-    }
+export async function createDiary(values: DiaryValues): Promise<DiaryResult> {
+  const { user } = await validateRequest()
+  if (!user) throw new Error("Usuario no autenticado")
 
-    const sanitizedDaysAvailable =
-      data.daysAvailable?.map((day: Schedule) => ({
-        available: day.available,
-        timeStart: day.timeStart,
-        timeEnd: day.timeEnd,
-      })) ?? []
+  return await prisma.$transaction(async (tx) => {
+    try {
+      const sanitizedDaysAvailable =
+        values.daysAvailable?.map((day: Schedule) => ({
+          available: day.available,
+          timeStart: day.timeStart,
+          timeEnd: day.timeEnd,
+        })) ?? []
 
-    const sanitizedOfferDays =
-      data.offerDays?.map(
-        (offer: { isOffer: boolean; discountPercentage: number | null }) => ({
-          isOffer: offer.isOffer,
-          discountPercentage: offer.discountPercentage,
-        }),
-      ) ?? []
+      const sanitizedOfferDays =
+        values.offerDays?.map(
+          (offer: { isOffer: boolean; discountPercentage: number | null }) => ({
+            isOffer: offer.isOffer,
+            discountPercentage: offer.discountPercentage,
+          }),
+        ) ?? []
 
-    const diaryData = {
-      facilityId: data.facilityId,
-      activityId: data.activityId,
-      name: data.name,
-      typeSchedule: data.typeSchedule,
-      dateFrom: data.dateFrom,
-      dateUntil: data.dateUntil,
-      repeatFor: data.repeatFor,
-      termDuration: data.termDuration,
-      amountOfPeople: data.amountOfPeople,
-      isActive: data.isActive,
-      genreExclusive: data.genreExclusive,
-      worksHolidays: data.worksHolidays,
-      observations: data.observations,
-      daysAvailable:
-        sanitizedDaysAvailable.length > 0
-          ? {
-              createMany: { data: sanitizedDaysAvailable },
-            }
-          : undefined,
-      offerDays:
-        sanitizedOfferDays.length > 0
-          ? {
-              createMany: { data: sanitizedOfferDays },
-            }
-          : undefined,
-    }
-
-    if (!diaryData) {
-      throw new Error("Payload for diary creation is null or undefined.")
-    }
-
-    const diary = await prisma.diary.create({
-      data: diaryData,
-      include: {
-        daysAvailable: true,
-        offerDays: true,
-      },
-    })
-
-    return { success: true, diary }
-  } catch (error) {
-    console.error("Error creating diary:", error)
-
-    if (error instanceof Error) {
-      console.error("Error stack:", error.stack)
-      return { success: false, error: error.message }
-    }
-
-    return { success: false, error: "Unknown error" }
-  }
-}
-
-export async function updateDiary(id: string, values: DiaryValues) {
-  try {
-    const diary = await prisma.diary.update({
-      where: { id },
-      data: {
+      const diaryData = {
         facilityId: values.facilityId,
         activityId: values.activityId,
         name: values.name,
@@ -145,154 +97,257 @@ export async function updateDiary(id: string, values: DiaryValues) {
         dateFrom: values.dateFrom,
         dateUntil: values.dateUntil,
         repeatFor: values.repeatFor,
-        offerDays: {
-          deleteMany: {},
-          create: values.offerDays.map((day) => ({
-            isOffer: day.isOffer,
-            discountPercentage: day.discountPercentage,
-          })),
-        },
         termDuration: values.termDuration,
         amountOfPeople: values.amountOfPeople,
         isActive: values.isActive,
         genreExclusive: values.genreExclusive,
         worksHolidays: values.worksHolidays,
         observations: values.observations,
-        daysAvailable: {
-          deleteMany: {},
-          create: values.daysAvailable.map((day) => ({
-            available: day.available,
-            timeStart: day.timeStart,
-            timeEnd: day.timeEnd,
-          })),
-        },
-      },
-      include: {
-        facility: true,
-        activity: true,
-        daysAvailable: true,
-      },
-    })
+        daysAvailable:
+          sanitizedDaysAvailable.length > 0
+            ? {
+                createMany: { data: sanitizedDaysAvailable },
+              }
+            : undefined,
+        offerDays:
+          sanitizedOfferDays.length > 0
+            ? {
+                createMany: { data: sanitizedOfferDays },
+              }
+            : undefined,
+      }
 
-    revalidatePath(`/agenda`)
-    return { success: true, diary }
-  } catch (error) {
-    console.error(error)
-    return { error: "Error al actualizar la agenda" }
-  }
+      if (!diaryData) {
+        throw new Error("Payload for diary creation is null or undefined.")
+      }
+
+      const diary = await tx.diary.create({
+        data: diaryData,
+        include: {
+          daysAvailable: true,
+          offerDays: true,
+        },
+      })
+
+      await createNotification(
+        tx,
+        user.id,
+        values.facilityId,
+        NotificationType.DIARY_CREATED,
+        diary.id,
+      )
+
+      return { success: true, diary }
+    } catch (error) {
+      console.error(error)
+      return { success: false, error: "Error al crear la agenda" }
+    }
+  })
 }
 
-export async function deleteDiaries(diaryIds: string[]) {
-  try {
-    if (!diaryIds || diaryIds.length === 0) {
+export async function updateDiary(
+  id: string,
+  values: DiaryValues,
+): Promise<DiaryResult> {
+  const { user } = await validateRequest()
+  if (!user) throw new Error("Usuario no autenticado")
+
+  return await prisma.$transaction(async (tx) => {
+    try {
+      const diary = await tx.diary.update({
+        where: { id },
+        data: {
+          facilityId: values.facilityId,
+          activityId: values.activityId,
+          name: values.name,
+          typeSchedule: values.typeSchedule,
+          dateFrom: values.dateFrom,
+          dateUntil: values.dateUntil,
+          repeatFor: values.repeatFor,
+          offerDays: {
+            deleteMany: {},
+            create: values.offerDays.map((day) => ({
+              isOffer: day.isOffer,
+              discountPercentage: day.discountPercentage,
+            })),
+          },
+          termDuration: values.termDuration,
+          amountOfPeople: values.amountOfPeople,
+          isActive: values.isActive,
+          genreExclusive: values.genreExclusive,
+          worksHolidays: values.worksHolidays,
+          observations: values.observations,
+          daysAvailable: {
+            deleteMany: {},
+            create: values.daysAvailable.map((day) => ({
+              available: day.available,
+              timeStart: day.timeStart,
+              timeEnd: day.timeEnd,
+            })),
+          },
+        },
+        include: {
+          facility: true,
+          activity: true,
+          daysAvailable: true,
+          offerDays: true,
+        },
+      })
+
+      await createNotification(
+        tx,
+        user.id,
+        values.facilityId,
+        NotificationType.DIARY_UPDATED,
+        diary.id,
+      )
+
+      revalidatePath(`/agenda`)
+      return { success: true, diary }
+    } catch (error) {
+      console.error(error)
+      return { success: false, error: "Error al editar la agenda" }
+    }
+  })
+}
+
+export async function deleteDiaries(
+  diaryIds: string[],
+  facilityId: string,
+): Promise<DeleteEntityResult> {
+  const { user } = await validateRequest()
+  if (!user) throw new Error("Usuario no autenticado")
+
+  return await prisma.$transaction(async (tx) => {
+    try {
+      if (!diaryIds || diaryIds.length === 0) {
+        return {
+          success: false,
+          message: "No se proporcionaron IDs de agendas para eliminar",
+        }
+      }
+
+      await tx.dayAvailable.deleteMany({
+        where: {
+          diaryId: { in: diaryIds },
+        },
+      })
+
+      await tx.offerDay.deleteMany({
+        where: {
+          diaryId: { in: diaryIds },
+        },
+      })
+
+      const { count } = await tx.diary.deleteMany({
+        where: {
+          id: { in: diaryIds },
+        },
+      })
+
+      if (count === 0) {
+        return {
+          success: false,
+          message: "No se encontraron agendas para eliminar",
+        }
+      }
+
+      await createNotification(
+        tx,
+        user.id,
+        facilityId,
+        NotificationType.DIARY_DELETED,
+      )
+
+      return {
+        success: true,
+        message: `Se ${count === 1 ? "ha" : "han"} eliminado ${count} ${
+          count === 1 ? "agenda" : "agendas"
+        } correctamente`,
+        deletedCount: count,
+      }
+    } catch (error) {
+      console.error("Error deleting diaries:", error)
       return {
         success: false,
-        message: "No se proporcionaron IDs de agendas para eliminar",
+        message:
+          error instanceof Error
+            ? error.message
+            : "Error al eliminar las agendas",
       }
     }
-
-    await prisma.dayAvailable.deleteMany({
-      where: {
-        diaryId: { in: diaryIds },
-      },
-    })
-
-    await prisma.offerDay.deleteMany({
-      where: {
-        diaryId: { in: diaryIds },
-      },
-    })
-
-    const { count } = await prisma.diary.deleteMany({
-      where: {
-        id: { in: diaryIds },
-      },
-    })
-
-    if (count === 0) {
-      return {
-        success: false,
-        message: "No se encontraron agendas para eliminar",
-      }
-    }
-
-    return {
-      success: true,
-      message: `Se ${count === 1 ? "ha" : "han"} eliminado ${count} ${
-        count === 1 ? "agenda" : "agendas"
-      } correctamente`,
-      deletedCount: count,
-    }
-  } catch (error) {
-    console.error("Error al eliminar las agendas:", error)
-    return {
-      success: false,
-      message:
-        error instanceof Error
-          ? error.message
-          : "Error desconocido al eliminar las agendas",
-    }
-  }
+  })
 }
 
 export async function replicateDiaries(
   diaryIds: string[],
   targetFacilityIds: string[],
 ) {
-  try {
-    const diaries = await prisma.diary.findMany({
-      where: { id: { in: diaryIds } },
-      include: {
-        daysAvailable: true,
-        offerDays: true,
-      },
+  const { user } = await validateRequest()
+  if (!user) throw new Error("Usuario no autenticado")
+
+  return await prisma
+    .$transaction(async (tx) => {
+      const diaries = await tx.diary.findMany({
+        where: { id: { in: diaryIds } },
+        include: {
+          daysAvailable: true,
+          offerDays: true,
+        },
+      })
+
+      const replicatedDiaries = await Promise.all(
+        targetFacilityIds.flatMap(async (facilityId) =>
+          diaries.map(async (diary) => {
+            const { id, facilityId: _, ...diaryData } = diary
+            return prisma.diary.create({
+              data: {
+                ...diaryData,
+                facilityId: facilityId,
+                daysAvailable: {
+                  create: diary.daysAvailable.map(
+                    ({ id, diaryId, ...dayData }) => dayData,
+                  ),
+                },
+                offerDays: {
+                  create: diary.offerDays.map(
+                    ({ id, diaryId, ...dayData }) => dayData,
+                  ),
+                },
+              },
+            })
+          }),
+        ),
+      )
+
+      const flattenedDiaries = replicatedDiaries.flat()
+
+      await Promise.all(
+        targetFacilityIds.map((facilityId) =>
+          createNotification(
+            tx,
+            user.id,
+            facilityId,
+            NotificationType.DIARY_REPLICATED,
+          ),
+        ),
+      )
+
+      revalidatePath(`/agenda`)
+      return {
+        success: true,
+        message: `Se han replicado ${flattenedDiaries.length} agendas en ${targetFacilityIds.length} establecimientos.`,
+        replicatedCount: flattenedDiaries.length,
+      }
     })
-
-    const replicatedDiaries = await Promise.all(
-      targetFacilityIds.flatMap(async (facilityId) =>
-        diaries.map(async (diary) => {
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          const { id, facilityId: _, ...diaryData } = diary
-          return prisma.diary.create({
-            data: {
-              ...diaryData,
-              facilityId: facilityId,
-              daysAvailable: {
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                create: diary.daysAvailable.map(
-                  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                  ({ id, diaryId, ...dayData }) => dayData,
-                ),
-              },
-              offerDays: {
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                create: diary.offerDays.map(
-                  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                  ({ id, diaryId, ...dayData }) => dayData,
-                ),
-              },
-            },
-          })
-        }),
-      ),
-    )
-
-    const flattenedDiaries = replicatedDiaries.flat()
-
-    revalidatePath(`/agenda`)
-    return {
-      success: true,
-      message: `Se han replicado ${flattenedDiaries.length} agendas en ${targetFacilityIds.length} establecimientos.`,
-      replicatedCount: flattenedDiaries.length,
-    }
-  } catch (error) {
-    console.error("Error replicating diaries:", error)
-    return {
-      success: false,
-      message:
-        error instanceof Error
-          ? error.message
-          : "Error al replicar las agendas",
-    }
-  }
+    .catch((error) => {
+      console.error("Error replicating diaries:", error)
+      return {
+        success: false,
+        message:
+          error instanceof Error
+            ? error.message
+            : "Error al replicar las agendas",
+      }
+    })
 }

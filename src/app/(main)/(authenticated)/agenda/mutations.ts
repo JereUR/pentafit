@@ -20,8 +20,6 @@ export function useCreateDiaryMutation() {
       if (!values) {
         throw new Error("No se proporcionaron datos para crear la agenda")
       }
-
-      console.log({values})
       const result = await createDiary(values)
       if (!result.success) {
         throw new Error(result.error)
@@ -92,7 +90,7 @@ export function useDeleteDiaryMutation() {
       facilityId: string
     }) => {
       const idsArray = Array.isArray(diaryIds) ? diaryIds : [diaryIds]
-      const result = await deleteDiaries(idsArray)
+      const result = await deleteDiaries(idsArray, facilityId)
 
       if (!result.success) {
         throw new Error(result.message)
