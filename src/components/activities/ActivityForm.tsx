@@ -68,6 +68,12 @@ export default function ActivityForm({ userId, activityData }: ActivityFormProps
     }
   }, [activityData, form])
 
+  useEffect(() => {
+    if (workingFacility && !isEditing) {
+      form.setValue("facilityId", workingFacility.id)
+    }
+  }, [workingFacility, form, isEditing])
+
   async function onSubmit(values: ActivityValues) {
     setError(undefined)
 

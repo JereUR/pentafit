@@ -81,6 +81,12 @@ export default function PlanForm({ userId, planData }: PlanFormProps) {
       form.reset(planData)
     }
   }, [planData, form])
+  
+  useEffect(() => {
+    if (workingFacility && !isEditing) {
+      form.setValue("facilityId", workingFacility.id)
+    }
+  }, [workingFacility, form, isEditing])
 
   async function onSubmit(values: PlanValues) {
     setError(undefined)
