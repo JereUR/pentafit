@@ -14,7 +14,17 @@ import {
 } from "@/lib/validation"
 import prisma from "@/lib/prisma"
 import { generateIdFromEntropySize } from "lucia"
-import { Prisma } from "@prisma/client"
+import { NotificationType, Prisma } from "@prisma/client"
+import { TeamData } from "@/types/team"
+import { validateRequest } from "@/auth"
+import { createNotification } from "@/lib/notificationHelpers"
+import { DeleteEntityResult } from "@/lib/utils"
+
+type TeamResult = {
+  success: boolean
+  member?: TeamData
+  error?: string
+}
 
 export const getMemberById = cache(
   async (id: string): Promise<MemberValues & { id: string }> => {
@@ -65,76 +75,95 @@ export const getMemberById = cache(
 )
 
 export async function createMember(values: MemberValues) {
-  try {
-    const {
-      firstName,
-      lastName,
-      email,
-      gender,
-      birthday,
-      avatarUrl,
-      role,
-      facilities,
-      password,
-    } = memberSchema.parse(values)
+  const { user } = await validateRequest()
+  if (!user) throw new Error("Usuario no autenticado")
 
-    const passwordHash = await hash(password, {
-      memoryCost: 19456,
-      timeCost: 2,
-      outputLen: 32,
-      parallelism: 1,
-    })
-
-    const userId = generateIdFromEntropySize(10)
-
-    const existingEmail = await prisma.user.findFirst({
-      where: {
-        email: {
-          equals: email,
-          mode: "insensitive",
-        },
-      },
-    })
-
-    if (existingEmail) {
-      return { error: "El email ingresado ya está en uso." }
-    }
-
-    const member = await prisma.user.create({
-      data: {
-        id: userId,
+  return await prisma.$transaction(async (tx) => {
+    try {
+      const {
         firstName,
         lastName,
         email,
-        passwordHash,
         gender,
         birthday,
-        role,
         avatarUrl,
-        facilities: {
-          create: facilities.map((facility) => ({
-            facilityId: facility.id,
-          })),
-        },
-      },
-      include: {
-        facilities: {
-          include: {
-            facility: true,
+        role,
+        facilities,
+        password,
+      } = memberSchema.parse(values)
+
+      const passwordHash = await hash(password, {
+        memoryCost: 19456,
+        timeCost: 2,
+        outputLen: 32,
+        parallelism: 1,
+      })
+
+      const userId = generateIdFromEntropySize(10)
+
+      const existingEmail = await prisma.user.findFirst({
+        where: {
+          email: {
+            equals: email,
+            mode: "insensitive",
           },
         },
-      },
-    })
+      })
 
-    revalidatePath(`/equipo`)
-    return { success: true, member }
-  } catch (error) {
-    console.error(error)
-    return { error: "Error al crear integrante" }
-  }
+      if (existingEmail) {
+        return { error: "El email ingresado ya está en uso." }
+      }
+
+      const member = await tx.user.create({
+        data: {
+          id: userId,
+          firstName,
+          lastName,
+          email,
+          passwordHash,
+          gender,
+          birthday,
+          role,
+          avatarUrl,
+          facilities: {
+            create: facilities.map((facility) => ({
+              facilityId: facility.id,
+            })),
+          },
+        },
+        include: {
+          facilities: {
+            include: {
+              facility: true,
+            },
+          },
+        },
+      })
+
+      await createNotification(
+        tx,
+        user.id,
+        values.facilities.map((facility) => facility.id),
+        NotificationType.USER_CREATED,
+        member.id,
+      )
+
+      revalidatePath(`/equipo`)
+      return { success: true, member }
+    } catch (error) {
+      console.error(error)
+      return { success: false, error: "Error al crear integrante" }
+    }
+  })
 }
 
-export async function updateMember(id: string, values: UpdateMemberValues) {
+export async function updateMember(
+  id: string,
+  values: UpdateMemberValues,
+): Promise<TeamResult> {
+  const { user } = await validateRequest()
+  if (!user) throw new Error("Usuario no autenticado")
+
   try {
     if (!values || typeof values !== "object") {
       throw new Error("Invalid input: values must be an object")
@@ -204,6 +233,13 @@ export async function updateMember(id: string, values: UpdateMemberValues) {
         })
       }
 
+      await createNotification(
+        prismaClient,
+        user.id,
+        facilityIdsToConnect,
+        NotificationType.USER_UPDATED,
+      )
+
       return prismaClient.user.findUnique({
         where: { id },
         include: {
@@ -217,41 +253,91 @@ export async function updateMember(id: string, values: UpdateMemberValues) {
     })
 
     revalidatePath(`/equipo`)
-    return { success: true, member }
-  } catch (error) {
-    console.error("Error in updateMember:", error)
-    if (error instanceof Error) {
-      console.error("Error name:", error.name)
-      console.error("Error message:", error.message)
-      console.error("Error stack:", error.stack)
+    if (!member) {
+      throw new Error("No se pudo actualizar el miembro")
     }
+
+    // Aserción de tipo para informar a TypeScript que member no es null
+    const updatedMember = member as NonNullable<typeof member>
+
     return {
-      error:
-        error instanceof Error
-          ? error.message
-          : "Error al actualizar al integrante del equipo",
-      details: JSON.stringify(error, Object.getOwnPropertyNames(error)),
+      success: true,
+      member: {
+        id: updatedMember.id,
+        firstName: updatedMember.firstName ?? "",
+        lastName: updatedMember.lastName ?? "",
+        email: updatedMember.email ?? "",
+        birthday: new Date(updatedMember.birthday) ?? new Date(),
+        gender: updatedMember.gender ?? "",
+        role: updatedMember.role ?? "USER",
+        avatarUrl: updatedMember.avatarUrl ?? "",
+        facilities: updatedMember.facilities.map((f) => ({
+          id: f.facility.id ?? "",
+          name: f.facility.name ?? "",
+          logoUrl: f.facility.logoUrl ?? "",
+        })),
+        facilityId: updatedMember.facilities[0]?.facilityId ?? "",
+      },
     }
+  } catch (error) {
+    console.error(error)
+    return { success: false, error: "Error al editar integrante" }
   }
 }
 
-export async function deleteMember(memberIds: string[]) {
+export async function deleteMember(
+  memberIds: string[],
+): Promise<DeleteEntityResult> {
+  const { user } = await validateRequest()
+  if (!user) throw new Error("Usuario no autenticado")
+
   try {
     if (!memberIds || memberIds.length === 0) {
       throw new Error("No se proporcionaron IDs de miembros para eliminar")
     }
 
     const result = await prisma.$transaction(async (tx) => {
+      const userFacilities = await tx.userFacility.findMany({
+        where: {
+          userId: { in: memberIds },
+        },
+        select: {
+          userId: true,
+          facilityId: true,
+        },
+      })
+
+      const facilityIdsByUser = userFacilities.reduce(
+        (acc, { userId, facilityId }) => {
+          if (!acc[userId]) acc[userId] = []
+          acc[userId].push(facilityId)
+          return acc
+        },
+        {} as Record<string, string[]>,
+      )
+
       await tx.userFacility.deleteMany({
         where: {
           userId: { in: memberIds },
         },
       })
+
       const { count } = await tx.user.deleteMany({
         where: {
           id: { in: memberIds },
         },
       })
+
+      for (const userId of memberIds) {
+        const facilityIds = facilityIdsByUser[userId] || []
+        await createNotification(
+          tx,
+          user.id,
+          facilityIds,
+          NotificationType.USER_DELETED,
+          userId,
+        )
+      }
 
       return count
     })
@@ -266,16 +352,13 @@ export async function deleteMember(memberIds: string[]) {
       deletedCount: result,
     }
   } catch (error) {
-    console.error(
-      "Error deleting members:",
-      error instanceof Error ? error.message : "Unknown error",
-    )
+    console.error("Error deleting member:", error)
     return {
       success: false,
       message:
         error instanceof Error
           ? error.message
-          : "Error desconocido al eliminar a los integrantes",
+          : "Error al eliminar integrantes",
     }
   }
 }

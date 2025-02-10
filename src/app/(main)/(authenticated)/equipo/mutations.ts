@@ -76,7 +76,6 @@ export function useUpdateMemberMutation() {
 
       const result = await updateMember(id, values)
       if (result.error) {
-        console.error("Update error:", result.error, "Details:", result.details)
         throw new Error(result.error)
       }
 
@@ -91,7 +90,7 @@ export function useUpdateMemberMutation() {
         title: "Integrante actualizado correctamente",
       })
       queryClient.invalidateQueries({
-        queryKey: ["team", updatedMember.facilities.map((f) => f.facilityId)],
+        queryKey: ["team", updatedMember.facilities.map((f) => f.id)],
       })
     },
     onError: (error: Error) => {
