@@ -1,4 +1,4 @@
-import { Control, Controller } from "react-hook-form"
+import { Control, Controller, UseFormSetValue } from "react-hook-form"
 
 import {
   FormControl,
@@ -20,12 +20,19 @@ import {
 import { PlanValues } from "@/lib/validation"
 import { planTypeOptions, paymentTypeOptions } from "@/types/plan"
 import { MultiSelect } from "../ui/multi-select"
+import { useWorkingFacility } from "@/contexts/WorkingFacilityContext"
+import { useAllDiaries } from "@/hooks/useAllDiaries"
+import { ActivitySelector } from "./ActivitySelector"
 
 interface DetailsTabPlanFormProps {
   control: Control<PlanValues>
+  setValue: UseFormSetValue<PlanValues>
 }
 
-export function DetailsTabPlanForm({ control }: DetailsTabPlanFormProps) {
+export function DetailsTabPlanForm({ control, setValue }: DetailsTabPlanFormProps) {
+  const { workingFacility } = useWorkingFacility()
+  const { data: diariesData, isLoading } = useAllDiaries(workingFacility?.id)
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -59,7 +66,7 @@ export function DetailsTabPlanForm({ control }: DetailsTabPlanFormProps) {
                 <Input
                   type="number"
                   {...field}
-                  onChange={(e) => field.onChange(e.target.value)}
+                  onChange={(e) => field.onChange(Number.parseInt(e.target.value))}
                   value={field.value === 0 ? '' : field.value}
                 />
               </FormControl>
@@ -155,6 +162,7 @@ export function DetailsTabPlanForm({ control }: DetailsTabPlanFormProps) {
           )}
         />
       </div>
+      {!isLoading && diariesData && <ActivitySelector control={control} setValue={setValue} diaries={diariesData.diaries} />}
     </div>
   )
 }

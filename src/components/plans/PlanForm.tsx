@@ -59,20 +59,7 @@ function PlanForm({ userId, planData }: PlanFormProps) {
       planType: PlanType.MENSUAL,
       freeTest: false,
       current: false,
-      diaryPlans: [
-        {
-          name: "Actividad 1",
-          daysOfWeek: [true, true, true, true, true, false, false],
-          sessionsPerWeek: 4,
-          activityId: "52205e28-abab-4dfd-9920-7a4f6f8b8ed0",
-        },
-        {
-          name: "Actividad 2",
-          daysOfWeek: [false, false, false, false, false, true, true],
-          sessionsPerWeek: 1,
-          activityId: "52205e28-abab-4dfd-9920-7a4f6f8b8ed0",
-        }
-      ],
+      diaryPlans: [],
       facilityId: workingFacility?.id || "",
     },
   })
@@ -114,8 +101,9 @@ function PlanForm({ userId, planData }: PlanFormProps) {
           form.reset()
           router.push("/planes")
         },
-        onError: (error) => {
-          setError(error instanceof Error ? error.message : "Error creating plan")
+        onError: (error: unknown) => {
+          console.error("Error creating plan:", error)
+          setError(error instanceof Error ? error.message : "Error desconocido al crear el plan")
         },
       })
     }
@@ -134,6 +122,8 @@ function PlanForm({ userId, planData }: PlanFormProps) {
       <NoWorkingFacilityMessage entityName="un plan" />
     </div>
   }
+
+  console.log(form.getValues())
 
   return (
     <div className="flex flex-col items-center md:items-start gap-5 p-5 md:p-10 md:py-14 rounded-md border">
@@ -168,7 +158,7 @@ function PlanForm({ userId, planData }: PlanFormProps) {
                   <GeneralInfoTabPlanForm control={form.control} />
                 </TabsContent>
                 <TabsContent value="details">
-                  <DetailsTabPlanForm control={form.control} />
+                  <DetailsTabPlanForm control={form.control} setValue={form.setValue} />
                 </TabsContent>
               </Tabs>
               <LoadingButton
