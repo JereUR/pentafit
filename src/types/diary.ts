@@ -62,6 +62,11 @@ export type DiaryData = {
   facilityId: string
 }
 
+export interface AllDIaryData extends DiaryData {
+  activityId: string
+  activityName: string
+}
+
 export type DiaryExportData = {
   name: string
   typeSchedule: string
