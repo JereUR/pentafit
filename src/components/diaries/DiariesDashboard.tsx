@@ -133,7 +133,7 @@ export default function DiariesDashboard({ userId }: { userId: string }) {
         userId={userId}
         addButtonLabel="Agregar Agenda"
         searchPlaceholder="Buscar agendas..."
-        exportApiRoute={`/api/diaries/${workingFacility?.id}/all`}
+        exportApiRoute={`/api/diaries/${workingFacility?.id}/all-export`}
         exportFileName={`Agenda_${workingFacility?.name}`}
       />
       <DiariesTable
