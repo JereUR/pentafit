@@ -228,7 +228,7 @@ export const planSchema = z.object({
   name: z.string().min(1, "El nombre es requerido"),
   description: z.string(),
   price: z.union([z.number().min(0), z.string()]).transform((val) => {
-    const parsed = parseFloat(val as string)
+    const parsed = Number.parseFloat(val as string)
     return isNaN(parsed) ? 0 : parsed
   }),
   startDate: z.date(),
@@ -242,12 +242,24 @@ export const planSchema = z.object({
   freeTest: z.boolean().default(false),
   current: z.boolean().default(false),
   diaryPlans: z.array(
-    z.object({
-      name: z.string(),
-      daysOfWeek: z.array(z.boolean()).length(7),
-      sessionsPerWeek: z.number().int().min(1),
-      activityId: z.string().uuid("ID de actividad inválido"),
-    }),
+    z
+      .object({
+        name: z.string(),
+        daysOfWeek: z.array(z.boolean()).length(7),
+        sessionsPerWeek: z.number().int().min(1),
+        activityId: z.string().uuid("ID de actividad inválido"),
+      })
+      .refine(
+        (data) => {
+          const selectedDays = data.daysOfWeek.filter(Boolean).length
+          return data.sessionsPerWeek <= selectedDays
+        },
+        {
+          message:
+            "El número de sesiones por semana no puede ser mayor que la cantidad de días seleccionados",
+          path: ["sessionsPerWeek"],
+        },
+      ),
   ),
   facilityId: z.string().uuid("ID de establecimiento inválido"),
 })
