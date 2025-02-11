@@ -28,8 +28,8 @@ export function useCreatePlanMutation() {
         queryClient.invalidateQueries({
           queryKey: ["plans"],
         })
+        router.push("/planes")
       }
-      router.push("/planes")
     },
     onError: (error: Error) => {
       toast({

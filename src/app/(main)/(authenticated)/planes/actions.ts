@@ -10,7 +10,7 @@ import prisma from "@/lib/prisma"
 import { PlanData } from "@/types/plan"
 import { validateRequest } from "@/auth"
 import { createNotification } from "@/lib/notificationHelpers"
-import { NotificationType } from "@prisma/client"
+import { NotificationType, Prisma } from "@prisma/client"
 import { DeleteEntityResult } from "@/lib/utils"
 
 type PlanResult = {
@@ -75,6 +75,8 @@ export async function createPlan(values: PlanValues): Promise<PlanResult> {
   const { user } = await validateRequest()
   if (!user) throw new Error("Usuario no autenticado")
 
+  console.log({ values })
+
   return await prisma.$transaction(async (tx) => {
     try {
       const sanitizedDiaryPlans = values.diaryPlans.map((plan) => ({
@@ -83,6 +85,7 @@ export async function createPlan(values: PlanValues): Promise<PlanResult> {
           ? plan.daysOfWeek
           : [false, false, false, false, false, false, false],
       }))
+      console.log({ sanitizedDiaryPlans })
 
       const plan = await tx.plan.create({
         data: {
@@ -111,19 +114,24 @@ export async function createPlan(values: PlanValues): Promise<PlanResult> {
           facility: true,
           diaryPlans: {
             include: {
-              activity: true,
+              activity: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
             },
           },
         },
       })
 
-      await createNotification(
+      /* await createNotification(
         tx,
         user.id,
         values.facilityId,
         NotificationType.PLAN_CREATED,
         plan.id,
-      )
+      ) */
 
       const formattedPlan: PlanData = {
         id: plan.id,
@@ -150,7 +158,7 @@ export async function createPlan(values: PlanValues): Promise<PlanResult> {
       }
 
       revalidatePath(`/planes`)
-      return { success: true, formattedPlan }
+      return { success: true, plan: formattedPlan }
     } catch (error) {
       console.error(error)
       return { success: false, error: "Error al crear el plan" }
