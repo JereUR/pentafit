@@ -22,7 +22,6 @@ export interface DiaryPlanData {
   daysOfWeek: boolean[]
   sessionsPerWeek: number
   activityId: string
-  activityName: string
 }
 
 export interface PlanData {
@@ -40,6 +39,13 @@ export interface PlanData {
   freeTest: boolean
   current: boolean
   diaryPlans: DiaryPlanData[]
+}
+
+export interface DiaryPlansValues {
+  name: string
+  daysOfWeek: boolean[]
+  sessionsPerWeek: number
+  activityId: string
 }
 
 export interface PlanDataExport {
