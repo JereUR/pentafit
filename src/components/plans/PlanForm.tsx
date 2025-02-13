@@ -30,6 +30,7 @@ import { GeneralInfoTabPlanForm } from "./GeneralInfoTabPlanForm"
 import { DetailsTabPlanForm } from "./DetailsTabPlanForm"
 import { PlanType } from "@prisma/client"
 import { withClientSideRendering } from "@/hooks/withClientSideRendering"
+import { DiaryPlansValues } from "@/types/plan"
 
 interface PlanFormProps {
   userId: string
@@ -38,6 +39,7 @@ interface PlanFormProps {
 
 function PlanForm({ userId, planData }: PlanFormProps) {
   const { workingFacility } = useWorkingFacility()
+  const [diaryPlanValues, setDiaryPlanValues] = useState<DiaryPlansValues[]>([])
   const [error, setError] = useState<string>()
   const isEditing = !!planData
   const router = useRouter()
@@ -51,8 +53,8 @@ function PlanForm({ userId, planData }: PlanFormProps) {
       name: "",
       description: "",
       price: 0,
-      startDate: new Date(),
-      endDate: new Date(),
+      startDate: new Date().toISOString(),
+      endDate: new Date().toISOString(),
       expirationPeriod: 0,
       generateInvoice: false,
       paymentTypes: [],
@@ -76,14 +78,22 @@ function PlanForm({ userId, planData }: PlanFormProps) {
     }
   }, [workingFacility, form, isEditing])
 
-  async function onSubmit(values: PlanValues) {
+  const onSubmit = async (values: PlanValues) => {
+    console.log("Form submitted with values:", JSON.stringify(values, null, 2))
     setError(undefined)
+
+    const sanitizedValues = {
+      ...values,
+      diaryPlans: diaryPlanValues,
+    }
+
+    console.log("Sanitized values:", JSON.stringify(sanitizedValues, null, 2))
 
     if (isEditing && planData) {
       updatePlan(
         {
           id: planData.id,
-          values,
+          values: sanitizedValues,
         },
         {
           onSuccess: () => {
@@ -96,7 +106,8 @@ function PlanForm({ userId, planData }: PlanFormProps) {
         },
       )
     } else {
-      createPlan(values, {
+      console.log("Sending data:", JSON.stringify(sanitizedValues, null, 2))
+      createPlan(sanitizedValues, {
         onSuccess: () => {
           form.reset()
           router.push("/planes")
@@ -123,7 +134,7 @@ function PlanForm({ userId, planData }: PlanFormProps) {
     </div>
   }
 
-  console.log(form.getValues())
+  console.log({ diaryPlanValues })
 
   return (
     <div className="flex flex-col items-center md:items-start gap-5 p-5 md:p-10 md:py-14 rounded-md border">
@@ -158,7 +169,7 @@ function PlanForm({ userId, planData }: PlanFormProps) {
                   <GeneralInfoTabPlanForm control={form.control} />
                 </TabsContent>
                 <TabsContent value="details">
-                  <DetailsTabPlanForm control={form.control} setValue={form.setValue} />
+                  <DetailsTabPlanForm control={form.control} setDiaryPlanValues={setDiaryPlanValues} />
                 </TabsContent>
               </Tabs>
               <LoadingButton

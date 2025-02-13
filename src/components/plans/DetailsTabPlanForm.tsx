@@ -1,4 +1,6 @@
-import { Control, Controller, UseFormSetValue } from "react-hook-form"
+import { Control, Controller } from "react-hook-form"
+import { Dispatch, SetStateAction } from "react"
+import { Loader2 } from 'lucide-react'
 
 import {
   FormControl,
@@ -18,7 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { PlanValues } from "@/lib/validation"
-import { planTypeOptions, paymentTypeOptions } from "@/types/plan"
+import { planTypeOptions, paymentTypeOptions, DiaryPlansValues } from "@/types/plan"
 import { MultiSelect } from "../ui/multi-select"
 import { useWorkingFacility } from "@/contexts/WorkingFacilityContext"
 import { useAllDiaries } from "@/hooks/useAllDiaries"
@@ -26,10 +28,10 @@ import { ActivitySelector } from "./ActivitySelector"
 
 interface DetailsTabPlanFormProps {
   control: Control<PlanValues>
-  setValue: UseFormSetValue<PlanValues>
+  setDiaryPlanValues: Dispatch<SetStateAction<DiaryPlansValues[]>>
 }
 
-export function DetailsTabPlanForm({ control, setValue }: DetailsTabPlanFormProps) {
+export function DetailsTabPlanForm({ control, setDiaryPlanValues }: DetailsTabPlanFormProps) {
   const { workingFacility } = useWorkingFacility()
   const { data: diariesData, isLoading } = useAllDiaries(workingFacility?.id)
 
@@ -162,7 +164,9 @@ export function DetailsTabPlanForm({ control, setValue }: DetailsTabPlanFormProp
           )}
         />
       </div>
-      {!isLoading && diariesData && <ActivitySelector control={control} setValue={setValue} diaries={diariesData.diaries} />}
+      {!isLoading && diariesData ?
+        <ActivitySelector diaries={diariesData.diaries} onChange={setDiaryPlanValues} />
+        : <Loader2 className='animate-spin' />}
     </div>
   )
 }

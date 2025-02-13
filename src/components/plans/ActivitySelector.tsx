@@ -1,189 +1,96 @@
-import { type Control, useFieldArray, useWatch, type UseFormSetValue } from "react-hook-form"
-import { PlusCircle, Trash2 } from "lucide-react"
-import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import { Dispatch, SetStateAction, useState } from "react"
+
+import { MultiSelect } from "@/components/ui/multi-select"
 import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
-import type { AllDIaryData } from "@/types/diary"
-import type { PlanValues } from "@/lib/validation"
+import { Switch } from "@/components/ui/switch"
 import { daysOfWeek } from "@/lib/utils"
+import { AllDIaryData } from "@/types/diary"
+import { DiaryPlansValues } from "@/types/plan"
 
 interface ActivitySelectorProps {
-  control: Control<PlanValues>
-  setValue: UseFormSetValue<PlanValues>
   diaries: AllDIaryData[]
+  onChange: Dispatch<SetStateAction<DiaryPlansValues[]>>
 }
 
-export function ActivitySelector({ control, setValue, diaries }: ActivitySelectorProps) {
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: "diaryPlans",
-  })
+export function ActivitySelector({ diaries, onChange }: ActivitySelectorProps) {
+  const [selectedDiaries, setSelectedDiaries] = useState<DiaryPlansValues[]>([])
+
+  const handleSelect = (selectedIds: string[]) => {
+    const newSelected = selectedIds.map((id) => {
+      const diary = diaries.find((d) => d.id === id)
+      if (!diary) return null
+      return {
+        name: diary.activityName,
+        daysOfWeek: diary.daysAvailable,
+        sessionsPerWeek: 1,
+        activityId: diary.activityId,
+      }
+    }).filter(Boolean) as DiaryPlansValues[]
+
+    console.log({newSelected})
+
+    setSelectedDiaries(newSelected)
+    onChange(newSelected)
+  }
+
+  const handleUpdate = (index: number, updatedValues: Partial<DiaryPlansValues>) => {
+    const updatedDiaries = [...selectedDiaries]
+    updatedDiaries[index] = { ...updatedDiaries[index], ...updatedValues }
+    setSelectedDiaries(updatedDiaries)
+    onChange(updatedDiaries)
+  }
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h3 className="text-lg font-semibold">Actividades del Plan</h3>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={() =>
-            append({
-              name: "",
-              activityId: "",
-              daysOfWeek: [false, false, false, false, false, false, false],
-              sessionsPerWeek: 1,
-            })
-          }
-        >
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Agregar Actividad
-        </Button>
-      </div>
-      {fields.map((field, index) => (
-        <ActivityItem
-          key={field.id}
-          control={control}
-          setValue={setValue}
-          index={index}
-          diaries={diaries}
-          onRemove={() => remove(index)}
-        />
+      <MultiSelect
+        options={diaries.map((diary) => ({
+          label: `${diary.name} - ${diary.activityName}`,
+          value: diary.id,
+        }))}
+        selected={selectedDiaries.map((d) => d.activityId)}
+        onChange={handleSelect}
+        placeholder="Seleccionar actividades"
+        searchText="Buscar actividad"
+      />
+
+      {selectedDiaries.map((diary, index) => (
+        <div key={diary.activityId} className="border p-4 rounded-lg space-y-3">
+          <h3 className="text-lg font-semibold">{diary.name}</h3>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium">Sesiones por semana</label>
+              <Input
+                type="number"
+                min={1}
+                value={diary.sessionsPerWeek}
+                onChange={(e) => handleUpdate(index, { sessionsPerWeek: Number(e.target.value) })}
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-4 gap-2">
+            {daysOfWeek.map((day, dayIndex) => {
+              const dayData = diary.daysOfWeek[dayIndex]
+              return (
+                <div key={dayIndex} className="flex items-center space-x-2">
+                  <Switch
+                    checked={dayData}
+                    onCheckedChange={(e) => handleUpdate(index, {
+                      daysOfWeek: {
+                        ...diary.daysOfWeek,
+                        [dayIndex]: e,
+                      },
+                    })}
+                    disabled={!dayData}
+                  />
+                  <span className={dayData ? "text-black" : "text-gray-400"}>{day}</span>
+                </div>
+              )
+            })}
+          </div>
+        </div>
       ))}
     </div>
   )
 }
-
-interface ActivityItemProps {
-  control: Control<PlanValues>
-  setValue: UseFormSetValue<PlanValues>
-  index: number
-  diaries: AllDIaryData[]
-  onRemove: () => void
-}
-
-function ActivityItem({ control, setValue, index, diaries, onRemove }: ActivityItemProps) {
-
-  const watchActivityId = useWatch({
-    control,
-    name: `diaryPlans.${index}.activityId`,
-  })
-
-  const watchDaysOfWeek = useWatch({
-    control,
-    name: `diaryPlans.${index}.daysOfWeek`,
-  })
-
-  const selectedDiary = diaries.find((diary) => diary.id === watchActivityId)
-  const selectedDays = watchDaysOfWeek ? watchDaysOfWeek.filter(Boolean).length : 0
-
-  return (
-    <div className="p-4 border rounded-md space-y-4">
-      <div className="flex justify-between items-center">
-        <h4 className="text-md font-medium">{selectedDiary ? selectedDiary.activityName : `Actividad ${index + 1}`}</h4>
-        <Button type="button" variant="ghost" size="sm" onClick={onRemove}>
-          <Trash2 className="h-4 w-4" />
-        </Button>
-      </div>
-      <FormField
-        control={control}
-        name={`diaryPlans.${index}.activityId`}
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Seleccionar Actividad/Diary</FormLabel>
-            <Select
-              onValueChange={(value) => {
-                const selectedDiary = diaries.find((diary) => diary.id === value)
-                if (selectedDiary) {
-                  setValue(`diaryPlans.${index}.name`, selectedDiary.activityName)
-                  setValue(`diaryPlans.${index}.activityId`, selectedDiary.id)
-                }
-                field.onChange(value)
-              }}
-              value={field.value}
-            >
-              <FormControl>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecciona una actividad" />
-                </SelectTrigger>
-              </FormControl>
-              <SelectContent>
-                {diaries.map((diary) => (
-                  <SelectItem key={diary.id} value={diary.id}>
-                    {diary.name} - {diary.activityName}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-      <FormField
-        control={control}
-        name={`diaryPlans.${index}.daysOfWeek`}
-        render={() => (
-          <FormItem>
-            <FormLabel>Días de la Semana</FormLabel>
-            <div className="flex flex-wrap gap-2">
-              {daysOfWeek.map((day, dayIndex) => (
-                <FormField
-                  key={dayIndex}
-                  control={control}
-                  name={`diaryPlans.${index}.daysOfWeek.${dayIndex}`}
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-center space-x-2">
-                      <FormControl>
-                        <Checkbox
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                          disabled={selectedDiary && !selectedDiary.daysAvailable[dayIndex].available}
-                        />
-                      </FormControl>
-                      <FormLabel className="text-sm font-normal">{day}</FormLabel>
-                    </FormItem>
-                  )}
-                />
-              ))}
-            </div>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-      <FormField
-        control={control}
-        name={`diaryPlans.${index}.sessionsPerWeek`}
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Sesiones máximas por Semana</FormLabel>
-            <FormControl>
-              <Input
-                type="number"
-                {...field}
-                min={1}
-                max={selectedDays}
-                onChange={(e) => {
-                  const value = Number.parseInt(e.target.value, 10)
-                  if (value > selectedDays) {
-                    field.onChange(selectedDays)
-                  } else {
-                    field.onChange(value)
-                  }
-                }}
-              />
-            </FormControl>
-            <FormMessage />
-            {field.value > selectedDays && (
-              <p className="text-sm text-red-500">
-                El número de sesiones no puede ser mayor que la cantidad de días seleccionados ({selectedDays}).
-              </p>
-            )}
-          </FormItem>
-        )}
-      />
-    </div>
-  )
-}
-
