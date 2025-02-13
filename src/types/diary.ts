@@ -62,9 +62,12 @@ export type DiaryData = {
   facilityId: string
 }
 
-export interface AllDIaryData extends DiaryData {
+export interface AllDIaryData {
+  id: string
+  name: string
   activityId: string
   activityName: string
+  daysAvailable: boolean[]
 }
 
 export type DiaryExportData = {
