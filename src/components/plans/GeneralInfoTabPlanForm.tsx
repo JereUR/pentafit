@@ -1,7 +1,7 @@
 import { Control, Controller } from "react-hook-form"
 import { es } from "date-fns/locale"
 import { CalendarIcon } from "lucide-react"
-import { format } from "date-fns"
+import { format, parseISO } from "date-fns"
 
 import {
   FormControl,
@@ -90,7 +90,7 @@ export function GeneralInfoTabPlanForm({ control }: GeneralInfoTabPlanFormProps)
                       variant={"outline"}
                       className={`w-full pl-3 text-left font-normal ${!field.value && "text-muted-foreground"}`}
                     >
-                      {field.value ? format(field.value, "dd/MM/yyyy") : <span>Selecciona una fecha</span>}
+                      {field.value ? format(parseISO(field.value), "dd/MM/yyyy") : <span>Selecciona una fecha</span>}
                       <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                     </Button>
                   </FormControl>
@@ -98,8 +98,8 @@ export function GeneralInfoTabPlanForm({ control }: GeneralInfoTabPlanFormProps)
                 <PopoverContent className="w-auto p-0" align="start">
                   <Calendar
                     mode="single"
-                    selected={field.value}
-                    onSelect={field.onChange}
+                    selected={field.value ? parseISO(field.value) : undefined}
+                    onSelect={(date) => field.onChange(date ? date.toISOString() : undefined)}
                     disabled={(date) => date < new Date() || date > new Date("2100-01-01")}
                     initialFocus
                     locale={es}
@@ -123,7 +123,7 @@ export function GeneralInfoTabPlanForm({ control }: GeneralInfoTabPlanFormProps)
                       variant={"outline"}
                       className={`w-full pl-3 text-left font-normal ${!field.value && "text-muted-foreground"}`}
                     >
-                      {field.value ? format(field.value, "dd/MM/yyyy") : <span>Selecciona una fecha</span>}
+                      {field.value ? format(parseISO(field.value), "dd/MM/yyyy") : <span>Selecciona una fecha</span>}
                       <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                     </Button>
                   </FormControl>
@@ -131,8 +131,8 @@ export function GeneralInfoTabPlanForm({ control }: GeneralInfoTabPlanFormProps)
                 <PopoverContent className="w-auto p-0" align="start">
                   <Calendar
                     mode="single"
-                    selected={field.value}
-                    onSelect={field.onChange}
+                    selected={field.value ? parseISO(field.value) : undefined}
+                    onSelect={(date) => field.onChange(date ? date.toISOString() : undefined)}
                     disabled={(date) => date < new Date() || date > new Date("2100-01-01")}
                     initialFocus
                     locale={es}

@@ -231,8 +231,12 @@ export const planSchema = z.object({
     const parsed = Number.parseFloat(val as string)
     return isNaN(parsed) ? 0 : parsed
   }),
-  startDate: z.date(),
-  endDate: z.date(),
+  startDate: z.string().refine((dateString) => !isNaN(Date.parse(dateString)), {
+    message: "Fecha de inicio inválida",
+  }),
+  endDate: z.string().refine((dateString) => !isNaN(Date.parse(dateString)), {
+    message: "Fecha de fin inválida",
+  }),
   expirationPeriod: z.number().int().min(0),
   generateInvoice: z.boolean().default(false),
   paymentTypes: z
@@ -244,7 +248,7 @@ export const planSchema = z.object({
   diaryPlans: z.array(
     z
       .object({
-        name: z.string(),
+        name: requiredString,
         daysOfWeek: z.array(z.boolean()).length(7),
         sessionsPerWeek: z.number().int().min(1),
         activityId: z.string().uuid("ID de actividad inválido"),
