@@ -5,12 +5,12 @@ import { revalidatePath } from "next/cache"
 import { cache } from "react"
 import { notFound } from "next/navigation"
 
-import { PlanValues } from "@/lib/validation"
+import { planSchema, PlanValues } from "@/lib/validation"
 import prisma from "@/lib/prisma"
 import { PlanData } from "@/types/plan"
 import { validateRequest } from "@/auth"
 import { createNotification } from "@/lib/notificationHelpers"
-import { NotificationType, Prisma } from "@prisma/client"
+import { NotificationType } from "@prisma/client"
 import { DeleteEntityResult } from "@/lib/utils"
 
 type PlanResult = {
@@ -48,8 +48,8 @@ export const getPlanById = cache(
         name: plan.name,
         description: plan.description,
         price: plan.price,
-        startDate: plan.startDate,
-        endDate: plan.endDate,
+        startDate: plan.startDate.toISOString(),
+        endDate: plan.endDate.toISOString(),
         expirationPeriod: plan.expirationPeriod,
         generateInvoice: plan.generateInvoice,
         paymentTypes: plan.paymentTypes,
@@ -70,180 +70,6 @@ export const getPlanById = cache(
     }
   },
 )
-
-export async function createPlan(values: PlanValues): Promise<PlanResult> {
-  const { user } = await validateRequest()
-  if (!user) throw new Error("Usuario no autenticado")
-
-  console.log({ values })
-
-  return await prisma.$transaction(async (tx) => {
-    try {
-      const sanitizedDiaryPlans = values.diaryPlans.map((plan) => ({
-        ...plan,
-        daysOfWeek: Array.isArray(plan.daysOfWeek)
-          ? plan.daysOfWeek
-          : [false, false, false, false, false, false, false],
-      }))
-      console.log({ sanitizedDiaryPlans })
-
-      const plan = await tx.plan.create({
-        data: {
-          name: values.name,
-          description: values.description,
-          price: values.price,
-          startDate: values.startDate,
-          endDate: values.endDate,
-          expirationPeriod: values.expirationPeriod,
-          generateInvoice: values.generateInvoice,
-          paymentTypes: values.paymentTypes,
-          planType: values.planType,
-          freeTest: values.freeTest,
-          current: values.current,
-          facilityId: values.facilityId,
-          diaryPlans: {
-            create: sanitizedDiaryPlans.map((diaryPlan) => ({
-              name: diaryPlan.name,
-              daysOfWeek: diaryPlan.daysOfWeek,
-              sessionsPerWeek: diaryPlan.sessionsPerWeek,
-              activityId: diaryPlan.activityId,
-            })),
-          },
-        },
-        include: {
-          facility: true,
-          diaryPlans: {
-            include: {
-              activity: {
-                select: {
-                  id: true,
-                  name: true,
-                },
-              },
-            },
-          },
-        },
-      })
-
-      /* await createNotification(
-        tx,
-        user.id,
-        values.facilityId,
-        NotificationType.PLAN_CREATED,
-        plan.id,
-      ) */
-
-      const formattedPlan: PlanData = {
-        id: plan.id,
-        facilityId: plan.facilityId,
-        name: plan.name,
-        description: plan.description,
-        price: plan.price,
-        startDate: plan.startDate,
-        endDate: plan.endDate,
-        expirationPeriod: plan.expirationPeriod,
-        generateInvoice: plan.generateInvoice,
-        paymentTypes: plan.paymentTypes,
-        planType: plan.planType,
-        freeTest: plan.freeTest,
-        current: plan.current,
-        diaryPlans: plan.diaryPlans.map((diaryPlan) => ({
-          activityName: diaryPlan.activity.name,
-          daysOfWeek: diaryPlan.daysOfWeek,
-          sessionsPerWeek: diaryPlan.sessionsPerWeek,
-          activityId: diaryPlan.activity.id,
-          name: diaryPlan.name,
-          id: diaryPlan.id,
-        })),
-      }
-
-      revalidatePath(`/planes`)
-      return { success: true, plan: formattedPlan }
-    } catch (error) {
-      console.error(error)
-      return { success: false, error: "Error al crear el plan" }
-    }
-  })
-}
-
-export async function updatePlan(
-  id: string,
-  values: PlanValues,
-): Promise<PlanResult> {
-  const { user } = await validateRequest()
-  if (!user) throw new Error("Usuario no autenticado")
-
-  return await prisma.$transaction(async (tx) => {
-    try {
-      const plan = await tx.plan.update({
-        where: { id },
-        data: {
-          name: values.name,
-          description: values.description,
-          price: values.price,
-          startDate: values.startDate,
-          endDate: values.endDate,
-          expirationPeriod: values.expirationPeriod,
-          generateInvoice: values.generateInvoice,
-          paymentTypes: values.paymentTypes,
-          planType: values.planType,
-          freeTest: values.freeTest,
-          current: values.current,
-          facilityId: values.facilityId,
-          diaryPlans: {
-            deleteMany: {},
-            create: values.diaryPlans.map((diaryPlan) => diaryPlan),
-          },
-        },
-        include: {
-          facility: true,
-          diaryPlans: {
-            include: {
-              activity: true,
-            },
-          },
-        },
-      })
-      await createNotification(
-        tx,
-        user.id,
-        values.facilityId,
-        NotificationType.PLAN_UPDATED,
-        plan.id,
-      )
-
-      const formattedPlan: PlanData = {
-        id: plan.id,
-        facilityId: plan.facilityId,
-        name: plan.name,
-        description: plan.description,
-        price: plan.price,
-        startDate: plan.startDate,
-        endDate: plan.endDate,
-        expirationPeriod: plan.expirationPeriod,
-        generateInvoice: plan.generateInvoice,
-        paymentTypes: plan.paymentTypes,
-        planType: plan.planType,
-        freeTest: plan.freeTest,
-        current: plan.current,
-        diaryPlans: plan.diaryPlans.map((diaryPlan) => ({
-          activityName: diaryPlan.activity.name,
-          daysOfWeek: diaryPlan.daysOfWeek,
-          sessionsPerWeek: diaryPlan.sessionsPerWeek,
-          activityId: diaryPlan.activity.id,
-          name: diaryPlan.name,
-          id: diaryPlan.id,
-        })),
-      }
-
-      revalidatePath(`/planes`)
-      return { success: true, formattedPlan }
-    } catch (error) {
-      console.error(error)
-      return { success: false, error: "Error al crear el plan" }
-    }
-  })
-}
 
 export async function deletePlans(
   planIds: string[],

@@ -5,38 +5,29 @@ import { useRouter } from "next/navigation"
 
 import { useToast } from "@/hooks/use-toast"
 import type { PlanValues } from "@/lib/validation"
-import { createPlan, deletePlans, updatePlan, replicatePlans } from "./actions"
+import { deletePlans, replicatePlans } from "./actions"
 
 export function useCreatePlanMutation() {
-  const { toast } = useToast()
   const queryClient = useQueryClient()
-  const router = useRouter()
 
   return useMutation({
-    mutationFn: async (values: PlanValues) => {
-      const result = await createPlan(values)
-      if (!result.success) {
-        throw new Error(result.error)
-      }
-      return result
-    },
-    onSuccess: (result) => {
-      if (result.success && result.plan) {
-        toast({
-          title: `Plan ${result.plan.name} creado correctamente`,
-        })
-        queryClient.invalidateQueries({
-          queryKey: ["plans"],
-        })
-        router.push("/planes")
-      }
-    },
-    onError: (error: Error) => {
-      toast({
-        variant: "destructive",
-        title: "Error al crear el plan",
-        description: error.message,
+    mutationFn: async (planData: PlanValues) => {
+      const res = await fetch("/api/plans", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(planData),
       })
+
+      if (!res.ok) {
+        const errorData = await res.json()
+        console.error("Validation errors:", errorData.errors)
+        throw new Error(errorData.message || "Error al crear el plan")
+      }
+
+      return res.json()
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["plans"] })
     },
   })
 }
@@ -47,8 +38,22 @@ export function useUpdatePlanMutation() {
   const router = useRouter()
 
   return useMutation({
-    mutationFn: ({ id, values }: { id: string; values: PlanValues }) =>
-      updatePlan(id, values),
+    mutationFn: async ({ id, values }: { id: string; values: PlanValues }) => {
+      const response = await fetch(`/api/plans`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id, ...values }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.message || "Error al actualizar el plan")
+      }
+
+      return response.json()
+    },
     onSuccess: (result) => {
       if (result.success && result.plan) {
         toast({
