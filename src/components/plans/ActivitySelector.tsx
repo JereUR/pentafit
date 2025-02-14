@@ -126,7 +126,7 @@ export function ActivitySelector({ diaries, onChange, initialDiaryPlans }: Activ
                         disabled={!isOriginallyAvailable}
                       />
                       <span
-                        className={`text-xs mt-1 ${isOriginallyAvailable ? (isChecked ? "text-black" : "text-gray-600") : "text-gray-400"}`}
+                        className={`text-xs mt-1 ${isOriginallyAvailable ? (isChecked ? "text-primary" : "text-foreground") : "text-gray-400 dark:text-gray-600"}`}
                       >
                         {day.slice(0, 3)}
                       </span>
