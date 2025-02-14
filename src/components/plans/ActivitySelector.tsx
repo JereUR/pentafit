@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { type Dispatch, type SetStateAction, useEffect, useState } from "react"
+import { Trash2 } from "lucide-react"
 
 import { MultiSelect } from "@/components/ui/multi-select"
 import { Input } from "@/components/ui/input"
@@ -7,6 +8,7 @@ import { Switch } from "@/components/ui/switch"
 import { daysOfWeek } from "@/lib/utils"
 import type { AllDIaryData } from "@/types/diary"
 import type { DiaryPlansValues } from "@/types/plan"
+import { Button } from "../ui/button"
 
 interface ActivitySelectorProps {
   diaries: AllDIaryData[]
@@ -25,14 +27,12 @@ export function ActivitySelector({ diaries, onChange, initialDiaryPlans }: Activ
   useEffect(() => {
     if (initialDiaryPlans) {
       const extendedInitialDiaryPlans = initialDiaryPlans.map((plan) => {
-        const diary = diaries.find((d) => d.activityId === plan.activityId)
-
-        console.log({ diary })
+        const diary = diaries.find(d => d.activityId === plan.activityId)
 
         return {
           ...plan,
           originalDaysAvailable: diary?.daysAvailable || plan.daysOfWeek,
-          diaryId: diary?.id || "",
+          diaryId: diary?.id || ''
         }
       })
       setSelectedDiaries(extendedInitialDiaryPlans)
@@ -92,9 +92,9 @@ export function ActivitySelector({ diaries, onChange, initialDiaryPlans }: Activ
           <div key={diary.id || diary.diaryId} className="border p-4 rounded-lg space-y-3">
             <div className="flex justify-between items-center">
               <h3 className="text-lg font-semibold">{diary.name}</h3>
-              <button onClick={() => handleRemove(diary.diaryId)} className="text-red-500 hover:text-red-700">
-                Eliminar
-              </button>
+              <Button variant='ghost' onClick={() => handleRemove(diary.diaryId)} className="text-destructive hover:text-destructive/70 hover:bg-background">
+                <Trash2 />
+              </Button>
             </div>
 
             <div>
@@ -115,7 +115,7 @@ export function ActivitySelector({ diaries, onChange, initialDiaryPlans }: Activ
                   const isOriginallyAvailable = diary.originalDaysAvailable[dayIndex]
                   const isChecked = diary.daysOfWeek[dayIndex]
                   return (
-                    <div key={`${diary.diaryId}-${dayIndex}`} className="flex flex-col items-center">
+                    <div key={`${diary.id || diary.diaryId}-${dayIndex}`} className="flex flex-col items-center">
                       <Switch
                         checked={isChecked}
                         onCheckedChange={(e) =>
