@@ -21,7 +21,7 @@ export function DiaryPlansDialog({ diaryPlans }: DiaryPlansDialogProps) {
         <TableBody>
           {diaryPlans.map((diaryPlan) => (
             <TableRow key={diaryPlan.id}>
-              <TableCell className="text-center">{diaryPlan.activityId}</TableCell>
+              <TableCell className="text-center">{diaryPlan.name}</TableCell>
               <TableCell>
                 <div className="flex flex-wrap justify-center gap-2">
                   {diaryPlan.daysOfWeek.map((day, index) => (
