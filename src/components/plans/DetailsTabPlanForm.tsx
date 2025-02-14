@@ -1,26 +1,13 @@
-import { Control, Controller } from "react-hook-form"
-import { Dispatch, SetStateAction } from "react"
-import { Loader2 } from 'lucide-react'
+import type { Control } from "react-hook-form"
+import type { Dispatch, SetStateAction } from "react"
+import { Loader2 } from "lucide-react"
 
-import {
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form"
+import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { PlanValues } from "@/lib/validation"
-import { planTypeOptions, paymentTypeOptions, DiaryPlansValues } from "@/types/plan"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import type { PlanValues } from "@/lib/validation"
+import { planTypeOptions, paymentTypeOptions, type DiaryPlansValues } from "@/types/plan"
 import { MultiSelect } from "../ui/multi-select"
 import { useWorkingFacility } from "@/contexts/WorkingFacilityContext"
 import { useAllDiaries } from "@/hooks/useAllDiaries"
@@ -29,9 +16,10 @@ import { ActivitySelector } from "./ActivitySelector"
 interface DetailsTabPlanFormProps {
   control: Control<PlanValues>
   setDiaryPlanValues: Dispatch<SetStateAction<DiaryPlansValues[]>>
+  initialDiaryPlans?: DiaryPlansValues[]
 }
 
-export function DetailsTabPlanForm({ control, setDiaryPlanValues }: DetailsTabPlanFormProps) {
+export function DetailsTabPlanForm({ control, setDiaryPlanValues, initialDiaryPlans }: DetailsTabPlanFormProps) {
   const { workingFacility } = useWorkingFacility()
   const { data: diariesData, isLoading } = useAllDiaries(workingFacility?.id)
 
@@ -45,22 +33,17 @@ export function DetailsTabPlanForm({ control, setDiaryPlanValues }: DetailsTabPl
             <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
               <div className="space-y-0.5">
                 <FormLabel className="text-base">Generar factura</FormLabel>
-                <FormDescription>
-                  Generar factura automáticamente
-                </FormDescription>
+                <FormDescription>Generar factura automáticamente</FormDescription>
               </div>
               <FormControl>
-                <Switch
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                />
+                <Switch checked={field.value} onCheckedChange={field.onChange} />
               </FormControl>
             </FormItem>
           )}
         />
-        <Controller
-          name="expirationPeriod"
+        <FormField
           control={control}
+          name="expirationPeriod"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Plazo de vencimiento</FormLabel>
@@ -69,7 +52,7 @@ export function DetailsTabPlanForm({ control, setDiaryPlanValues }: DetailsTabPl
                   type="number"
                   {...field}
                   onChange={(e) => field.onChange(Number.parseInt(e.target.value))}
-                  value={field.value === 0 ? '' : field.value}
+                  value={field.value === 0 ? "" : field.value}
                 />
               </FormControl>
               <FormMessage />
@@ -87,10 +70,7 @@ export function DetailsTabPlanForm({ control, setDiaryPlanValues }: DetailsTabPl
                 <FormLabel className="text-base">Ofrece clase de prueba</FormLabel>
               </div>
               <FormControl>
-                <Switch
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                />
+                <Switch checked={field.value} onCheckedChange={field.onChange} />
               </FormControl>
             </FormItem>
           )}
@@ -126,15 +106,10 @@ export function DetailsTabPlanForm({ control, setDiaryPlanValues }: DetailsTabPl
             <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
               <div className="space-y-0.5">
                 <FormLabel className="text-base">Vigente</FormLabel>
-                <FormDescription>
-                  Hacer esta actividad visible al público
-                </FormDescription>
+                <FormDescription>Hacer esta actividad visible al público</FormDescription>
               </div>
               <FormControl>
-                <Switch
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                />
+                <Switch checked={field.value} onCheckedChange={field.onChange} />
               </FormControl>
             </FormItem>
           )}
@@ -164,9 +139,15 @@ export function DetailsTabPlanForm({ control, setDiaryPlanValues }: DetailsTabPl
           )}
         />
       </div>
-      {!isLoading && diariesData ?
-        <ActivitySelector diaries={diariesData.diaries} onChange={setDiaryPlanValues} />
-        : <Loader2 className='animate-spin' />}
+      {!isLoading && diariesData ? (
+        <ActivitySelector
+          diaries={diariesData.diaries}
+          onChange={setDiaryPlanValues}
+          initialDiaryPlans={initialDiaryPlans}
+        />
+      ) : (
+        <Loader2 className="animate-spin" />
+      )}
     </div>
   )
 }

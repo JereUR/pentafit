@@ -1,4 +1,4 @@
-'use client'
+"use client"
 
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useState, useEffect } from "react"
@@ -6,19 +6,8 @@ import { useForm } from "react-hook-form"
 import { useRouter } from "next/navigation"
 
 import { Form } from "@/components/ui/form"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import LoadingButton from "@/components/LoadingButton"
 import ErrorText from "@/components/ErrorText"
 import { planSchema, type PlanValues } from "@/lib/validation"
@@ -30,7 +19,7 @@ import { GeneralInfoTabPlanForm } from "./GeneralInfoTabPlanForm"
 import { DetailsTabPlanForm } from "./DetailsTabPlanForm"
 import { PlanType } from "@prisma/client"
 import { withClientSideRendering } from "@/hooks/withClientSideRendering"
-import { DiaryPlansValues } from "@/types/plan"
+import type { DiaryPlansValues } from "@/types/plan"
 
 interface PlanFormProps {
   userId: string
@@ -39,7 +28,7 @@ interface PlanFormProps {
 
 function PlanForm({ userId, planData }: PlanFormProps) {
   const { workingFacility } = useWorkingFacility()
-  const [diaryPlanValues, setDiaryPlanValues] = useState<DiaryPlansValues[]>([])
+  const [diaryPlanValues, setDiaryPlanValues] = useState<DiaryPlansValues[]>(planData?.diaryPlans || [])
   const [error, setError] = useState<string>()
   const isEditing = !!planData
   const router = useRouter()
@@ -69,6 +58,7 @@ function PlanForm({ userId, planData }: PlanFormProps) {
   useEffect(() => {
     if (planData) {
       form.reset(planData)
+      setDiaryPlanValues(planData.diaryPlans)
     }
   }, [planData, form])
 
@@ -123,15 +113,15 @@ function PlanForm({ userId, planData }: PlanFormProps) {
   const mutationError = isEditing ? updateError : createError
   const isPending = isEditing ? isUpdating : isCreating
   const pageTitle = isEditing ? "Editar plan" : "Agregar plan"
-  const pageDescription = isEditing
-    ? "Modifica los datos de tu plan"
-    : "Ingresa los datos de tu plan para comenzar"
+  const pageDescription = isEditing ? "Modifica los datos de tu plan" : "Ingresa los datos de tu plan para comenzar"
 
   if (!workingFacility) {
-    return <div className='flex flex-col items-center gap-5 p-5 md:p-10 rounded-md border'>
-      <WorkingFacility userId={userId} />
-      <NoWorkingFacilityMessage entityName="un plan" />
-    </div>
+    return (
+      <div className="flex flex-col items-center gap-5 p-5 md:p-10 rounded-md border">
+        <WorkingFacility userId={userId} />
+        <NoWorkingFacilityMessage entityName="un plan" />
+      </div>
+    )
   }
 
   console.log({ diaryPlanValues })
@@ -152,31 +142,35 @@ function PlanForm({ userId, planData }: PlanFormProps) {
                   errorText={
                     (mutationError instanceof Error
                       ? mutationError.message
-                      : typeof mutationError === 'string'
+                      : typeof mutationError === "string"
                         ? mutationError
                         : null) ||
                     error ||
-                    'An error occurred'
+                    "An error occurred"
                   }
                 />
               )}
               <Tabs defaultValue="general" className="w-full">
                 <TabsList className="grid w-full grid-cols-2">
-                  {window.innerWidth > 700 ? <TabsTrigger value="general">Información General</TabsTrigger> : <TabsTrigger value="general">Inf General</TabsTrigger>}
+                  {window.innerWidth > 700 ? (
+                    <TabsTrigger value="general">Información General</TabsTrigger>
+                  ) : (
+                    <TabsTrigger value="general">Inf General</TabsTrigger>
+                  )}
                   <TabsTrigger value="details">Detalles</TabsTrigger>
                 </TabsList>
                 <TabsContent value="general">
                   <GeneralInfoTabPlanForm control={form.control} />
                 </TabsContent>
                 <TabsContent value="details">
-                  <DetailsTabPlanForm control={form.control} setDiaryPlanValues={setDiaryPlanValues} />
+                  <DetailsTabPlanForm
+                    control={form.control}
+                    setDiaryPlanValues={setDiaryPlanValues}
+                    initialDiaryPlans={planData?.diaryPlans}
+                  />
                 </TabsContent>
               </Tabs>
-              <LoadingButton
-                loading={isPending}
-                type="submit"
-                className="w-full"
-              >
+              <LoadingButton loading={isPending} type="submit" className="w-full">
                 {isEditing ? "Actualizar plan" : "Crear plan"}
               </LoadingButton>
             </form>
@@ -188,3 +182,4 @@ function PlanForm({ userId, planData }: PlanFormProps) {
 }
 
 export default withClientSideRendering(PlanForm)
+
