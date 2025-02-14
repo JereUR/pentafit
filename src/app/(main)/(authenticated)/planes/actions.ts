@@ -58,6 +58,7 @@ export const getPlanById = cache(
         current: plan.current,
         facilityId: plan.facilityId,
         diaryPlans: plan.diaryPlans.map((diaryPlan) => ({
+          id: diaryPlan.id,
           name: diaryPlan.activity.name,
           daysOfWeek: diaryPlan.daysOfWeek,
           sessionsPerWeek: diaryPlan.sessionsPerWeek,

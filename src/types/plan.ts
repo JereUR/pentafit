@@ -42,6 +42,7 @@ export interface PlanData {
 }
 
 export interface DiaryPlansValues {
+  id?: string
   name: string
   daysOfWeek: boolean[]
   sessionsPerWeek: number
