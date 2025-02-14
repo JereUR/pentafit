@@ -20,7 +20,7 @@ export interface MultiSelectProps {
   searchText: string
 }
 
-export function MultiSelect({ options, selected, onChange, placeholder = "Seleccionar opción...", searchText}: MultiSelectProps) {
+export function MultiSelect({ options, selected, onChange, placeholder = "Seleccionar opción...", searchText }: MultiSelectProps) {
   const [open, setOpen] = React.useState(false)
 
   const handleSelect = (currentValue: string) => {
@@ -36,11 +36,14 @@ export function MultiSelect({ options, selected, onChange, placeholder = "Selecc
         <Button variant="outline" role="combobox" aria-expanded={open} className="w-full justify-between">
           {selected.length > 0 ? (
             <div className="flex flex-wrap gap-1">
-              {selected.map((value) => (
-                <Badge variant="default" key={value} className="mr-1">
-                  {options.find((option) => option.value === value)?.label}
-                </Badge>
-              ))}
+              {selected.map((value, index) => {
+                const option = options.find((option) => option.value === value)
+                return option ? (
+                  <Badge variant="default" key={`${value}-${index}`} className="mr-1">
+                    {option.label}
+                  </Badge>
+                ) : null
+              })}
             </div>
           ) : (
             placeholder
