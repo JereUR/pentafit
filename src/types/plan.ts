@@ -93,7 +93,7 @@ export const formatDiaryPlans = (
         .filter(Boolean)
         .join(", ")
 
-      return `${plan.name} - ${plan.sessionsPerWeek} sesiones máximas por semana (${days})`
+      return `${plan.name} - ${plan.sessionsPerWeek === 1 ? "1 sesión máxima" : `${plan.sessionsPerWeek} sesiones máximas`} por semana  (${days})`
     })
     .join("\n")
 }
