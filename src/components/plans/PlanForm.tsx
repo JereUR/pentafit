@@ -74,7 +74,8 @@ function PlanForm({ userId, planData }: PlanFormProps) {
 
     const sanitizedValues = {
       ...values,
-      diaryPlans: diaryPlanValues,
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      diaryPlans: diaryPlanValues.map(({ id, ...plan }) => { return plan }),
     }
 
     console.log("Sanitized values:", JSON.stringify(sanitizedValues, null, 2))

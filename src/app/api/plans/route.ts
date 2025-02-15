@@ -75,6 +75,12 @@ export async function PUT(req: Request) {
     let updatedPlan
 
     await prisma.$transaction(async (tx) => {
+      // First, delete existing diaryPlans
+      await tx.diaryPlan.deleteMany({
+        where: { planId: id },
+      })
+
+      // Then, update the plan and create new diaryPlans
       updatedPlan = await tx.plan.update({
         where: { id },
         data: {
@@ -91,7 +97,6 @@ export async function PUT(req: Request) {
           current: validatedData.current,
           facilityId: validatedData.facilityId,
           diaryPlans: {
-            deleteMany: {},
             create: validatedData.diaryPlans.map((diaryPlan) => ({
               name: diaryPlan.name,
               daysOfWeek: diaryPlan.daysOfWeek,
@@ -104,28 +109,19 @@ export async function PUT(req: Request) {
         },
       })
 
-      await createNotification(
-        tx,
-        user.id,
-        validatedData.facilityId,
-        NotificationType.PLAN_UPDATED,
-        updatedPlan.id,
-      )
+      await createNotification(tx, user.id, validatedData.facilityId, NotificationType.PLAN_UPDATED, updatedPlan.id)
     })
 
     revalidatePath(`/planes`)
 
-    return NextResponse.json(updatedPlan, { status: 200 })
+    return NextResponse.json({ success: true, plan: updatedPlan }, { status: 200 })
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { message: "Error de validación", errors: error.errors },
-        { status: 400 },
-      )
+      return NextResponse.json({ message: "Error de validación", errors: error.errors }, { status: 400 })
     }
     console.error("Server error:", error)
     return NextResponse.json(
-      { message: "Error al actualizar el plan" },
+      { message: "Error al actualizar el plan", error: error instanceof Error ? error.message : String(error) },
       { status: 500 },
     )
   }
