@@ -1,4 +1,5 @@
-import { type NotificationType, Prisma } from "@prisma/client"
+import type { NotificationType, Prisma } from "@prisma/client"
+
 export async function createNotification(
   tx: Prisma.TransactionClient,
   issuerId: string,
@@ -11,7 +12,10 @@ export async function createNotification(
     include: { users: true },
   })
   if (!facility) throw new Error("Facility not found")
-  const notifications = facility.users.map((userFacility) => ({
+
+  const recipientUsers = facility.users.filter((userFacility) => userFacility.userId !== issuerId)
+
+  const notifications = recipientUsers.map((userFacility) => ({
     recipientId: userFacility.userId,
     issuerId,
     facilityId,
@@ -26,5 +30,9 @@ export async function createNotification(
             : "userId"]: relatedId,
     }),
   }))
-  await tx.notification.createMany({ data: notifications })
+
+  if (notifications.length > 0) {
+    await tx.notification.createMany({ data: notifications })
+  }
 }
+
