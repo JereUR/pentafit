@@ -1,6 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import type React from "react"
+
+import { useState, useEffect } from "react"
 import { usePathname } from "next/navigation"
 import type { Role } from "@prisma/client"
 
@@ -20,6 +22,7 @@ interface AuthenticatedLayoutProps {
 export default function AuthenticatedLayout({ children, userRole }: AuthenticatedLayoutProps) {
   const [isExpanded, setIsExpanded] = useState(true)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [initialNotificationCount, setInitialNotificationCount] = useState(0)
 
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen)
   const closeMobileMenu = () => setIsMobileMenuOpen(false)
@@ -30,15 +33,39 @@ export default function AuthenticatedLayout({ children, userRole }: Authenticate
   const isMembershipPage = pathParts[1] === "actualizar-membresia"
   const userId = isUserPage || isMembershipPage ? pathParts[2] : ""
 
+  useEffect(() => {
+    async function fetchInitialNotificationCount() {
+      try {
+        const response = await fetch("/api/notifications/unread-count")
+        if (response.ok) {
+          const data = await response.json()
+          setInitialNotificationCount(data.unreadCount)
+        }
+      } catch (error) {
+        console.error("Error fetching initial notification count:", error)
+      }
+    }
+
+    fetchInitialNotificationCount()
+  }, [])
+
   return (
     <WorkingFacilityProvider>
       <div className="relative h-screen bg-background overflow-hidden">
         <Sidebar isExpanded={isExpanded} onExpandedChange={setIsExpanded} userRole={userRole} />
         <div className={cn("flex flex-col h-full transition-all duration-300", isExpanded ? "lg:ml-64" : "lg:ml-20")}>
           {isUserPage || isMembershipPage ? (
-            <UserTitleWrapper userId={userId} onMenuClick={toggleMobileMenu} />
+            <UserTitleWrapper
+              userId={userId}
+              onMenuClick={toggleMobileMenu}
+              initialNotificationCount={initialNotificationCount}
+            />
           ) : (
-            <TopBar onMenuClick={toggleMobileMenu} isLoading={false} />
+            <TopBar
+              onMenuClick={toggleMobileMenu}
+              isLoading={false}
+              initialNotificationCount={initialNotificationCount}
+            />
           )}
           <main className="flex-1 overflow-auto p-4 max-w-full">{children}</main>
         </div>

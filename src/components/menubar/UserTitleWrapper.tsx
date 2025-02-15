@@ -1,15 +1,16 @@
-'use client'
+"use client"
 
-import { useEffect, useState } from 'react'
-import TopBar from '@/components/menubar/TopBar'
+import { useEffect, useState } from "react"
+import TopBar from "@/components/menubar/TopBar"
 
 interface UserTitleWrapperProps {
   userId: string
   onMenuClick: () => void
+  initialNotificationCount: number
 }
 
-export default function UserTitleWrapper({ userId, onMenuClick }: UserTitleWrapperProps) {
-  const [userName, setUserName] = useState('')
+export default function UserTitleWrapper({ userId, onMenuClick, initialNotificationCount }: UserTitleWrapperProps) {
+  const [userName, setUserName] = useState("")
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
@@ -31,6 +32,13 @@ export default function UserTitleWrapper({ userId, onMenuClick }: UserTitleWrapp
     fetchUserName()
   }, [userId])
 
-  return <TopBar userName={userName} onMenuClick={onMenuClick} isLoading={isLoading} />
+  return (
+    <TopBar
+      userName={userName}
+      onMenuClick={onMenuClick}
+      isLoading={isLoading}
+      initialNotificationCount={initialNotificationCount}
+    />
+  )
 }
 
