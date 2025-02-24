@@ -16,8 +16,8 @@ export default function Dashboard({ userId }: { userId: string }) {
   const { data: metrics, isLoading: isLoadingMetrics, error: metricsError } = useMetrics(workingFacility?.id)
 
   return (
-    <div className="flex gap-6 px-4 md:px-10 w-full">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+    <div className="flex flex-col lg:fle-row gap-4 lg:gap-6 px-1 lg:px-4 md:px-10 w-full">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
         <DashboardCard
           id={0}
           title="Establecimientos activos"
