@@ -14,7 +14,6 @@ const fetchMetrics = async (facilityId: string): Promise<FacilityMetrics> => {
     const response = await kyInstance
       .get(`/api/metrics/${facilityId}`)
       .json<FacilityMetrics>()
-    console.log("Metrics response:", response)
     return response
   } catch (error) {
     console.error("Error fetching metrics:", error)
@@ -28,15 +27,6 @@ export const useMetrics = (facilityId?: string) => {
     queryFn: () => fetchMetrics(facilityId as string),
     enabled: Boolean(facilityId),
     retry: false,
-  })
-
-  console.log("useMetrics hook state:", {
-    facilityId,
-    isEnabled: Boolean(facilityId),
-    isLoading: query.isLoading,
-    isError: query.isError,
-    error: query.error,
-    data: query.data,
   })
 
   return query

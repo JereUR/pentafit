@@ -32,8 +32,6 @@ export default function DiariesDashboard({ userId }: { userId: string }) {
   const { mutate: replicateDiary, isPending: isReplicating } = useReplicateDiaryMutation()
   const { toast } = useToast()
 
-  console.log({ data })
-
   useEffect(() => {
     setSelectedCount(selectedRows.length)
   }, [selectedRows])

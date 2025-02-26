@@ -55,14 +55,6 @@ export async function GET(
       }),
     ])
 
-    console.log(
-      activeActivities,
-      currentPlans,
-      activeDiaries,
-      teamMembers,
-      clientMembers,
-    )
-
     return NextResponse.json({
       activeActivities,
       currentPlans,

@@ -69,7 +69,6 @@ function PlanForm({ userId, planData }: PlanFormProps) {
   }, [workingFacility, form, isEditing])
 
   const onSubmit = async (values: PlanValues) => {
-    console.log("Form submitted with values:", JSON.stringify(values, null, 2))
     setError(undefined)
 
     const sanitizedValues = {
@@ -77,8 +76,6 @@ function PlanForm({ userId, planData }: PlanFormProps) {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       diaryPlans: diaryPlanValues.map(({ id, ...plan }) => { return plan }),
     }
-
-    console.log("Sanitized values:", JSON.stringify(sanitizedValues, null, 2))
 
     if (isEditing && planData) {
       updatePlan(
@@ -97,7 +94,6 @@ function PlanForm({ userId, planData }: PlanFormProps) {
         },
       )
     } else {
-      console.log("Sending data:", JSON.stringify(sanitizedValues, null, 2))
       createPlan(sanitizedValues, {
         onSuccess: () => {
           form.reset()
@@ -124,8 +120,6 @@ function PlanForm({ userId, planData }: PlanFormProps) {
       </div>
     )
   }
-
-  console.log({ diaryPlanValues })
 
   return (
     <div className="flex flex-col items-center md:items-start gap-5 p-5 md:p-10 md:py-14 rounded-md border">
