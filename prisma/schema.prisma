@@ -29,22 +29,24 @@ enum MembershipLevel {
 }
 
 model User {
-  id                    String          @id @default(uuid())
-  firstName             String
-  lastName              String
-  email                 String?         @unique
-  birthday              String
-  gender                String
-  role                  Role            @default(CLIENT)
-  passwordHash          String?
-  googleId              String?         @unique
-  avatarUrl             String?
-  membershipLevel       MembershipLevel @default(NONE)
-  sessions              Session[]
-  resetTokens           ResetToken[]
-  facilities            UserFacility[]
-  receivedNotifications Notification[]  @relation("RecipientNotifications")
-  issuedNotifications   Notification[]  @relation("IssuerNotifications")
+  id                     String          @id @default(uuid())
+  firstName              String
+  lastName               String
+  email                  String?         @unique
+  birthday               String
+  gender                 String
+  role                   Role            @default(CLIENT)
+  passwordHash           String?
+  googleId               String?         @unique
+  avatarUrl              String?
+  membershipLevel        MembershipLevel @default(NONE)
+  sessions               Session[]
+  resetTokens            ResetToken[]
+  facilities             UserFacility[]
+  receivedNotifications  Notification[]  @relation("RecipientNotifications")
+  issuedNotifications    Notification[]  @relation("IssuerNotifications")
+  performedTransactions  Transaction[]   @relation("PerformedTransactions")
+  targetUserTransactions Transaction[]   @relation("TargetUserTransactions")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -89,6 +91,7 @@ model Facility {
   activities    Activity[]
   plans         Plan[]
   diaries       Diary[]
+  transactions  Transaction[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -156,6 +159,57 @@ model Notification {
   @@map("notifications")
 }
 
+enum TransactionType {
+  ACTIVITY_CREATED
+  ACTIVITY_UPDATED
+  ACTIVITY_DELETED
+  ACTIVITY_REPLICATED
+  STAFF_CREATED
+  STAFF_UPDATED
+  STAFF_DELETED
+  STAFF_ROLE_CHANGED
+  CLIENT_CREATED
+  CLIENT_UPDATED
+  CLIENT_DELETED
+  CLIENT_MEMBERSHIP_CHANGED
+  PLAN_CREATED
+  PLAN_UPDATED
+  PLAN_DELETED
+  PLAN_REPLICATED
+  DIARY_CREATED
+  DIARY_UPDATED
+  DIARY_DELETED
+  DIARY_REPLICATED
+}
+
+model Transaction {
+  id      String          @id @default(uuid())
+  type    TransactionType
+  details Json?
+
+  performedById String
+  performedBy   User   @relation("PerformedTransactions", fields: [performedById], references: [id], onDelete: Cascade)
+
+  facilityId String
+  facility   Facility @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+
+  activityId String?
+  activity   Activity? @relation(fields: [activityId], references: [id], onDelete: SetNull)
+
+  targetUserId String?
+  targetUser   User?   @relation("TargetUserTransactions", fields: [targetUserId], references: [id], onDelete: SetNull)
+
+  planId String?
+  plan   Plan?   @relation(fields: [planId], references: [id], onDelete: SetNull)
+
+  diaryId String?
+  diary   Diary?  @relation(fields: [diaryId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+
+  @@map("transactions")
+}
+
 model Activity {
   id              String         @id @default(uuid())
   name            String
@@ -175,6 +229,7 @@ model Activity {
   notifications   Notification[]
   diaryPlans      DiaryPlan[]
   diaries         Diary[]
+  transactions    Transaction[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -211,6 +266,7 @@ model Plan {
   facility         Facility       @relation(fields: [facilityId], references: [id])
   diaryPlans       DiaryPlan[]
   notifications    Notification[]
+  transactions     Transaction[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -286,6 +342,7 @@ model Diary {
   daysAvailable DayAvailable[]
   offerDays     OfferDay[]
   notifications Notification[]
+  transactions  Transaction[]
 
   @@map("diaries")
 }
