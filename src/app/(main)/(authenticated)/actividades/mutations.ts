@@ -34,6 +34,9 @@ export function useCreateActivityMutation() {
       queryClient.invalidateQueries({
         queryKey: ["activities", newActivity?.facilityId],
       })
+      queryClient.invalidateQueries({
+        queryKey: ["latestTransactions", newActivity?.facilityId],
+      })
       router.push("/actividades")
     },
     onError: (error: Error) => {
@@ -73,6 +76,9 @@ export function useUpdateActivityMutation() {
       })
       queryClient.invalidateQueries({
         queryKey: ["activities", updatedActivity?.facilityId],
+      })
+      queryClient.invalidateQueries({
+        queryKey: ["latestTransactions", updatedActivity?.facilityId],
       })
       router.push("/actividades")
     },
@@ -127,6 +133,9 @@ export function useDeleteActivityMutation() {
       queryClient.invalidateQueries({
         queryKey: ["activities", facilityId],
       })
+      queryClient.invalidateQueries({
+        queryKey: ["latestTransactions", facilityId],
+      })
     },
     onError: (error: Error) => {
       toast({
@@ -163,6 +172,10 @@ export function useReplicateActivityMutation() {
       })
       queryClient.invalidateQueries({
         queryKey: ["activities"],
+      })
+
+      queryClient.invalidateQueries({
+        queryKey: ["latestTransactions"],
       })
     },
     onError: (error: Error) => {
