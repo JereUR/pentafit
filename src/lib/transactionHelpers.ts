@@ -1,7 +1,7 @@
-import prisma from "./prisma"
 import type { TransactionType, Prisma } from "@prisma/client"
 
 export async function createTransaction({
+  tx,
   type,
   details,
   performedById,
@@ -11,6 +11,7 @@ export async function createTransaction({
   planId,
   diaryId,
 }: {
+  tx: Prisma.TransactionClient
   type: TransactionType
   details?: Prisma.JsonValue
   performedById: string
@@ -36,7 +37,7 @@ export async function createTransaction({
 
     console.log("Final transaction data:", JSON.stringify(data, null, 2))
 
-    const transaction = await prisma.transaction.create({
+    const transaction = await tx.transaction.create({
       data,
     })
 
@@ -48,12 +49,14 @@ export async function createTransaction({
 }
 
 export async function createActivityTransaction({
+  tx,
   type,
   activityId,
   performedById,
   facilityId,
   details,
 }: {
+  tx: Prisma.TransactionClient
   type:
     | "ACTIVITY_CREATED"
     | "ACTIVITY_UPDATED"
@@ -64,18 +67,12 @@ export async function createActivityTransaction({
   facilityId: string
   details?: Prisma.JsonValue
 }) {
-  const jsonDetails = details
-    ? JSON.parse(
-        JSON.stringify(details, (_, value) =>
-          value === undefined ? null : value,
-        ),
-      )
-    : undefined
-
-  console.log("Processed details:", JSON.stringify(jsonDetails, null, 2))
+  const safeDetails = details && typeof details === "object" ? details : {}
 
   return createTransaction({
+    tx,
     type,
+    details: safeDetails,
     performedById,
     facilityId,
     activityId,
@@ -83,12 +80,14 @@ export async function createActivityTransaction({
 }
 
 export async function createStaffTransaction({
+  tx,
   type,
   targetUserId,
   performedById,
   facilityId,
   details,
 }: {
+  tx: Prisma.TransactionClient
   type:
     | "STAFF_CREATED"
     | "STAFF_UPDATED"
@@ -99,9 +98,10 @@ export async function createStaffTransaction({
   facilityId: string
   details?: Prisma.JsonValue
 }) {
-  const safeDetails = details || {}
+  const safeDetails = details && typeof details === "object" ? details : {}
 
   return createTransaction({
+    tx,
     type,
     details: safeDetails,
     performedById,
@@ -111,12 +111,14 @@ export async function createStaffTransaction({
 }
 
 export async function createClientTransaction({
+  tx,
   type,
   targetUserId,
   performedById,
   facilityId,
   details,
 }: {
+  tx: Prisma.TransactionClient
   type:
     | "CLIENT_CREATED"
     | "CLIENT_UPDATED"
@@ -127,9 +129,10 @@ export async function createClientTransaction({
   facilityId: string
   details?: Prisma.JsonValue
 }) {
-  const safeDetails = details || undefined
+  const safeDetails = details && typeof details === "object" ? details : {}
 
   return createTransaction({
+    tx,
     type,
     details: safeDetails,
     performedById,
@@ -139,21 +142,24 @@ export async function createClientTransaction({
 }
 
 export async function createPlanTransaction({
+  tx,
   type,
   planId,
   performedById,
   facilityId,
   details,
 }: {
+  tx: Prisma.TransactionClient
   type: "PLAN_CREATED" | "PLAN_UPDATED" | "PLAN_DELETED" | "PLAN_REPLICATED"
   planId: string
   performedById: string
   facilityId: string
   details?: Prisma.JsonValue
 }) {
-  const safeDetails = details || {}
+  const safeDetails = details && typeof details === "object" ? details : {}
 
   return createTransaction({
+    tx,
     type,
     details: safeDetails,
     performedById,
@@ -163,21 +169,24 @@ export async function createPlanTransaction({
 }
 
 export async function createDiaryTransaction({
+  tx,
   type,
   diaryId,
   performedById,
   facilityId,
   details,
 }: {
+  tx: Prisma.TransactionClient
   type: "DIARY_CREATED" | "DIARY_UPDATED" | "DIARY_DELETED" | "DIARY_REPLICATED"
   diaryId: string
   performedById: string
   facilityId: string
   details?: Prisma.JsonValue
 }) {
-  const safeDetails = details || {}
+  const safeDetails = details && typeof details === "object" ? details : {}
 
   return createTransaction({
+    tx,
     type,
     details: safeDetails,
     performedById,
