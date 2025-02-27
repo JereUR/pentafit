@@ -8,10 +8,11 @@ import { notFound } from "next/navigation"
 import { ActivityValues } from "@/lib/validation"
 import prisma from "@/lib/prisma"
 import { createNotification } from "@/lib/notificationHelpers"
-import { NotificationType } from "@prisma/client"
+import { NotificationType, Prisma, TransactionType } from "@prisma/client"
 import { validateRequest } from "@/auth"
 import { ActivityData } from "@/types/activity"
 import { DeleteEntityResult } from "@/lib/utils"
+import { createActivityTransaction } from "@/lib/transactionHelpers"
 
 type ActivityResult = {
   success: boolean
@@ -79,6 +80,19 @@ export async function createActivity(
         },
       })
 
+      await createActivityTransaction({
+        tx,
+        type: TransactionType.ACTIVITY_CREATED,
+        activityId: activity.id,
+        performedById: user.id,
+        facilityId: activity.facilityId,
+        details: {
+          action: "Actividad creada",
+          attachmentId: activity.id,
+          attachmentName: activity.name,
+        },
+      })
+
       await createNotification(
         tx,
         user.id,
@@ -124,6 +138,19 @@ export async function updateActivity(
         },
       })
 
+      await createActivityTransaction({
+        tx,
+        type: TransactionType.ACTIVITY_UPDATED,
+        activityId: activity.id,
+        performedById: user.id,
+        facilityId: activity.facilityId,
+        details: {
+          action: "Actividad actualizada",
+          attachmentId: activity.id,
+          attachmentName: activity.name,
+        },
+      })
+
       await createNotification(
         tx,
         user.id,
@@ -148,43 +175,85 @@ export async function deleteActivities(
   const { user } = await validateRequest()
   if (!user) throw new Error("Usuario no autenticado")
 
-  return await prisma.$transaction(async (tx) => {
-    try {
-      const diariesCount = await tx.diary.count({
-        where: {
-          activityId: { in: activityIds },
-        },
-      })
+  return await prisma
+    .$transaction(
+      async (tx) => {
+        try {
+          const activities = await tx.activity.findMany({
+            where: {
+              id: { in: activityIds },
+            },
+            select: {
+              id: true,
+              name: true,
+            },
+          })
 
-      const { count } = await tx.activity.deleteMany({
-        where: {
-          id: { in: activityIds },
-        },
-      })
+          if (activities.length === 0) {
+            return {
+              success: false,
+              message: "No se encontraron actividades para eliminar",
+            }
+          }
 
-      if (count === 0) {
-        return {
-          success: false,
-          message: "No se encontraron actividades para eliminar",
+          const diariesCount = await tx.diary.count({
+            where: {
+              activityId: { in: activityIds },
+            },
+          })
+
+          for (const activity of activities) {
+            await createActivityTransaction({
+              tx,
+              type: TransactionType.ACTIVITY_DELETED,
+              activityId: activity.id,
+              performedById: user.id,
+              facilityId,
+              details: {
+                action: "Actividad borrada",
+                attachmentId: activity.id,
+                attachmentName: activity.name,
+                deletedDiariesCount: diariesCount,
+              },
+            })
+          }
+
+          await createNotification(
+            tx,
+            user.id,
+            facilityId,
+            NotificationType.ACTIVITY_DELETED,
+          )
+
+          const { count } = await tx.activity.deleteMany({
+            where: {
+              id: { in: activityIds },
+            },
+          })
+
+          revalidatePath("/actividades")
+
+          return {
+            success: true,
+            message: `Se ${count === 1 ? "ha" : "han"} eliminado ${count} ${
+              count === 1 ? "actividad" : "actividades"
+            } y ${diariesCount} ${diariesCount === 1 ? "diario asociado" : "diarios asociados"} correctamente`,
+            deletedCount: count,
+            deletedDiariesCount: diariesCount,
+          }
+        } catch (error) {
+          console.error("Error deleting activities:", error)
+          throw error
         }
-      }
-
-      await createNotification(
-        tx,
-        user.id,
-        facilityId,
-        NotificationType.ACTIVITY_DELETED,
-      )
-
-      revalidatePath(`/actividades`)
-      return {
-        success: true,
-        message: `Se ${count === 1 ? "ha" : "han"} eliminado ${count} ${count === 1 ? "actividad" : "actividades"} y ${diariesCount} ${diariesCount === 1 ? "diario asociado" : "diarios asociados"} correctamente`,
-        deletedCount: count,
-        deletedDiariesCount: diariesCount,
-      }
-    } catch (error) {
-      console.error("Error deleting activities:", error)
+      },
+      {
+        isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+        maxWait: 5000,
+        timeout: 10000,
+      },
+    )
+    .catch((error) => {
+      console.error("Transaction failed:", error)
       return {
         success: false,
         message:
@@ -192,8 +261,7 @@ export async function deleteActivities(
             ? error.message
             : "Error al eliminar las actividades",
       }
-    }
-  })
+    })
 }
 
 export async function replicateActivities(
@@ -207,29 +275,76 @@ export async function replicateActivities(
     .$transaction(async (tx) => {
       const activities = await tx.activity.findMany({
         where: { id: { in: activityIds } },
+        select: {
+          id: true,
+          name: true,
+          facilityId: true,
+          description: true,
+          price: true,
+          isPublic: true,
+          publicName: true,
+          generateInvoice: true,
+          maxSessions: true,
+          mpAvailable: true,
+          startDate: true,
+          endDate: true,
+          paymentType: true,
+          activityType: true,
+        },
       })
 
-      const replicatedActivities = await Promise.all(
-        targetFacilityIds.flatMap(async (facilityId) =>
-          activities.map(async (activity) => {
-            const {
-              id,
-              createdAt,
-              updatedAt,
-              facilityId: _,
-              ...activityData
-            } = activity
-            return tx.activity.create({
-              data: {
-                ...activityData,
-                facilityId: facilityId,
-              },
-            })
-          }),
+      if (activities.length === 0) {
+        return {
+          success: false,
+          message: "No se encontraron actividades para replicar",
+        }
+      }
+
+      const replicationResults = await Promise.all(
+        targetFacilityIds.flatMap(async (targetFacilityId) =>
+          Promise.all(
+            activities.map(async (sourceActivity) => {
+              const {
+                id: sourceId,
+                facilityId: sourceFacilityId,
+                ...activityData
+              } = sourceActivity
+
+              const replicatedActivity = await tx.activity.create({
+                data: {
+                  ...activityData,
+                  facilityId: targetFacilityId,
+                },
+              })
+
+              await createActivityTransaction({
+                tx,
+                type: "ACTIVITY_REPLICATED",
+                activityId: replicatedActivity.id,
+                performedById: user.id,
+                facilityId: targetFacilityId,
+                details: {
+                  action: "Actividad replicada",
+                  sourceActivityId: sourceId,
+                  sourceActivityName: activityData.name,
+                  sourceFacilityId: sourceFacilityId,
+                  targetFacilityId: targetFacilityId,
+                  replicatedActivityId: replicatedActivity.id,
+                  replicatedActivityName: replicatedActivity.name,
+                },
+              })
+
+              return {
+                sourceActivity,
+                replicatedActivity,
+                targetFacilityId,
+              }
+            }),
+          ),
         ),
       )
 
-      const flattenedActivities = replicatedActivities.flat()
+      const flattenedResults = replicationResults.flat()
 
       await Promise.all(
         targetFacilityIds.map((facilityId) =>
@@ -245,8 +360,16 @@ export async function replicateActivities(
       revalidatePath(`/actividades`)
       return {
         success: true,
-        message: `Se han replicado ${flattenedActivities.length} actividades en ${targetFacilityIds.length} establecimientos.`,
-        replicatedCount: flattenedActivities.length,
+        message: `Se han replicado ${flattenedResults.length} actividades en ${targetFacilityIds.length} establecimientos.`,
+        replicatedCount: flattenedResults.length,
+        details: {
+          replicatedActivities: flattenedResults.map((result) => ({
+            sourceId: result.sourceActivity.id,
+            sourceName: result.sourceActivity.name,
+            replicatedId: result.replicatedActivity.id,
+            targetFacilityId: result.targetFacilityId,
+          })),
+        },
       }
     })
     .catch((error) => {
