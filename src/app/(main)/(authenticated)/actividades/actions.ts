@@ -320,9 +320,9 @@ export async function replicateActivities(
               await createActivityTransaction({
                 tx,
                 type: "ACTIVITY_REPLICATED",
-                activityId: replicatedActivity.id,
+                activityId: sourceId,
                 performedById: user.id,
-                facilityId: targetFacilityId,
+                facilityId: sourceFacilityId,
                 details: {
                   action: "Actividad replicada",
                   sourceActivityId: sourceId,
