@@ -5,13 +5,14 @@ import { revalidatePath } from "next/cache"
 import { cache } from "react"
 import { notFound } from "next/navigation"
 
-import { type DiaryValues } from "@/lib/validation"
+import type { DiaryValues } from "@/lib/validation"
 import prisma from "@/lib/prisma"
-import { DiaryData, Schedule } from "@/types/diary"
+import type { DiaryData, Schedule } from "@/types/diary"
 import { validateRequest } from "@/auth"
 import { createNotification } from "@/lib/notificationHelpers"
-import { NotificationType } from "@prisma/client"
-import { DeleteEntityResult } from "@/lib/utils"
+import { NotificationType, Prisma, TransactionType } from "@prisma/client"
+import type { DeleteEntityResult } from "@/lib/utils"
+import { createDiaryTransaction } from "@/lib/transactionHelpers"
 
 type DiaryResult = {
   success: boolean
@@ -129,6 +130,19 @@ export async function createDiary(values: DiaryValues): Promise<DiaryResult> {
         },
       })
 
+      await createDiaryTransaction({
+        tx,
+        type: TransactionType.DIARY_CREATED,
+        diaryId: diary.id,
+        performedById: user.id,
+        facilityId: diary.facilityId,
+        details: {
+          action: "Agenda creada",
+          attachmentId: diary.id,
+          attachmentName: diary.name,
+        },
+      })
+
       await createNotification(
         tx,
         user.id,
@@ -137,6 +151,7 @@ export async function createDiary(values: DiaryValues): Promise<DiaryResult> {
         diary.id,
       )
 
+      revalidatePath(`/agenda`)
       return { success: true, diary }
     } catch (error) {
       console.error(error)
@@ -152,8 +167,8 @@ export async function updateDiary(
   const { user } = await validateRequest()
   if (!user) throw new Error("Usuario no autenticado")
 
-  return await prisma.$transaction(async (tx) => {
-    try {
+  return await prisma
+    .$transaction(async (tx) => {
       const diary = await tx.diary.update({
         where: { id },
         data: {
@@ -194,6 +209,19 @@ export async function updateDiary(
         },
       })
 
+      await createDiaryTransaction({
+        tx,
+        type: TransactionType.DIARY_UPDATED,
+        diaryId: diary.id,
+        performedById: user.id,
+        facilityId: diary.facilityId,
+        details: {
+          action: "Agenda actualizada",
+          attachmentId: diary.id,
+          attachmentName: diary.name,
+        },
+      })
+
       await createNotification(
         tx,
         user.id,
@@ -204,11 +232,11 @@ export async function updateDiary(
 
       revalidatePath(`/agenda`)
       return { success: true, diary }
-    } catch (error) {
+    })
+    .catch((error) => {
       console.error(error)
       return { success: false, error: "Error al editar la agenda" }
-    }
-  })
+    })
 }
 
 export async function deleteDiaries(
@@ -218,56 +246,101 @@ export async function deleteDiaries(
   const { user } = await validateRequest()
   if (!user) throw new Error("Usuario no autenticado")
 
-  return await prisma.$transaction(async (tx) => {
-    try {
-      if (!diaryIds || diaryIds.length === 0) {
-        return {
-          success: false,
-          message: "No se proporcionaron IDs de agendas para eliminar",
+  return await prisma
+    .$transaction(
+      async (tx) => {
+        try {
+          if (!diaryIds || diaryIds.length === 0) {
+            return {
+              success: false,
+              message: "No se proporcionaron IDs de agendas para eliminar",
+            }
+          }
+
+          const diaries = await tx.diary.findMany({
+            where: {
+              id: { in: diaryIds },
+            },
+            select: {
+              id: true,
+              name: true,
+              activity: {
+                select: {
+                  name: true,
+                },
+              },
+            },
+          })
+
+          if (diaries.length === 0) {
+            return {
+              success: false,
+              message: "No se encontraron agendas para eliminar",
+            }
+          }
+
+          for (const diary of diaries) {
+            await createDiaryTransaction({
+              tx,
+              type: TransactionType.DIARY_DELETED,
+              diaryId: diary.id,
+              performedById: user.id,
+              facilityId,
+              details: {
+                action: "Agenda borrada",
+                attachmentId: diary.id,
+                attachmentName: diary.name,
+              },
+            })
+          }
+
+          await tx.dayAvailable.deleteMany({
+            where: {
+              diaryId: { in: diaryIds },
+            },
+          })
+
+          await tx.offerDay.deleteMany({
+            where: {
+              diaryId: { in: diaryIds },
+            },
+          })
+
+          const { count } = await tx.diary.deleteMany({
+            where: {
+              id: { in: diaryIds },
+            },
+          })
+
+          await createNotification(
+            tx,
+            user.id,
+            facilityId,
+            NotificationType.DIARY_DELETED,
+          )
+
+          revalidatePath("/agenda")
+
+          return {
+            success: true,
+            message: `Se ${count === 1 ? "ha" : "han"} eliminado ${count} ${
+              count === 1 ? "agenda" : "agendas"
+            } correctamente`,
+            deletedCount: count,
+          }
+        } catch (error) {
+          console.error("Error deleting diaries:", error)
+          throw error
         }
-      }
-
-      await tx.dayAvailable.deleteMany({
-        where: {
-          diaryId: { in: diaryIds },
-        },
-      })
-
-      await tx.offerDay.deleteMany({
-        where: {
-          diaryId: { in: diaryIds },
-        },
-      })
-
-      const { count } = await tx.diary.deleteMany({
-        where: {
-          id: { in: diaryIds },
-        },
-      })
-
-      if (count === 0) {
-        return {
-          success: false,
-          message: "No se encontraron agendas para eliminar",
-        }
-      }
-
-      await createNotification(
-        tx,
-        user.id,
-        facilityId,
-        NotificationType.DIARY_DELETED,
-      )
-
-      return {
-        success: true,
-        message: `Se ${count === 1 ? "ha" : "han"} eliminado ${count} ${
-          count === 1 ? "agenda" : "agendas"
-        } correctamente`,
-        deletedCount: count,
-      }
-    } catch (error) {
-      console.error("Error deleting diaries:", error)
+      },
+      {
+        isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+        maxWait: 5000,
+        timeout: 10000,
+      },
+    )
+    .catch((error) => {
+      console.error("Transaction failed:", error)
       return {
         success: false,
         message:
@@ -275,8 +348,7 @@ export async function deleteDiaries(
             ? error.message
             : "Error al eliminar las agendas",
       }
-    }
-  })
+    })
 }
 
 export async function replicateDiaries(
@@ -293,34 +365,91 @@ export async function replicateDiaries(
         include: {
           daysAvailable: true,
           offerDays: true,
+          activity: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
         },
       })
 
-      const replicatedDiaries = await Promise.all(
-        targetFacilityIds.flatMap(async (facilityId) =>
-          diaries.map(async (diary) => {
-            const { id, facilityId: _, ...diaryData } = diary
-            return prisma.diary.create({
-              data: {
-                ...diaryData,
-                facilityId: facilityId,
-                daysAvailable: {
-                  create: diary.daysAvailable.map(
-                    ({ id, diaryId, ...dayData }) => dayData,
-                  ),
+      if (diaries.length === 0) {
+        return {
+          success: false,
+          message: "No se encontraron agendas para replicar",
+        }
+      }
+
+      const replicationResults = await Promise.all(
+        targetFacilityIds.flatMap(async (targetFacilityId) =>
+          Promise.all(
+            diaries.map(async (sourceDiary) => {
+              const {
+                id: sourceId,
+                facilityId: sourceFacilityId,
+                activity,
+                daysAvailable,
+                offerDays,
+                ...diaryData
+              } = sourceDiary
+
+              const replicatedDiary = await tx.diary.create({
+                data: {
+                  ...diaryData,
+                  facilityId: targetFacilityId,
+                  activityId: activity.id,
+                  daysAvailable: {
+                    create: daysAvailable.map(
+                      ({ id, diaryId, ...dayData }) => dayData,
+                    ),
+                  },
+                  offerDays: {
+                    create: offerDays.map(
+                      ({ id, diaryId, ...dayData }) => dayData,
+                    ),
+                  },
                 },
-                offerDays: {
-                  create: diary.offerDays.map(
-                    ({ id, diaryId, ...dayData }) => dayData,
-                  ),
+                include: {
+                  activity: {
+                    select: {
+                      name: true,
+                    },
+                  },
                 },
-              },
-            })
-          }),
+              })
+
+              await createDiaryTransaction({
+                tx,
+                type: TransactionType.DIARY_REPLICATED,
+                diaryId: sourceId,
+                performedById: user.id,
+                facilityId: sourceFacilityId,
+                details: {
+                  action: "Agenda replicada",
+                  sourceDiaryId: sourceId,
+                  sourceDiaryName: sourceDiary.name,
+                  sourceFacilityId: sourceFacilityId,
+                  targetFacilityId: targetFacilityId,
+                  replicatedDiaryId: replicatedDiary.id,
+                  replicatedDiaryName: replicatedDiary.name,
+                  activityName: activity.name,
+                  daysAvailableCount: daysAvailable.length,
+                  offerDaysCount: offerDays.length,
+                },
+              })
+
+              return {
+                sourceDiary,
+                replicatedDiary,
+                targetFacilityId,
+              }
+            }),
+          ),
         ),
       )
 
-      const flattenedDiaries = replicatedDiaries.flat()
+      const flattenedResults = replicationResults.flat()
 
       await Promise.all(
         targetFacilityIds.map((facilityId) =>
@@ -336,8 +465,16 @@ export async function replicateDiaries(
       revalidatePath(`/agenda`)
       return {
         success: true,
-        message: `Se han replicado ${flattenedDiaries.length} agendas en ${targetFacilityIds.length} establecimientos.`,
-        replicatedCount: flattenedDiaries.length,
+        message: `Se han replicado ${flattenedResults.length} agendas en ${targetFacilityIds.length} establecimientos.`,
+        replicatedCount: flattenedResults.length,
+        details: {
+          replicatedDiaries: flattenedResults.map((result) => ({
+            sourceId: result.sourceDiary.id,
+            sourceName: result.sourceDiary.name,
+            replicatedId: result.replicatedDiary.id,
+            targetFacilityId: result.targetFacilityId,
+          })),
+        },
       }
     })
     .catch((error) => {
