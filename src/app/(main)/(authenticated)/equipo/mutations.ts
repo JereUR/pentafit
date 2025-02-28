@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 
 import { useToast } from "@/hooks/use-toast"
 import { MemberValues, UpdateMemberValues } from "@/lib/validation"
-import { createMember, deleteMember, updateMember } from "./actions"
+import { createMember, deleteMembers, updateMember } from "./actions"
 import { useUploadThing } from "@/lib/uploadthing"
 
 export function useCreateMemberMutation() {
@@ -123,7 +123,7 @@ export function useDeleteMemberMutation() {
       facilityId: string
     }) => {
       const idsArray = Array.isArray(memberIds) ? memberIds : [memberIds]
-      const result = await deleteMember(idsArray)
+      const result = await deleteMembers(idsArray, facilityId)
       if (!result.success) {
         throw new Error(result.message)
       }
