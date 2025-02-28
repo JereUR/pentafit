@@ -5,13 +5,14 @@ import { revalidatePath } from "next/cache"
 import { cache } from "react"
 import { notFound } from "next/navigation"
 
-import { planSchema, PlanValues } from "@/lib/validation"
+import type { PlanValues } from "@/lib/validation"
 import prisma from "@/lib/prisma"
-import { PlanData } from "@/types/plan"
-import { validateRequest } from "@/auth"
 import { createNotification } from "@/lib/notificationHelpers"
-import { NotificationType } from "@prisma/client"
-import { DeleteEntityResult } from "@/lib/utils"
+import { NotificationType, Prisma, TransactionType } from "@prisma/client"
+import { validateRequest } from "@/auth"
+import type { PlanData } from "@/types/plan"
+import type { DeleteEntityResult } from "@/lib/utils"
+import { createPlanTransaction } from "@/lib/transactionHelpers"
 
 type PlanResult = {
   success: boolean
@@ -72,6 +73,135 @@ export const getPlanById = cache(
   },
 )
 
+export async function createPlan(values: PlanValues): Promise<PlanResult> {
+  const { user } = await validateRequest()
+  if (!user) throw new Error("Usuario no autenticado")
+
+  return await prisma.$transaction(async (tx) => {
+    try {
+      const plan = await tx.plan.create({
+        data: {
+          name: values.name,
+          description: values.description,
+          price: values.price,
+          startDate: new Date(values.startDate),
+          endDate: new Date(values.endDate),
+          expirationPeriod: values.expirationPeriod,
+          generateInvoice: values.generateInvoice,
+          paymentTypes: values.paymentTypes,
+          planType: values.planType,
+          freeTest: values.freeTest,
+          current: values.current,
+          facilityId: values.facilityId,
+          diaryPlans: {
+            create:
+              values.diaryPlans?.map((dp) => ({
+                name: dp.name,
+                daysOfWeek: dp.daysOfWeek,
+                sessionsPerWeek: dp.sessionsPerWeek,
+                activityId: dp.activityId,
+              })) || [],
+          },
+        },
+      })
+
+      await createPlanTransaction({
+        tx,
+        type: TransactionType.PLAN_CREATED,
+        planId: plan.id,
+        performedById: user.id,
+        facilityId: plan.facilityId,
+        details: {
+          action: "Plan creado",
+          attachmentId: plan.id,
+          attachmentName: plan.name,
+        },
+      })
+
+      await createNotification(
+        tx,
+        user.id,
+        values.facilityId,
+        NotificationType.PLAN_CREATED,
+        plan.id,
+      )
+
+      revalidatePath(`/planes`)
+      return { success: true }
+    } catch (error) {
+      console.error(error)
+      return { success: false, error: "Error al crear el plan" }
+    }
+  })
+}
+
+export async function updatePlan(
+  id: string,
+  values: PlanValues,
+): Promise<PlanResult> {
+  const { user } = await validateRequest()
+  if (!user) throw new Error("Usuario no autenticado")
+
+  return await prisma
+    .$transaction(async (tx) => {
+      const plan = await tx.plan.update({
+        where: { id },
+        data: {
+          name: values.name,
+          description: values.description,
+          price: values.price,
+          startDate: new Date(values.startDate),
+          endDate: new Date(values.endDate),
+          expirationPeriod: values.expirationPeriod,
+          generateInvoice: values.generateInvoice,
+          paymentTypes: values.paymentTypes,
+          planType: values.planType,
+          freeTest: values.freeTest,
+          current: values.current,
+          facilityId: values.facilityId,
+          diaryPlans: {
+            deleteMany: {},
+            create:
+              values.diaryPlans?.map((dp) => ({
+                name: dp.name,
+                daysOfWeek: dp.daysOfWeek,
+                sessionsPerWeek: dp.sessionsPerWeek,
+                activityId: dp.activityId,
+              })) || [],
+          },
+        },
+      })
+
+      await createPlanTransaction({
+        tx,
+        type: TransactionType.PLAN_UPDATED,
+        planId: plan.id,
+        performedById: user.id,
+        facilityId: plan.facilityId,
+        details: {
+          action: "Plan actualizado",
+          attachmentId: plan.id,
+          attachmentName: plan.name,
+        },
+      })
+
+      await createNotification(
+        tx,
+        user.id,
+        values.facilityId,
+        NotificationType.PLAN_UPDATED,
+        plan.id,
+      )
+
+      revalidatePath(`/planes`)
+      return { success: true }
+    })
+    .catch((error) => {
+      console.error(error)
+      return { success: false, error: "Error al editar el plan" }
+    })
+}
+
 export async function deletePlans(
   planIds: string[],
   facilityId: string,
@@ -79,50 +209,77 @@ export async function deletePlans(
   const { user } = await validateRequest()
   if (!user) throw new Error("Usuario no autenticado")
 
-  return await prisma.$transaction(async (tx) => {
-    try {
-      if (!planIds || planIds.length === 0) {
-        return {
-          success: false,
-          message: "No se proporcionaron IDs de planes para eliminar",
+  return await prisma
+    .$transaction(
+      async (tx) => {
+        try {
+          const plans = await tx.plan.findMany({
+            where: {
+              id: { in: planIds },
+            },
+            select: {
+              id: true,
+              name: true,
+            },
+          })
+
+          if (plans.length === 0) {
+            return {
+              success: false,
+              message: "No se encontraron planes para eliminar",
+            }
+          }
+
+          for (const plan of plans) {
+            await createPlanTransaction({
+              tx,
+              type: TransactionType.PLAN_DELETED,
+              planId: plan.id,
+              performedById: user.id,
+              facilityId,
+              details: {
+                action: "Plan borrado",
+                attachmentId: plan.id,
+                attachmentName: plan.name,
+              },
+            })
+          }
+
+          await createNotification(
+            tx,
+            user.id,
+            facilityId,
+            NotificationType.PLAN_DELETED,
+          )
+
+          const { count } = await tx.plan.deleteMany({
+            where: {
+              id: { in: planIds },
+            },
+          })
+
+          revalidatePath("/planes")
+
+          return {
+            success: true,
+            message: `Se ${count === 1 ? "ha" : "han"} eliminado ${count} ${
+              count === 1 ? "plan" : "planes"
+            } correctamente`,
+            deletedCount: count,
+          }
+        } catch (error) {
+          console.error("Error deleting plans:", error)
+          throw error
         }
-      }
-
-      await tx.diaryPlan.deleteMany({
-        where: {
-          planId: { in: planIds },
-        },
-      })
-
-      const { count } = await tx.plan.deleteMany({
-        where: {
-          id: { in: planIds },
-        },
-      })
-
-      if (count === 0) {
-        return {
-          success: false,
-          message: "No se encontraron planes para eliminar",
-        }
-      }
-
-      await createNotification(
-        tx,
-        user.id,
-        facilityId,
-        NotificationType.PLAN_DELETED,
-      )
-
-      return {
-        success: true,
-        message: `Se ${count === 1 ? "ha" : "han"} eliminado ${count} ${
-          count === 1 ? "plan" : "planes"
-        } correctamente`,
-        deletedCount: count,
-      }
-    } catch (error) {
-      console.error("Error deleting plans:", error)
+      },
+      {
+        isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+        maxWait: 5000,
+        timeout: 10000,
+      },
+    )
+    .catch((error) => {
+      console.error("Transaction failed:", error)
       return {
         success: false,
         message:
@@ -130,8 +287,7 @@ export async function deletePlans(
             ? error.message
             : "Error al eliminar los planes",
       }
-    }
-  })
+    })
 }
 
 export async function replicatePlans(
@@ -145,31 +301,87 @@ export async function replicatePlans(
     .$transaction(async (tx) => {
       const plans = await tx.plan.findMany({
         where: { id: { in: planIds } },
-        include: {
-          diaryPlans: true,
+        select: {
+          id: true,
+          name: true,
+          facilityId: true,
+          description: true,
+          price: true,
+          startDate: true,
+          endDate: true,
+          expirationPeriod: true,
+          generateInvoice: true,
+          paymentTypes: true,
+          planType: true,
+          freeTest: true,
+          current: true,
+          diaryPlans: {
+            select: {
+              name: true,
+              daysOfWeek: true,
+              sessionsPerWeek: true,
+              activityId: true,
+            },
+          },
         },
       })
 
-      const replicatedPlans = await Promise.all(
-        targetFacilityIds.flatMap(async (facilityId) =>
-          plans.map(async (plan) => {
-            const { id, facilityId: _, ...planData } = plan
-            return prisma.plan.create({
-              data: {
-                ...planData,
-                facilityId: facilityId,
-                diaryPlans: {
-                  create: (plan.diaryPlans ?? []).map(
-                    ({ id, planId, ...dpData }) => dpData,
-                  ),
+      if (plans.length === 0) {
+        return {
+          success: false,
+          message: "No se encontraron planes para replicar",
+        }
+      }
+
+      const replicationResults = await Promise.all(
+        targetFacilityIds.flatMap(async (targetFacilityId) =>
+          Promise.all(
+            plans.map(async (sourcePlan) => {
+              const {
+                id: sourceId,
+                facilityId: sourceFacilityId,
+                diaryPlans,
+                ...planData
+              } = sourcePlan
+
+              const replicatedPlan = await tx.plan.create({
+                data: {
+                  ...planData,
+                  facilityId: targetFacilityId,
+                  diaryPlans: {
+                    create: diaryPlans,
+                  },
                 },
-              },
-            })
-          }),
+              })
+
+              await createPlanTransaction({
+                tx,
+                type: TransactionType.PLAN_REPLICATED,
+                planId: sourceId,
+                performedById: user.id,
+                facilityId: sourceFacilityId,
+                details: {
+                  action: "Plan replicado",
+                  sourcePlanId: sourceId,
+                  sourcePlanName: planData.name,
+                  sourceFacilityId: sourceFacilityId,
+                  targetFacilityId: targetFacilityId,
+                  replicatedPlanId: replicatedPlan.id,
+                  replicatedPlanName: replicatedPlan.name,
+                },
+              })
+
+              return {
+                sourcePlan,
+                replicatedPlan,
+                targetFacilityId,
+              }
+            }),
+          ),
         ),
       )
 
-      const flattenedPlans = replicatedPlans.flat()
+      const flattenedResults = replicationResults.flat()
 
       await Promise.all(
         targetFacilityIds.map((facilityId) =>
@@ -185,18 +397,26 @@ export async function replicatePlans(
       revalidatePath(`/planes`)
       return {
         success: true,
-        message: `Se han replicado ${flattenedPlans.length} planes en ${targetFacilityIds.length} establecimientos.`,
-        replicatedCount: flattenedPlans.length,
+        message: `Se han replicado ${flattenedResults.length} planes en ${targetFacilityIds.length} establecimientos.`,
+        replicatedCount: flattenedResults.length,
+        details: {
+          replicatedPlans: flattenedResults.map((result) => ({
+            sourceId: result.sourcePlan.id,
+            sourceName: result.sourcePlan.name,
+            replicatedId: result.replicatedPlan.id,
+            targetFacilityId: result.targetFacilityId,
+          })),
+        },
       }
     })
     .catch((error) => {
-      console.error("Error replicating activities:", error)
+      console.error("Error replicating plans:", error)
       return {
         success: false,
         message:
           error instanceof Error
             ? error.message
-            : "Error al replicar las actividades",
+            : "Error al replicar los planes",
       }
     })
 }
