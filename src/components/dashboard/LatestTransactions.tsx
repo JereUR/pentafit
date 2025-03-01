@@ -2,16 +2,26 @@
 
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
-import { Loader2 } from "lucide-react"
+import { Calendar, ClipboardList, Loader2, Users } from "lucide-react"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useLatestTransactions } from "@/hooks/useLatestTransactions"
-import { Transaction } from "@/types/transactions"
-import noAvatarSrc from '@/assets/avatar-placeholder.png'
+import type { Transaction, TransactionType } from "@/types/transactions"
+import noAvatarSrc from "@/assets/avatar-placeholder.png"
+import { PlanIcon } from "@/config/icons"
 
 interface LatestTransactionsProps {
   facilityId: string
+}
+
+interface TransactionDetails {
+  attachmentName?: string
+  [key: string]: string | undefined
+}
+
+type TransactionWithDetails = Transaction & {
+  details?: TransactionDetails | null
 }
 
 export function LatestTransactions({ facilityId }: LatestTransactionsProps) {
@@ -30,13 +40,39 @@ export function LatestTransactions({ facilityId }: LatestTransactionsProps) {
     )
   }
 
-  const getTransactionName = (transaction: Transaction) => {
+  const getTransactionIcon = (type: TransactionType) => {
+    if (type.includes("ACTIVITY")) {
+      return <ClipboardList className="h-4 w-4 text-purple-400" />
+    }
+    if (type.includes("STAFF") || type.includes("CLIENT")) {
+      return <Users className="h-4 w-4 text-cyan-400" />
+    }
+    if (type.includes("PLAN")) {
+      return <PlanIcon className="h-4 w-4 text-amber-400" />
+    }
+    if (type.includes("DIARY")) {
+      return <Calendar className="h-4 w-4 text-emerald-400" />
+    }
+    return null
+  }
+
+  const getTransactionType = (type: TransactionType) => {
+    if (type.includes("ACTIVITY")) return "Actividad"
+    if (type.includes("STAFF")) return "Staff"
+    if (type.includes("CLIENT")) return "Cliente"
+    if (type.includes("PLAN")) return "Plan"
+    if (type.includes("DIARY")) return "Diario"
+    return "N/A"
+  }
+
+  const getTransactionName = (transaction: TransactionWithDetails) => {
     if (transaction.targetUser) {
       return `${transaction.targetUser.firstName} ${transaction.targetUser.lastName}`
     }
     if (transaction.activity) return transaction.activity.name
     if (transaction.plan) return transaction.plan.name
     if (transaction.diary) return transaction.diary.name
+    if (transaction.details?.attachmentName) return transaction.details.attachmentName
     return "N/A"
   }
 
@@ -55,7 +91,7 @@ export function LatestTransactions({ facilityId }: LatestTransactionsProps) {
     return "?"
   }
 
-  const getStatusBadge = (type: string) => {
+  const getStatusBadge = (type: TransactionType) => {
     if (type.includes("CREATED")) {
       return <span className="px-2 py-1 text-xs rounded-full bg-yellow-500/20 text-yellow-500">Creado</span>
     }
@@ -69,6 +105,10 @@ export function LatestTransactions({ facilityId }: LatestTransactionsProps) {
       return <span className="px-2 py-1 text-xs rounded-full bg-purple-500/20 text-purple-500">Replicado</span>
     }
     return <span className="px-2 py-1 text-xs rounded-full bg-gray-500/20 text-gray-500">{type}</span>
+  }
+
+  const isUserTransaction = (type: TransactionType) => {
+    return type.includes("STAFF") || type.includes("CLIENT")
   }
 
   return (
@@ -86,14 +126,27 @@ export function LatestTransactions({ facilityId }: LatestTransactionsProps) {
           <div className="space-y-8">
             {transactions.map((transaction) => (
               <div key={transaction.id} className="flex items-center">
-                <Avatar className="h-9 w-9">
-                  <AvatarImage src={getTransactionAvatar(transaction)} alt="Avatar" />
-                  <AvatarFallback>{getTransactionInitials(transaction)}</AvatarFallback>
-                </Avatar>
+                {isUserTransaction(transaction.type) ? (
+                  <Avatar className="h-9 w-9">
+                    <AvatarImage src={getTransactionAvatar(transaction)} alt="Avatar" />
+                    <AvatarFallback>{getTransactionInitials(transaction)}</AvatarFallback>
+                  </Avatar>
+                ) : (
+                  <div className="h-9 w-9 rounded-full bg-secondary flex items-center justify-center">
+                    <div className="h-4 w-4">
+                      {getTransactionIcon(transaction.type)}
+                    </div>
+                  </div>
+                )}
                 <div className="ml-4 space-y-1">
-                  <p className="text-sm font-medium leading-none">{getTransactionName(transaction)}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-medium leading-none">
+                      {getTransactionName(transaction)}
+                    </p>
+                  </div>
                   <p className="text-sm text-muted-foreground">
-                    Por {transaction.performedBy.firstName} {transaction.performedBy.lastName}
+                    <span className="font-medium">{getTransactionType(transaction.type)}</span> - Por{" "}
+                    {transaction.performedBy.firstName} {transaction.performedBy.lastName}
                   </p>
                 </div>
                 <div className="ml-auto flex flex-col items-end gap-2">
