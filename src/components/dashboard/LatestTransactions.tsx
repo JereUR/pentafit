@@ -5,7 +5,7 @@ import { es } from "date-fns/locale"
 import { Calendar, ClipboardList, Loader2, Users } from "lucide-react"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useLatestTransactions } from "@/hooks/useLatestTransactions"
 import type { Transaction, TransactionType } from "@/types/transactions"
 import noAvatarSrc from "@/assets/avatar-placeholder.png"
@@ -115,7 +115,6 @@ export function LatestTransactions({ facilityId }: LatestTransactionsProps) {
     <Card className="col-span-4 mt-6 border-primary">
       <CardHeader>
         <CardTitle>Últimas Transacciones</CardTitle>
-        <CardDescription>Las últimas 10 operaciones realizadas</CardDescription>
       </CardHeader>
       <CardContent>
         {isLoading ? (
