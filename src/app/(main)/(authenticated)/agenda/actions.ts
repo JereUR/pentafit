@@ -469,8 +469,8 @@ export async function replicateDiaries(
         replicatedCount: flattenedResults.length,
         details: {
           replicatedDiaries: flattenedResults.map((result) => ({
-            sourceId: result.sourceDiary.id,
-            sourceName: result.sourceDiary.name,
+            attachmentId: result.sourceDiary.id,
+            attachmentName: result.sourceDiary.name,
             replicatedId: result.replicatedDiary.id,
             targetFacilityId: result.targetFacilityId,
           })),
