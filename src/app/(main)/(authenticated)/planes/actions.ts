@@ -142,8 +142,8 @@ export async function updatePlan(
   const { user } = await validateRequest()
   if (!user) throw new Error("Usuario no autenticado")
 
-  return await prisma
-    .$transaction(async (tx) => {
+  return await prisma.$transaction(async (tx) => {
+    try {
       const plan = await tx.plan.update({
         where: { id },
         data: {
@@ -195,11 +195,11 @@ export async function updatePlan(
 
       revalidatePath(`/planes`)
       return { success: true }
-    })
-    .catch((error) => {
+    } catch (error) {
       console.error(error)
       return { success: false, error: "Error al editar el plan" }
-    })
+    }
+  })
 }
 
 export async function deletePlans(
@@ -209,85 +209,92 @@ export async function deletePlans(
   const { user } = await validateRequest()
   if (!user) throw new Error("Usuario no autenticado")
 
-  return await prisma
-    .$transaction(
-      async (tx) => {
-        try {
-          const plans = await tx.plan.findMany({
-            where: {
-              id: { in: planIds },
-            },
-            select: {
-              id: true,
-              name: true,
-            },
-          })
-
-          if (plans.length === 0) {
-            return {
-              success: false,
-              message: "No se encontraron planes para eliminar",
-            }
-          }
-
-          for (const plan of plans) {
-            await createPlanTransaction({
-              tx,
-              type: TransactionType.PLAN_DELETED,
-              planId: plan.id,
-              performedById: user.id,
-              facilityId,
-              details: {
-                action: "Plan borrado",
-                attachmentId: plan.id,
-                attachmentName: plan.name,
-              },
-            })
-          }
-
-          await createNotification(
-            tx,
-            user.id,
-            facilityId,
-            NotificationType.PLAN_DELETED,
-          )
-
-          const { count } = await tx.plan.deleteMany({
-            where: {
-              id: { in: planIds },
-            },
-          })
-
-          revalidatePath("/planes")
-
-          return {
-            success: true,
-            message: `Se ${count === 1 ? "ha" : "han"} eliminado ${count} ${
-              count === 1 ? "plan" : "planes"
-            } correctamente`,
-            deletedCount: count,
-          }
-        } catch (error) {
-          console.error("Error deleting plans:", error)
-          throw error
-        }
+  try {
+    const plans = await prisma.plan.findMany({
+      where: {
+        id: { in: planIds },
       },
-      {
-        isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
-        maxWait: 5000,
-        timeout: 10000,
+      select: {
+        id: true,
+        name: true,
       },
-    )
-    .catch((error) => {
-      console.error("Transaction failed:", error)
+    })
+
+    if (plans.length === 0) {
       return {
         success: false,
-        message:
-          error instanceof Error
-            ? error.message
-            : "Error al eliminar los planes",
+        message: "No se encontraron planes para eliminar",
       }
+    }
+
+    await prisma.diaryPlan.deleteMany({
+      where: {
+        planId: { in: planIds },
+      },
     })
+
+    for (const plan of plans) {
+      await prisma.transaction.create({
+        data: {
+          type: "PLAN_DELETED",
+          details: {
+            action: "Plan borrado",
+            attachmentId: plan.id,
+            attachmentName: plan.name,
+          },
+          performedById: user.id,
+          facilityId,
+          planId: plan.id,
+        },
+      })
+    }
+
+    const facility = await prisma.facility.findUnique({
+      where: { id: facilityId },
+      include: { users: true },
+    })
+
+    if (facility) {
+      const recipientUsers = facility.users.filter(
+        (userFacility) => userFacility.userId !== user.id,
+      )
+
+      for (const userFacility of recipientUsers) {
+        await prisma.notification.create({
+          data: {
+            recipientId: userFacility.userId,
+            issuerId: user.id,
+            facilityId,
+            type: "PLAN_DELETED",
+          },
+        })
+      }
+    }
+
+    const { count } = await prisma.plan.deleteMany({
+      where: {
+        id: { in: planIds },
+      },
+    })
+
+    revalidatePath("/planes")
+
+    return {
+      success: true,
+      message: `Se ${count === 1 ? "ha" : "han"} eliminado ${count} ${count === 1 ? "plan" : "planes"} correctamente`,
+      deletedCount: count,
+    }
+  } catch (err) {
+    const errorMessage =
+      err instanceof Error ? err.message : "Error al eliminar los planes"
+
+    console.log("Transaction failed:", errorMessage)
+
+    return {
+      success: false,
+      message: errorMessage,
+    }
+  }
 }
 
 export async function replicatePlans(
