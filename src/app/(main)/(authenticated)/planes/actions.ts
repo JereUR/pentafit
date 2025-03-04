@@ -288,8 +288,6 @@ export async function deletePlans(
     const errorMessage =
       err instanceof Error ? err.message : "Error al eliminar los planes"
 
-    console.log("Transaction failed:", errorMessage)
-
     return {
       success: false,
       message: errorMessage,
