@@ -35,8 +35,6 @@ export async function createTransaction({
       ...(diaryId && { diaryId }),
     }
 
-    console.log("Final transaction data:", JSON.stringify(data, null, 2))
-
     const transaction = await tx.transaction.create({
       data,
     })
