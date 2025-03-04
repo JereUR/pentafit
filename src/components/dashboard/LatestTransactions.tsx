@@ -1,6 +1,6 @@
 "use client"
 
-import { format } from "date-fns"
+import { format, formatDistanceToNow, isWithinInterval, subDays } from "date-fns"
 import { es } from "date-fns/locale"
 import { Calendar, ClipboardList, Loader2, Users } from "lucide-react"
 
@@ -10,6 +10,7 @@ import { useLatestTransactions } from "@/hooks/useLatestTransactions"
 import type { Transaction, TransactionType } from "@/types/transactions"
 import noAvatarSrc from "@/assets/avatar-placeholder.png"
 import { PlanIcon } from "@/config/icons"
+import { Separator } from "../ui/separator"
 
 interface LatestTransactionsProps {
   facilityId: string
@@ -111,6 +112,24 @@ export function LatestTransactions({ facilityId }: LatestTransactionsProps) {
     return type.includes("STAFF") || type.includes("CLIENT")
   }
 
+  const getFormattedDate = (dateString: string) => {
+    const date = new Date(dateString)
+    const now = new Date()
+    const isRecent = isWithinInterval(date, {
+      start: subDays(now, 1),
+      end: now,
+    })
+
+    if (isRecent) {
+      return formatDistanceToNow(date, {
+        addSuffix: true,
+        locale: es,
+      })
+    }
+
+    return format(date, "dd.MM.yyyy HH:mm", { locale: es })
+  }
+
   return (
     <Card className="col-span-4 mt-6 border-primary">
       <CardHeader>
@@ -122,38 +141,40 @@ export function LatestTransactions({ facilityId }: LatestTransactionsProps) {
             <Loader2 className="h-6 w-6 animate-spin" />
           </div>
         ) : transactions && transactions.length > 0 ? (
-          <div className="space-y-8">
-            {transactions.map((transaction) => (
-              <div key={transaction.id} className="flex items-center">
-                {isUserTransaction(transaction.type) ? (
-                  <Avatar className="h-9 w-9">
-                    <AvatarImage src={getTransactionAvatar(transaction)} alt="Avatar" />
-                    <AvatarFallback>{getTransactionInitials(transaction)}</AvatarFallback>
-                  </Avatar>
-                ) : (
-                  <div className="h-9 w-9 rounded-full bg-secondary flex items-center justify-center">
-                    <div className="h-4 w-4">
-                      {getTransactionIcon(transaction.type)}
+          <div>
+            {transactions.map((transaction, index) => (
+              <div key={transaction.id}>
+                {/* Transaction content */}
+                <div className="py-3">
+                  <div className="flex flex-col space-y-2 sm:space-y-0 sm:grid sm:grid-cols-3 sm:gap-4">
+                    <div className="flex items-center col-span-1">
+                      {isUserTransaction(transaction.type) ? (
+                        <Avatar className="h-9 w-9 flex-shrink-0">
+                          <AvatarImage src={getTransactionAvatar(transaction)} alt="Avatar" />
+                          <AvatarFallback>{getTransactionInitials(transaction)}</AvatarFallback>
+                        </Avatar>
+                      ) : (
+                        <div className="h-9 w-9 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
+                          <div className="h-4 w-4">{getTransactionIcon(transaction.type)}</div>
+                        </div>
+                      )}
+                      <div className="ml-4 space-y-1 overflow-hidden">
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-medium leading-none truncate">{getTransactionName(transaction)}</p>
+                        </div>
+                        <p className="text-sm text-muted-foreground truncate">
+                          <span className="font-medium">{getTransactionType(transaction.type)}</span> - Por{" "}
+                          {transaction.performedBy.firstName} {transaction.performedBy.lastName}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center sm:justify-center">{getStatusBadge(transaction.type)}</div>
+                    <div className="flex items-center sm:justify-end">
+                      <div className="text-sm text-muted-foreground">{getFormattedDate(transaction.createdAt)}</div>
                     </div>
                   </div>
-                )}
-                <div className="ml-4 space-y-1">
-                  <div className="flex items-center gap-2">
-                    <p className="text-sm font-medium leading-none">
-                      {getTransactionName(transaction)}
-                    </p>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    <span className="font-medium">{getTransactionType(transaction.type)}</span> - Por{" "}
-                    {transaction.performedBy.firstName} {transaction.performedBy.lastName}
-                  </p>
                 </div>
-                <div className="ml-auto flex flex-col items-end gap-2">
-                  <div>{getStatusBadge(transaction.type)}</div>
-                  <div className="text-sm text-muted-foreground">
-                    {format(new Date(transaction.createdAt), "dd.MM.yyyy", { locale: es })}
-                  </div>
-                </div>
+                {index < transactions.length - 1 && <Separator className="my-2" />}
               </div>
             ))}
           </div>
