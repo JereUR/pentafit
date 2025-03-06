@@ -192,3 +192,35 @@ export async function createDiaryTransaction({
     diaryId,
   })
 }
+
+export async function createRoutineTransaction({
+  tx,
+  type,
+  routineId,
+  performedById,
+  facilityId,
+  details,
+}: {
+  tx: Prisma.TransactionClient
+  type:
+    | "ROUTINE_CREATED"
+    | "ROUTINE_UPDATED"
+    | "ROUTINE_DELETED"
+    | "ROUTINE_REPLICATED"
+  routineId: string
+  performedById: string
+  facilityId: string
+  details?: Prisma.JsonValue
+}) {
+  const safeDetails = details && typeof details === "object" ? details : {}
+
+  return await tx.transaction.create({
+    data: {
+      type,
+      routineId,
+      performedById,
+      facilityId,
+      details: safeDetails,
+    },
+  })
+}
