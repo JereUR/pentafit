@@ -101,6 +101,30 @@ export default function Notification({ notification }: NotificationProps) {
       href: `/agenda`,
       color: "text-purple-500",
     },
+    ROUTINE_CREATED: {
+      message: "creó una rutina",
+      icon: <CalendarPlus className="h-4 w-4" />,
+      href: `/entrenamiento/rutinas`,
+      color: "text-green-500",
+    },
+    ROUTINE_UPDATED: {
+      message: "editó una rutina",
+      icon: <CalendarCog className="h-4 w-4" />,
+      href: `/entrenamiento/rutinas`,
+      color: "text-blue-500",
+    },
+    ROUTINE_DELETED: {
+      message: "eliminó una rutina",
+      icon: <CalendarX className="h-4 w-4" />,
+      href: `/entrenamiento/rutinas`,
+      color: "text-red-500",
+    },
+    ROUTINE_REPLICATED: {
+      message: "replicó rutinas",
+      icon: <CalendarArrowDown className="h-4 w-4" />,
+      href: `/entrenamiento/rutinas`,
+      color: "text-purple-500",
+    },
   }
 
   const { message, icon, href, color } = notificationTypeMap[notification.type]
