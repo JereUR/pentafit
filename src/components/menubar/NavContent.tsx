@@ -39,7 +39,7 @@ export function NavContent({ isExpanded, onExpandedChange, onClose, userRole }: 
           {isExpanded ? <ChevronLeft /> : <ChevronRight />}
         </Button>
       </div>
-      <nav className="flex-1 overflow-y-auto space-y-2 p-2">
+      <nav className="flex-1 overflow-y-auto space-y-2 p-2 scrollbar-thin">
         {filteredNavItems.map((item) => (
           <NavItemComponente
             key={item.title}
