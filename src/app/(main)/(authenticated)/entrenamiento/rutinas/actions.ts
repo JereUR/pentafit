@@ -177,7 +177,7 @@ export async function createRoutine(
         },
       })
 
-      /* await createRoutineTransaction({
+      await createRoutineTransaction({
         tx,
         type: TransactionType.ROUTINE_CREATED,
         routineId: routine.id,
@@ -188,15 +188,15 @@ export async function createRoutine(
           attachmentId: routine.id,
           attachmentName: routine.name,
         },
-      }) */
+      })
 
-      /* await createNotification(
+      await createNotification(
         tx,
         user.id,
         values.facilityId,
         NotificationType.ROUTINE_CREATED,
         routine.id,
-      ) */
+      )
 
       revalidatePath(`/rutinas`)
       return { success: true, routine }
