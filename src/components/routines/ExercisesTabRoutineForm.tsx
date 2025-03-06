@@ -1,0 +1,335 @@
+"use client"
+
+import type React from "react"
+
+import { useState, useEffect } from "react"
+import { CirclePlus, Pencil, Trash2 } from "lucide-react"
+import Image from "next/image"
+
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Textarea } from "@/components/ui/textarea"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import type { ExerciseValues } from "@/lib/validation"
+import { convertImagePath, getBodyZones, getExercisesByZone } from "@/data/exercisesData"
+import noImage from "@/assets/no-image.png"
+
+interface ExercisesTabRoutineFormProps {
+  exercises: ExerciseValues[]
+  setExercises: React.Dispatch<React.SetStateAction<ExerciseValues[]>>
+}
+
+export function ExercisesTabRoutineForm({ exercises, setExercises }: ExercisesTabRoutineFormProps) {
+  const [name, setName] = useState("")
+  const [bodyZone, setBodyZone] = useState("")
+  const [series, setSeries] = useState<number | null>(null)
+  const [count, setCount] = useState<number | null>(null)
+  const [measure, setMeasure] = useState("")
+  const [rest, setRest] = useState<number | null>(null)
+  const [description, setDescription] = useState("")
+  const [photoUrl, setPhotoUrl] = useState("")
+  const [editingIndex, setEditingIndex] = useState<number | null>(null)
+  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [availableExercises, setAvailableExercises] = useState<Array<{ exercise: string; photo: string }>>([])
+
+  // Obtener las zonas del cuerpo del archivo de datos
+  const bodyZones = getBodyZones()
+
+  // Actualizar los ejercicios disponibles cuando cambia la zona del cuerpo
+  useEffect(() => {
+    if (bodyZone) {
+      const exercises = getExercisesByZone(bodyZone)
+      setAvailableExercises(exercises)
+    } else {
+      setAvailableExercises([])
+    }
+  }, [bodyZone])
+
+  const validateExercise = () => {
+    const newErrors: Record<string, string> = {}
+
+    if (!name) newErrors.name = "El nombre es requerido"
+    if (!bodyZone) newErrors.bodyZone = "La zona del cuerpo es requerida"
+    if (!series || series <= 0) newErrors.series = "Las series deben ser al menos 1"
+    if (!count || count <= 0) newErrors.count = "La cantidad debe ser al menos 1"
+    if (!measure) newErrors.measure = "La medida es requerida"
+
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
+  const clearForm = () => {
+    setName("")
+    setBodyZone("")
+    setSeries(null)
+    setCount(null)
+    setMeasure("")
+    setRest(null)
+    setDescription("")
+    setPhotoUrl("")
+    setEditingIndex(null)
+    setErrors({})
+  }
+
+  const handleAddExercise = () => {
+    if (!validateExercise()) return
+
+    // Convertir la URL de la foto si existe
+    const processedPhotoUrl = photoUrl ? convertImagePath(photoUrl) : null
+
+    const newExercise: ExerciseValues = {
+      name,
+      bodyZone,
+      series: series!,
+      count: count!,
+      measure,
+      rest,
+      description: description || null,
+      photoUrl: processedPhotoUrl,
+    }
+
+    if (editingIndex !== null) {
+      const updatedExercises = [...exercises]
+      updatedExercises[editingIndex] = newExercise
+      setExercises(updatedExercises)
+    } else {
+      setExercises([...exercises, newExercise])
+    }
+
+    clearForm()
+  }
+
+  const handleEditExercise = (index: number) => {
+    const exercise = exercises[index]
+    setName(exercise.name)
+    setBodyZone(exercise.bodyZone)
+    setSeries(exercise.series)
+    setCount(exercise.count)
+    setMeasure(exercise.measure)
+    setRest(exercise.rest || null)
+    setDescription(exercise.description || "")
+    setPhotoUrl(exercise.photoUrl || "")
+    setEditingIndex(index)
+  }
+
+  const handleDeleteExercise = (index: number) => {
+    const updatedExercises = [...exercises]
+    updatedExercises.splice(index, 1)
+    setExercises(updatedExercises)
+  }
+
+  const handleExerciseSelect = (exerciseName: string) => {
+    setName(exerciseName)
+
+    const selectedExercise = availableExercises.find((ex) => ex.exercise === exerciseName)
+    if (selectedExercise) {
+      setPhotoUrl(selectedExercise.photo)
+    }
+  }
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardContent className="pt-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="bodyZone">Zona del cuerpo</Label>
+              <Select value={bodyZone} onValueChange={setBodyZone}>
+                <SelectTrigger id="bodyZone" className={errors.bodyZone ? "border-destructive" : ""}>
+                  <SelectValue placeholder="Seleccione una zona" />
+                </SelectTrigger>
+                <SelectContent>
+                  {bodyZones.map((zone) => (
+                    <SelectItem key={zone} value={zone}>
+                      {zone}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.bodyZone && <p className="text-sm text-destructive">{errors.bodyZone}</p>}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="exercise">Ejercicio</Label>
+              <Select value={name} onValueChange={handleExerciseSelect} disabled={!bodyZone}>
+                <SelectTrigger id="exercise" className={errors.name ? "border-destructive" : ""}>
+                  <SelectValue placeholder={bodyZone ? "Seleccione un ejercicio" : "Primero seleccione una zona"} />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableExercises.map((ex, index) => (
+                    <SelectItem key={index} value={ex.exercise}>
+                      {ex.exercise}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.name && <p className="text-sm text-destructive">{errors.name}</p>}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="series">Series</Label>
+              <Input
+                id="series"
+                type="number"
+                value={series === null ? "" : series}
+                onChange={(e) => setSeries(e.target.value ? Number.parseInt(e.target.value) : null)}
+                placeholder="Número de series"
+                className={errors.series ? "border-destructive" : ""}
+              />
+              {errors.series && <p className="text-sm text-destructive">{errors.series}</p>}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="count">Cantidad</Label>
+              <Input
+                id="count"
+                type="number"
+                value={count === null ? "" : count}
+                onChange={(e) => setCount(e.target.value ? Number.parseInt(e.target.value) : null)}
+                placeholder="Cantidad"
+                className={errors.count ? "border-destructive" : ""}
+              />
+              {errors.count && <p className="text-sm text-destructive">{errors.count}</p>}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="measure">Medida</Label>
+              <Select value={measure} onValueChange={setMeasure}>
+                <SelectTrigger id="measure" className={errors.measure ? "border-destructive" : ""}>
+                  <SelectValue placeholder="Seleccione una medida" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Repeticiones">Repeticiones</SelectItem>
+                  <SelectItem value="Segundos">Segundos</SelectItem>
+                </SelectContent>
+              </Select>
+              {errors.measure && <p className="text-sm text-destructive">{errors.measure}</p>}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="rest">Descanso (segundos)</Label>
+              <Input
+                id="rest"
+                type="number"
+                value={rest === null ? "" : rest}
+                onChange={(e) => setRest(e.target.value ? Number.parseInt(e.target.value) : null)}
+                placeholder="Tiempo de descanso"
+              />
+            </div>
+
+            <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="description">Descripción</Label>
+              <Textarea
+                id="description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Descripción del ejercicio"
+                className="resize-none"
+              />
+            </div>
+          </div>
+
+          {photoUrl && (
+            <div className="mt-6 rounded-lg bg-muted/50 p-0 overflow-hidden">
+              <div className="flex flex-col md:flex-row items-center">
+                <div className="relative w-full md:w-1/3 h-[200px] bg-background">
+                  <Image
+                    src={convertImagePath(photoUrl) || noImage}
+                    alt={name || "Ejercicio"}
+                    fill
+                    className="object-contain p-2"
+                    onError={(e) => {
+                      ; (e.target as HTMLImageElement).src = "/placeholder.svg?height=200&width=200"
+                    }}
+                  />
+                </div>
+                <div className="p-4 md:p-6 w-full md:w-2/3">
+                  <h3 className="text-lg font-semibold text-primary mb-2">{name}</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    {bodyZone} | {series || 0} series x {count || 0} {measure || "repeticiones"}
+                    {rest ? ` | Descanso: ${rest}s` : ""}
+                  </p>
+                  <p className="text-sm">{description || "Sin descripción disponible."}</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="mt-6 flex justify-center">
+            <Button
+              type="button"
+              onClick={handleAddExercise}
+              className="flex items-center gap-2 bg-primary hover:bg-primary/90"
+            >
+              <CirclePlus className="h-5 w-5" />
+              {editingIndex !== null ? "Actualizar Ejercicio" : "Agregar Ejercicio"}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {exercises.length > 0 && (
+        <div className="space-y-4">
+          <h3 className="text-lg font-medium text-primary">Ejercicios ({exercises.length})</h3>
+          <ScrollArea className="h-[400px] rounded-md border">
+            <div className="p-4 space-y-6">
+              {exercises.map((exercise, index) => (
+                <div key={index} className="bg-card rounded-lg p-4 shadow-sm">
+                  <div className="flex flex-col md:flex-row md:items-center gap-4">
+                    {exercise.photoUrl && (
+                      <div className="relative h-24 w-24 rounded-md overflow-hidden bg-muted flex-shrink-0 border border-border">
+                        <Image
+                          src={exercise.photoUrl || noImage}
+                          alt={exercise.name}
+                          fill
+                          className="object-cover"
+                          onError={(e) => {
+                            ; (e.target as HTMLImageElement).src = "/placeholder.svg?height=100&width=100"
+                          }}
+                        />
+                      </div>
+                    )}
+                    <div className="flex-1 space-y-1">
+                      <div className="flex items-start justify-between">
+                        <h4 className="font-medium text-primary">{exercise.name}</h4>
+                        <div className="flex space-x-2">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleEditExercise(index)}
+                            className="text-muted-foreground hover:text-primary"
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleDeleteExercise(index)}
+                            className="text-destructive hover:text-destructive/90 hover:bg-destructive/10"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        {exercise.bodyZone} | {exercise.series} series x {exercise.count} {exercise.measure}
+                        {exercise.rest ? ` | Descanso: ${exercise.rest}s` : ""}
+                      </p>
+                      {exercise.description && <p className="text-sm">{exercise.description}</p>}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </ScrollArea>
+        </div>
+      )}
+    </div>
+  )
+}
+

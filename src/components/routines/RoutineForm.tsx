@@ -1,0 +1,197 @@
+"use client"
+
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useState, useEffect } from "react"
+import { useForm } from "react-hook-form"
+import { useRouter } from "next/navigation"
+
+import { Form } from "@/components/ui/form"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import LoadingButton from "@/components/LoadingButton"
+import ErrorText from "@/components/ErrorText"
+import { useWorkingFacility } from "@/contexts/WorkingFacilityContext"
+import { withClientSideRendering } from "@/hooks/withClientSideRendering"
+import { type ExerciseValues, routineSchema, type RoutineValues } from "@/lib/validation"
+import WorkingFacility from "../WorkingFacility"
+import NoWorkingFacilityMessage from "../NoWorkingFacilityMessage"
+import { GeneralInfoTabRoutineForm } from "./GeneralInfoTabRoutineForm"
+import { ExercisesTabRoutineForm } from "./ExercisesTabRoutineForm"
+import {
+  useCreateRoutineMutation,
+  useUpdateRoutineMutation,
+} from "@/app/(main)/(authenticated)/entrenamiento/rutinas/mutations"
+
+interface RoutineFormProps {
+  userId: string
+  routineData?: RoutineValues & { id: string }
+}
+
+function RoutineForm({ userId, routineData }: RoutineFormProps) {
+  const { workingFacility } = useWorkingFacility()
+  const [exercises, setExercises] = useState<ExerciseValues[]>(routineData?.exercises || [])
+  const [error, setError] = useState<string>()
+  const isEditing = !!routineData
+  const router = useRouter()
+
+  const { mutate: createRoutine, isPending: isCreating, error: createError } = useCreateRoutineMutation()
+  const { mutate: updateRoutine, isPending: isUpdating, error: updateError } = useUpdateRoutineMutation()
+
+  const form = useForm<RoutineValues>({
+    resolver: zodResolver(routineSchema),
+    defaultValues: routineData || {
+      name: "",
+      description: "",
+      facilityId: workingFacility?.id || "",
+      isActive: true,
+      exercises: [],
+    },
+  })
+
+  useEffect(() => {
+    if (routineData) {
+      form.reset(routineData)
+      setExercises(routineData.exercises)
+    }
+  }, [routineData, form])
+
+  useEffect(() => {
+    if (workingFacility && !isEditing) {
+      form.setValue("facilityId", workingFacility.id)
+    }
+  }, [workingFacility, form, isEditing])
+
+  useEffect(() => {
+    form.setValue("exercises", exercises)
+  }, [exercises, form])
+
+  const onSubmit = async (values: RoutineValues) => {
+    setError(undefined)
+
+    if (exercises.length === 0) {
+      setError("Debe agregar al menos un ejercicio a la rutina")
+      return
+    }
+
+    const sanitizedValues: RoutineValues = {
+      name: values.name,
+      description: values.description || "",
+      facilityId: values.facilityId || workingFacility?.id || "",
+      isActive: typeof values.isActive === "boolean" ? values.isActive : true,
+      exercises: exercises.map((exercise) => ({
+        name: exercise.name,
+        bodyZone: exercise.bodyZone,
+        series: exercise.series,
+        count: exercise.count,
+        measure: exercise.measure,
+        rest: exercise.rest || null,
+        description: exercise.description || null,
+        photoUrl: exercise.photoUrl || null,
+      })),
+    }
+
+    if (!sanitizedValues.name || !sanitizedValues.facilityId) {
+      setError("Faltan campos requeridos (nombre o instalación)")
+      return
+    }
+
+    console.log("Enviando datos:", JSON.stringify(sanitizedValues, null, 2))
+
+    if (isEditing && routineData) {
+      updateRoutine(
+        {
+          id: routineData.id,
+          values: sanitizedValues,
+        },
+        {
+          onSuccess: () => {
+            form.reset()
+            router.push("/rutinas")
+          },
+          onError: (error) => {
+            console.error("Error completo:", error)
+            setError(error instanceof Error ? error.message : "Error al actualizar la rutina")
+          },
+        },
+      )
+    } else {
+      createRoutine(sanitizedValues, {
+        onSuccess: () => {
+          form.reset()
+          router.push("/rutinas")
+        },
+        onError: (error: unknown) => {
+          console.error("Error al crear la rutina:", error)
+          setError(error instanceof Error ? error.message : "Error desconocido al crear la rutina")
+        },
+      })
+    }
+  }
+
+  const mutationError = isEditing ? updateError : createError
+  const isPending = isEditing ? isUpdating : isCreating
+  const pageTitle = isEditing ? "Editar rutina" : "Agregar rutina"
+  const pageDescription = isEditing ? "Modifica los datos de tu rutina" : "Ingresa los datos de tu rutina para comenzar"
+
+  if (!workingFacility) {
+    return (
+      <div className="flex flex-col items-center gap-5 p-5 md:p-10 rounded-md border">
+        <WorkingFacility userId={userId} />
+        <NoWorkingFacilityMessage entityName="una rutina" />
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex flex-col items-center md:items-start gap-5 p-5 md:p-10 md:py-14 rounded-md border">
+      {!isEditing && <WorkingFacility userId={userId} />}
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle>{pageTitle}</CardTitle>
+          <CardDescription>{pageDescription}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              {(mutationError || error) && (
+                <ErrorText
+                  errorText={
+                    (mutationError instanceof Error
+                      ? mutationError.message
+                      : typeof mutationError === "string"
+                        ? mutationError
+                        : null) ||
+                    error ||
+                    "Ha ocurrido un error"
+                  }
+                />
+              )}
+              <Tabs defaultValue="general" className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                  {typeof window !== "undefined" && window.innerWidth > 700 ? (
+                    <TabsTrigger value="general">Información General</TabsTrigger>
+                  ) : (
+                    <TabsTrigger value="general">Inf General</TabsTrigger>
+                  )}
+                  <TabsTrigger value="exercises">Ejercicios</TabsTrigger>
+                </TabsList>
+                <TabsContent value="general">
+                  <GeneralInfoTabRoutineForm control={form.control} />
+                </TabsContent>
+                <TabsContent value="exercises">
+                  <ExercisesTabRoutineForm exercises={exercises} setExercises={setExercises} />
+                </TabsContent>
+              </Tabs>
+              <LoadingButton loading={isPending} type="submit" className="w-full">
+                {isEditing ? "Actualizar rutina" : "Crear rutina"}
+              </LoadingButton>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
+export default withClientSideRendering(RoutineForm)
+
