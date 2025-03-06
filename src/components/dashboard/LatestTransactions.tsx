@@ -54,6 +54,9 @@ export function LatestTransactions({ facilityId }: LatestTransactionsProps) {
     if (type.includes("DIARY")) {
       return <Calendar className="h-4 w-4 text-emerald-400" />
     }
+    if (type.includes("ROUTINE")) {
+      return <ClipboardList className="h-4 w-4 text-purple-400" />
+    }
     return null
   }
 
@@ -63,6 +66,7 @@ export function LatestTransactions({ facilityId }: LatestTransactionsProps) {
     if (type.includes("CLIENT")) return "Cliente"
     if (type.includes("PLAN")) return "Plan"
     if (type.includes("DIARY")) return "Diario"
+    if (type.includes("ROUTINE")) return "Rutina"
     return "N/A"
   }
 
