@@ -325,3 +325,59 @@ export const diarySchema = z
   })
 
 export type DiaryValues = z.infer<typeof diarySchema>
+
+export const exerciseSchema = z.object({
+  name: z.string().min(1, "El nombre es requerido"),
+  bodyZone: z.string().min(1, "La zona del cuerpo es requerida"),
+  series: z.number().min(1, "Las series deben ser al menos 1"),
+  count: z.number().min(1, "La cantidad debe ser al menos 1"),
+  measure: z.string().min(1, "La medida es requerida"),
+  rest: z.number().nullable().optional(),
+  description: z.string().nullable().optional(),
+  photoUrl: z.string().nullable().optional(),
+})
+
+export const routineSchema = z.object({
+  name: z.string().min(1, "El nombre es requerido"),
+  description: z.string().nullable().optional(),
+  facilityId: z.string().min(1, "El establecimiento es requerido"),
+  isActive: z.boolean().default(true),
+  exercises: z
+    .array(exerciseSchema)
+    .min(1, "Debe agregar al menos un ejercicio"),
+})
+
+export const presetRoutineSchema = z.object({
+  name: z.string().min(1, "El nombre es requerido"),
+  description: z.string().nullable().optional(),
+  facilityId: z.string().min(1, "El establecimiento es requerido"),
+  isPublic: z.boolean().default(false),
+  exercises: z
+    .array(exerciseSchema)
+    .min(1, "Debe agregar al menos un ejercicio"),
+})
+
+export const userRoutineSchema = z.object({
+  userId: z.string().min(1, "El usuario es requerido"),
+  routineId: z.string().min(1, "La rutina es requerida"),
+  dayOfWeek: z.enum(
+    [
+      "MONDAY",
+      "TUESDAY",
+      "WEDNESDAY",
+      "THURSDAY",
+      "FRIDAY",
+      "SATURDAY",
+      "SUNDAY",
+    ],
+    {
+      required_error: "El día de la semana es requerido",
+    },
+  ),
+  isActive: z.boolean().default(true),
+})
+
+export type ExerciseValues = z.infer<typeof exerciseSchema>
+export type RoutineValues = z.infer<typeof routineSchema>
+export type PresetRoutineValues = z.infer<typeof presetRoutineSchema>
+export type UserRoutineValues = z.infer<typeof userRoutineSchema>
