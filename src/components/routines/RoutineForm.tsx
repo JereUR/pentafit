@@ -95,8 +95,6 @@ function RoutineForm({ userId, routineData }: RoutineFormProps) {
       return
     }
 
-    console.log("Enviando datos:", JSON.stringify(sanitizedValues, null, 2))
-
     if (isEditing && routineData) {
       updateRoutine(
         {
@@ -106,7 +104,7 @@ function RoutineForm({ userId, routineData }: RoutineFormProps) {
         {
           onSuccess: () => {
             form.reset()
-            router.push("/rutinas")
+            router.push("/entrenamiento/rutinas")
           },
           onError: (error) => {
             console.error("Error completo:", error)
@@ -118,7 +116,7 @@ function RoutineForm({ userId, routineData }: RoutineFormProps) {
       createRoutine(sanitizedValues, {
         onSuccess: () => {
           form.reset()
-          router.push("/rutinas")
+          router.push("/entrenamiento/rutinas")
         },
         onError: (error: unknown) => {
           console.error("Error al crear la rutina:", error)
