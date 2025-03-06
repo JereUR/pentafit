@@ -10,6 +10,7 @@ export async function createTransaction({
   targetUserId,
   planId,
   diaryId,
+  routineId,
 }: {
   tx: Prisma.TransactionClient
   type: TransactionType
@@ -20,6 +21,7 @@ export async function createTransaction({
   targetUserId?: string
   planId?: string
   diaryId?: string
+  routineId?: string
 }) {
   try {
     const safeDetails = details && typeof details === "object" ? details : {}
@@ -33,6 +35,7 @@ export async function createTransaction({
       ...(targetUserId && { targetUserId }),
       ...(planId && { planId }),
       ...(diaryId && { diaryId }),
+      ...(routineId && { routineId }),
     }
 
     const transaction = await tx.transaction.create({
@@ -214,13 +217,12 @@ export async function createRoutineTransaction({
 }) {
   const safeDetails = details && typeof details === "object" ? details : {}
 
-  return await tx.transaction.create({
-    data: {
-      type,
-      routineId,
-      performedById,
-      facilityId,
-      details: safeDetails,
-    },
+  return await createTransaction({
+    tx,
+    type,
+    details: safeDetails,
+    performedById,
+    facilityId,
+    routineId,
   })
 }
