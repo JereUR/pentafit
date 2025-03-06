@@ -43,7 +43,7 @@ export function useCreateRoutineMutation() {
       queryClient.invalidateQueries({
         queryKey: ["latestTransactions", newRoutine?.facilityId],
       })
-      router.push("/rutinas")
+      router.push("/entrenamiento/rutinas")
     },
     onError: (error: Error) => {
       toast({
@@ -84,7 +84,7 @@ export function useUpdateRoutineMutation() {
       queryClient.invalidateQueries({
         queryKey: ["latestTransactions", updatedRoutine?.facilityId],
       })
-      router.push("/rutinas")
+      router.push("/entrenamiento/rutinas")
     },
     onError: (error: Error) => {
       toast({
@@ -176,7 +176,7 @@ export function useCreatePresetRoutineMutation() {
       queryClient.invalidateQueries({
         queryKey: ["latestTransactions", newPresetRoutine?.facilityId],
       })
-      router.push("/rutinas/preestablecidas")
+      router.push("/entrenamiento/rutinas/preestablecidas")
     },
     onError: (error: Error) => {
       toast({
@@ -220,7 +220,7 @@ export function useUpdatePresetRoutineMutation() {
       queryClient.invalidateQueries({
         queryKey: ["latestTransactions", updatedPresetRoutine?.facilityId],
       })
-      router.push("/rutinas/preestablecidas")
+      router.push("/entrenamiento/rutinas/preestablecidas")
     },
     onError: (error: Error) => {
       toast({
@@ -356,7 +356,7 @@ export function useCreateRoutineFromPresetMutation() {
       queryClient.invalidateQueries({
         queryKey: ["latestTransactions", newRoutine?.facilityId],
       })
-      router.push("/rutinas")
+      router.push("/entrenamiento/rutinas")
     },
     onError: (error: Error) => {
       toast({
