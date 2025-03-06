@@ -13,7 +13,9 @@ export async function createNotification(
   })
   if (!facility) throw new Error("Facility not found")
 
-  const recipientUsers = facility.users.filter((userFacility) => userFacility.userId !== issuerId)
+  const recipientUsers = facility.users.filter(
+    (userFacility) => userFacility.userId !== issuerId,
+  )
 
   const notifications = recipientUsers.map((userFacility) => ({
     recipientId: userFacility.userId,
@@ -27,7 +29,9 @@ export async function createNotification(
           ? "planId"
           : type.toLowerCase().includes("diary")
             ? "diaryId"
-            : "userId"]: relatedId,
+            : type.toLowerCase().includes("routine")
+              ? "routineId"
+              : "userId"]: relatedId,
     }),
   }))
 
@@ -35,4 +39,3 @@ export async function createNotification(
     await tx.notification.createMany({ data: notifications })
   }
 }
-
