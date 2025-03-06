@@ -14,6 +14,15 @@ const nextConfig: NextConfig = {
         hostname: "utfs.io",
         pathname: `/a/${process.env.NEXT_PUBLIC_UPLOADTHING_APP_ID}/*`,
       },
+      {
+        protocol: "https",
+        hostname: "**",
+      },
+      {
+        protocol: "https",
+        hostname: "uju2e4ws2o.ufs.sh",
+        pathname: "/**",
+      },
     ],
   },
   serverExternalPackages: ["@node-rs/argon2"],
