@@ -47,6 +47,7 @@ model User {
   issuedNotifications    Notification[]  @relation("IssuerNotifications")
   performedTransactions  Transaction[]   @relation("PerformedTransactions")
   targetUserTransactions Transaction[]   @relation("TargetUserTransactions")
+  routines               UserRoutine[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -74,24 +75,26 @@ model Session {
 }
 
 model Facility {
-  id            String            @id @default(uuid())
-  name          String
-  description   String?
-  email         String?
-  address       String?
-  phone         String?
-  instagram     String?
-  facebook      String?
-  isActive      Boolean           @default(false)
-  isWorking     Boolean           @default(false)
-  logoUrl       String?
-  metadata      FacilityMetadata?
-  users         UserFacility[]
-  notifications Notification[]
-  activities    Activity[]
-  plans         Plan[]
-  diaries       Diary[]
-  transactions  Transaction[]
+  id             String            @id @default(uuid())
+  name           String
+  description    String?
+  email          String?
+  address        String?
+  phone          String?
+  instagram      String?
+  facebook       String?
+  isActive       Boolean           @default(false)
+  isWorking      Boolean           @default(false)
+  logoUrl        String?
+  metadata       FacilityMetadata?
+  users          UserFacility[]
+  notifications  Notification[]
+  activities     Activity[]
+  plans          Plan[]
+  diaries        Diary[]
+  transactions   Transaction[]
+  routines       Routine[]
+  presetRoutines PresetRoutine[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -136,6 +139,10 @@ enum NotificationType {
   DIARY_UPDATED
   DIARY_DELETED
   DIARY_REPLICATED
+  ROUTINE_CREATED
+  ROUTINE_UPDATED
+  ROUTINE_DELETED
+  ROUTINE_REPLICATED
 }
 
 model Notification {
@@ -152,6 +159,8 @@ model Notification {
   plan        Plan?            @relation(fields: [planId], references: [id], onDelete: Cascade)
   diaryId     String?
   diary       Diary?           @relation(fields: [diaryId], references: [id], onDelete: Cascade)
+  routineId   String?
+  routine     Routine?         @relation(fields: [routineId], references: [id], onDelete: Cascade)
   type        NotificationType
   read        Boolean          @default(false)
   createdAt   DateTime         @default(now())
@@ -180,6 +189,10 @@ enum TransactionType {
   DIARY_UPDATED
   DIARY_DELETED
   DIARY_REPLICATED
+  ROUTINE_CREATED
+  ROUTINE_UPDATED
+  ROUTINE_DELETED
+  ROUTINE_REPLICATED
 }
 
 model Transaction {
@@ -204,6 +217,9 @@ model Transaction {
 
   diaryId String?
   diary   Diary?  @relation(fields: [diaryId], references: [id], onDelete: SetNull)
+
+  routineId String?
+  routine   Routine? @relation(fields: [routineId], references: [id], onDelete: SetNull)
 
   createdAt DateTime @default(now())
 
@@ -345,4 +361,84 @@ model Diary {
   transactions  Transaction[]
 
   @@map("diaries")
+}
+
+enum DayOfWeek {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
+
+model Routine {
+  id            String         @id @default(uuid())
+  name          String
+  description   String?
+  facilityId    String
+  facility      Facility       @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  exercises     Exercise[]
+  userRoutines  UserRoutine[]
+  notifications Notification[]
+  transactions  Transaction[]
+  isActive      Boolean        @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("routines")
+}
+
+model PresetRoutine {
+  id          String     @id @default(uuid())
+  name        String
+  description String?
+  facilityId  String
+  facility    Facility   @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  exercises   Exercise[]
+  isPublic    Boolean    @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("preset_routines")
+}
+
+model Exercise {
+  id              String         @id @default(uuid())
+  name            String
+  bodyZone        String
+  series          Int
+  count           Int
+  measure         String
+  rest            Int?
+  description     String?
+  photoUrl        String?
+  routineId       String?
+  routine         Routine?       @relation(fields: [routineId], references: [id], onDelete: Cascade)
+  presetRoutineId String?
+  presetRoutine   PresetRoutine? @relation(fields: [presetRoutineId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("exercises")
+}
+
+model UserRoutine {
+  id        String    @id @default(uuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  routineId String
+  routine   Routine   @relation(fields: [routineId], references: [id], onDelete: Cascade)
+  dayOfWeek DayOfWeek
+  isActive  Boolean   @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, routineId, dayOfWeek])
+  @@map("user_routines")
 }
