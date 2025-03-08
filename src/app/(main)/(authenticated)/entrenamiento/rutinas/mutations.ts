@@ -13,6 +13,7 @@ import {
   deletePresetRoutines,
   createUserRoutine,
   createRoutineFromPreset,
+  replicateRoutines,
 } from "./actions"
 import {
   PresetRoutineValues,
@@ -115,13 +116,14 @@ export function useDeleteRoutineMutation() {
       }
 
       return {
+        success: result.success, // Añadir la propiedad success
         message: result.message,
         deletedCount: result.deletedCount,
         facilityId,
       }
     },
-    onSuccess: (message) => {
-      const { message: description, deletedCount, facilityId } = message
+    onSuccess: (data) => {
+      const { message: description, deletedCount, facilityId } = data
 
       const title =
         deletedCount === undefined
@@ -362,6 +364,43 @@ export function useCreateRoutineFromPresetMutation() {
       toast({
         variant: "destructive",
         title: "Error al crear la rutina desde la preestablecida",
+        description: error.message,
+      })
+    },
+  })
+}
+
+export function useReplicateRoutineMutation() {
+  const { toast } = useToast()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({
+      routineIds,
+      targetFacilityIds,
+    }: {
+      routineIds: string[]
+      targetFacilityIds: string[]
+    }) => {
+      const result = await replicateRoutines(routineIds, targetFacilityIds)
+      if (!result.success) {
+        throw new Error(result.message)
+      }
+      return result
+    },
+    onSuccess: (result) => {
+      toast({
+        title: "Rutinas replicadas correctamente",
+        description: result.message,
+      })
+      queryClient.invalidateQueries({
+        queryKey: ["routines"],
+      })
+    },
+    onError: (error: Error) => {
+      toast({
+        variant: "destructive",
+        title: "Error al replicar las rutinas",
         description: error.message,
       })
     },
