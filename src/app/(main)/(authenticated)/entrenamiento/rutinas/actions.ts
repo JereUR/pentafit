@@ -520,7 +520,6 @@ export async function deleteRoutines(
             }
           }
 
-          // Count user routines that will be affected
           const userRoutinesCount = await tx.userRoutine.count({
             where: {
               routineId: { in: routineIds },
@@ -550,21 +549,18 @@ export async function deleteRoutines(
             NotificationType.ROUTINE_DELETED,
           )
 
-          // Delete exercises first
           await tx.exercise.deleteMany({
             where: {
               routineId: { in: routineIds },
             },
           })
 
-          // Delete user routines
           await tx.userRoutine.deleteMany({
             where: {
               routineId: { in: routineIds },
             },
           })
 
-          // Delete routines
           const { count } = await tx.routine.deleteMany({
             where: {
               id: { in: routineIds },
@@ -770,4 +766,120 @@ export async function createRoutineFromPreset(
       }
     }
   })
+}
+
+export async function replicateRoutines(
+  routineIds: string[],
+  targetFacilityIds: string[],
+) {
+  const { user } = await validateRequest()
+  if (!user) throw new Error("Usuario no autenticado")
+
+  return await prisma
+    .$transaction(async (tx) => {
+      const routines = await tx.routine.findMany({
+        where: { id: { in: routineIds } },
+        include: {
+          exercises: true,
+        },
+      })
+
+      if (routines.length === 0) {
+        return {
+          success: false,
+          message: "No se encontraron rutinas para replicar",
+        }
+      }
+
+      const replicationResults = await Promise.all(
+        targetFacilityIds.flatMap(async (targetFacilityId) =>
+          Promise.all(
+            routines.map(async (sourceRoutine) => {
+              const {
+                id: sourceId,
+                facilityId: sourceFacilityId,
+                exercises,
+                ...routineData
+              } = sourceRoutine
+
+              const replicatedRoutine = await tx.routine.create({
+                data: {
+                  ...routineData,
+                  facilityId: targetFacilityId,
+                  exercises: {
+                    create: exercises.map(
+                      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                      ({ id, routineId, presetRoutineId, ...exerciseData }) =>
+                        exerciseData,
+                    ),
+                  },
+                },
+              })
+
+              await createRoutineTransaction({
+                tx,
+                type: TransactionType.ROUTINE_REPLICATED,
+                routineId: sourceId,
+                performedById: user.id,
+                facilityId: sourceFacilityId,
+                details: {
+                  action: "Rutina replicada",
+                  sourceRoutineId: sourceId,
+                  sourceRoutineName: sourceRoutine.name,
+                  sourceFacilityId: sourceFacilityId,
+                  targetFacilityId: targetFacilityId,
+                  replicatedRoutineId: replicatedRoutine.id,
+                  replicatedRoutineName: replicatedRoutine.name,
+                  exercisesCount: exercises.length,
+                },
+              })
+
+              return {
+                sourceRoutine,
+                replicatedRoutine,
+                targetFacilityId,
+              }
+            }),
+          ),
+        ),
+      )
+
+      const flattenedResults = replicationResults.flat()
+
+      await Promise.all(
+        targetFacilityIds.map((facilityId) =>
+          createNotification(
+            tx,
+            user.id,
+            facilityId,
+            NotificationType.ROUTINE_REPLICATED,
+          ),
+        ),
+      )
+
+      revalidatePath(`/routines`)
+      return {
+        success: true,
+        message: `Se han replicado ${flattenedResults.length} rutinas en ${targetFacilityIds.length} establecimientos.`,
+        replicatedCount: flattenedResults.length,
+        details: {
+          replicatedRoutines: flattenedResults.map((result) => ({
+            sourceId: result.sourceRoutine.id,
+            sourceName: result.sourceRoutine.name,
+            replicatedId: result.replicatedRoutine.id,
+            targetFacilityId: result.targetFacilityId,
+          })),
+        },
+      }
+    })
+    .catch((error) => {
+      console.error("Error replicating routines:", error)
+      return {
+        success: false,
+        message:
+          error instanceof Error
+            ? error.message
+            : "Error al replicar las rutinas",
+      }
+    })
 }
