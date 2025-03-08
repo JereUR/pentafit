@@ -1,6 +1,12 @@
 import { DayOfWeek } from "@prisma/client"
 
-export type ExerciseData = {
+export const columnsRoutines: { key: keyof RoutineData; label: string }[] = [
+  { key: "name", label: "Nombre" },
+  { key: "description", label: "Descripción" },
+  { key: "exercises", label: "Ejercicios asociados" },
+]
+
+export interface ExerciseData {
   id: string
   name: string
   bodyZone: string
@@ -10,24 +16,29 @@ export type ExerciseData = {
   rest: number | null
   description: string | null
   photoUrl: string | null
-  routineId: string | null
-  presetRoutineId: string | null
-  createdAt: Date
-  updatedAt: Date
+  routineId?: string | null
+  presetRoutineId?: string | null
+  createdAt?: Date
+  updatedAt?: Date
 }
 
-export type RoutineData = {
+export interface RoutineData {
   id: string
   name: string
   description: string | null
   facilityId: string
-  isActive: boolean
   exercises: ExerciseData[]
   createdAt: Date
   updatedAt: Date
 }
 
-export type PresetRoutineData = {
+export interface RoutineDataExport {
+  name: string
+  description: string
+  exercises: string
+}
+
+export interface PresetRoutineData {
   id: string
   name: string
   description: string | null
@@ -38,7 +49,7 @@ export type PresetRoutineData = {
   updatedAt: Date
 }
 
-export type UserRoutineData = {
+export interface UserRoutineData {
   id: string
   userId: string
   routineId: string
@@ -47,4 +58,16 @@ export type UserRoutineData = {
   routine: RoutineData
   createdAt: Date
   updatedAt: Date
+}
+
+export default function formatExercisesToString(
+  exercises: ExerciseData[],
+): string {
+  if (!exercises.length) return "No exercises"
+
+  return exercises
+    .map((exercise, index) => {
+      return `${index + 1}• ${exercise.name} - ${exercise.bodyZone} - ${exercise.series} series x ${exercise.count} ${exercise.measure}${exercise.rest ? ` - Descanso: ${exercise.rest}s` : ""}${exercise.description ? ` - ${exercise.description}` : ""}.`
+    })
+    .join("\n")
 }
