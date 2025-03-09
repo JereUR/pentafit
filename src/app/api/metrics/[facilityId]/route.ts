@@ -13,6 +13,7 @@ export async function GET(
       activeActivities,
       currentPlans,
       activeDiaries,
+      activeRoutines,
       teamMembers,
       clientMembers,
     ] = await Promise.all([
@@ -27,6 +28,11 @@ export async function GET(
         },
       }),
       prisma.diary.count({
+        where: {
+          facilityId,
+        },
+      }),
+      prisma.routine.count({
         where: {
           facilityId,
         },
@@ -59,6 +65,7 @@ export async function GET(
       activeActivities,
       currentPlans,
       activeDiaries,
+      activeRoutines,
       teamMembers,
       clientMembers,
     })
