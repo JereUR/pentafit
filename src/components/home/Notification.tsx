@@ -7,6 +7,7 @@ import {
   ClipboardPaste,
   ClipboardPen,
   ClipboardType,
+  SquareActivity
 } from "lucide-react"
 import Link from "next/link"
 import type { JSX } from "react"
@@ -103,25 +104,25 @@ export default function Notification({ notification }: NotificationProps) {
     },
     ROUTINE_CREATED: {
       message: "creó una rutina",
-      icon: <CalendarPlus className="h-4 w-4" />,
+      icon: <SquareActivity className="h-4 w-4" />,
       href: `/entrenamiento/rutinas`,
       color: "text-green-500",
     },
     ROUTINE_UPDATED: {
       message: "editó una rutina",
-      icon: <CalendarCog className="h-4 w-4" />,
+      icon: <SquareActivity className="h-4 w-4" />,
       href: `/entrenamiento/rutinas`,
       color: "text-blue-500",
     },
     ROUTINE_DELETED: {
       message: "eliminó una rutina",
-      icon: <CalendarX className="h-4 w-4" />,
+      icon: <SquareActivity className="h-4 w-4" />,
       href: `/entrenamiento/rutinas`,
       color: "text-red-500",
     },
     ROUTINE_REPLICATED: {
       message: "replicó rutinas",
-      icon: <CalendarArrowDown className="h-4 w-4" />,
+      icon: <SquareActivity className="h-4 w-4" />,
       href: `/entrenamiento/rutinas`,
       color: "text-purple-500",
     },
