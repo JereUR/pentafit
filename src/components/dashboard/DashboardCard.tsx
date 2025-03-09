@@ -37,6 +37,7 @@ export function DashboardCard({ id, title, icon, value, loading, error, classNam
     "from-emerald-600/30 to-teal-600/30 hover:from-emerald-600/40 hover:to-teal-600/40",
     "from-rose-600/30 to-red-600/30 hover:from-rose-600/40 hover:to-red-600/40",
     "from-cyan-600/30 to-sky-600/30 hover:from-cyan-600/40 hover:to-sky-600/40",
+    "from-lime-600/30 to-green-600/30 hover:from-lime-600/40 hover:to-green-600/40",
   ]
 
   const iconColors = [
@@ -46,6 +47,7 @@ export function DashboardCard({ id, title, icon, value, loading, error, classNam
     "text-emerald-400",
     "text-rose-400",
     "text-cyan-400",
+    "text-lime-400",
   ]
 
   if (error) {

@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { Building2, Calendar, Users, ClipboardList, UserCircle2 } from 'lucide-react'
+import { Building2, Calendar, Users, ClipboardList, UserCircle2, SquareActivity } from 'lucide-react'
 
 import { useFacilities } from "@/hooks/useFacilities"
 import { useMetrics } from "@/hooks/useMetrics"
@@ -65,6 +65,14 @@ export default function Dashboard({ userId }: { userId: string }) {
             title="Clientes activos"
             icon={<UserCircle2 />}
             value={metrics?.clientMembers}
+            loading={isLoadingMetrics}
+            error={metricsError}
+          />
+          <DashboardCard
+            id={6}
+            title="Rutinas activas"
+            icon={<SquareActivity />}
+            value={metrics?.activeRoutines}
             loading={isLoadingMetrics}
             error={metricsError}
           />
