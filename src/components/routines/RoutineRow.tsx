@@ -65,6 +65,12 @@ export default function RoutineRow({
   }
 
   const renderCellContent = (column: { key: keyof RoutineData; label: string }) => {
+    if (column.key === "isActive") {
+      return(
+        <Checkbox checked={routine[column.key] as boolean} disabled />
+      )
+    }
+
     if (column.key === "exercises") {
       return (
         <div className="flex items-center justify-center gap-2">
