@@ -58,6 +58,7 @@ export async function GET(
       id: routine.id,
       name: routine.name,
       description: routine.description,
+      isActive: routine.isActive,
       exercises: routine.exercises.map((exercise) => ({
         ...exercise,
         rest: exercise.rest || null,
