@@ -768,10 +768,7 @@ export async function createRoutineFromPreset(
   })
 }
 
-export async function replicateRoutines(
-  routineIds: string[],
-  targetFacilityIds: string[],
-) {
+export async function replicateRoutines(routineIds: string[], targetFacilityIds: string[]) {
   const { user } = await validateRequest()
   if (!user) throw new Error("Usuario no autenticado")
 
@@ -791,16 +788,20 @@ export async function replicateRoutines(
         }
       }
 
+      const targetFacilities = await tx.facility.findMany({
+        where: { id: { in: targetFacilityIds } },
+        select: {
+          id: true,
+          name: true,
+          logoUrl: true,
+        },
+      })
+
       const replicationResults = await Promise.all(
         targetFacilityIds.flatMap(async (targetFacilityId) =>
           Promise.all(
             routines.map(async (sourceRoutine) => {
-              const {
-                id: sourceId,
-                facilityId: sourceFacilityId,
-                exercises,
-                ...routineData
-              } = sourceRoutine
+              const { id: sourceId, facilityId: sourceFacilityId, exercises, ...routineData } = sourceRoutine
 
               const replicatedRoutine = await tx.routine.create({
                 data: {
@@ -809,8 +810,7 @@ export async function replicateRoutines(
                   exercises: {
                     create: exercises.map(
                       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                      ({ id, routineId, presetRoutineId, ...exerciseData }) =>
-                        exerciseData,
+                      ({ id, routineId, presetRoutineId, ...exerciseData }) => exerciseData,
                     ),
                   },
                 },
@@ -831,6 +831,11 @@ export async function replicateRoutines(
                   replicatedRoutineId: replicatedRoutine.id,
                   replicatedRoutineName: replicatedRoutine.name,
                   exercisesCount: exercises.length,
+                  targetFacilities: targetFacilities.map((facility) => ({
+                    id: facility.id,
+                    name: facility.name,
+                    logoUrl: facility.logoUrl,
+                  })),
                 },
               })
 
@@ -848,16 +853,11 @@ export async function replicateRoutines(
 
       await Promise.all(
         targetFacilityIds.map((facilityId) =>
-          createNotification(
-            tx,
-            user.id,
-            facilityId,
-            NotificationType.ROUTINE_REPLICATED,
-          ),
+          createNotification(tx, user.id, facilityId, NotificationType.ROUTINE_REPLICATED),
         ),
       )
 
-      revalidatePath(`/routines`)
+      revalidatePath(`/entrenamiento/rutinas`)
       return {
         success: true,
         message: `Se han replicado ${flattenedResults.length} rutinas en ${targetFacilityIds.length} establecimientos.`,
@@ -876,10 +876,7 @@ export async function replicateRoutines(
       console.error("Error replicating routines:", error)
       return {
         success: false,
-        message:
-          error instanceof Error
-            ? error.message
-            : "Error al replicar las rutinas",
+        message: error instanceof Error ? error.message : "Error al replicar las rutinas",
       }
     })
 }

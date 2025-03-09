@@ -381,6 +381,15 @@ export async function replicateDiaries(
         }
       }
 
+      const targetFacilities = await tx.facility.findMany({
+        where: { id: { in: targetFacilityIds } },
+        select: {
+          id: true,
+          name: true,
+          logoUrl: true,
+        },
+      })
+
       const replicationResults = await Promise.all(
         targetFacilityIds.flatMap(async (targetFacilityId) =>
           Promise.all(
@@ -436,6 +445,11 @@ export async function replicateDiaries(
                   activityName: activity.name,
                   daysAvailableCount: daysAvailable.length,
                   offerDaysCount: offerDays.length,
+                  targetFacilities: targetFacilities.map((facility) => ({
+                    id: facility.id,
+                    name: facility.name,
+                    logoUrl: facility.logoUrl,
+                  })),
                 },
               })
 

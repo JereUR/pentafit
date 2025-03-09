@@ -102,7 +102,7 @@ export async function createActivity(
       )
 
       revalidatePath(`/actividades`)
-      return { success: true, activity }
+      return { success: true, activity}
     } catch (error) {
       console.error(error)
       return { success: false, error: "Error al crear la actividad" }
@@ -264,10 +264,7 @@ export async function deleteActivities(
     })
 }
 
-export async function replicateActivities(
-  activityIds: string[],
-  targetFacilityIds: string[],
-) {
+export async function replicateActivities(activityIds: string[], targetFacilityIds: string[]) {
   const { user } = await validateRequest()
   if (!user) throw new Error("Usuario no autenticado")
 
@@ -299,16 +296,21 @@ export async function replicateActivities(
           message: "No se encontraron actividades para replicar",
         }
       }
+      
+      const targetFacilities = await tx.facility.findMany({
+        where: { id: { in: targetFacilityIds } },
+        select: {
+          id: true,
+          name: true,
+          logoUrl: true,
+        },
+      })
 
       const replicationResults = await Promise.all(
         targetFacilityIds.flatMap(async (targetFacilityId) =>
           Promise.all(
             activities.map(async (sourceActivity) => {
-              const {
-                id: sourceId,
-                facilityId: sourceFacilityId,
-                ...activityData
-              } = sourceActivity
+              const { id: sourceId, facilityId: sourceFacilityId, ...activityData } = sourceActivity
 
               const replicatedActivity = await tx.activity.create({
                 data: {
@@ -331,6 +333,11 @@ export async function replicateActivities(
                   targetFacilityId: targetFacilityId,
                   replicatedActivityId: replicatedActivity.id,
                   replicatedActivityName: replicatedActivity.name,
+                  targetFacilities: targetFacilities.map((facility) => ({
+                    id: facility.id,
+                    name: facility.name,
+                    logoUrl: facility.logoUrl,
+                  })),
                 },
               })
 
@@ -348,12 +355,7 @@ export async function replicateActivities(
 
       await Promise.all(
         targetFacilityIds.map((facilityId) =>
-          createNotification(
-            tx,
-            user.id,
-            facilityId,
-            NotificationType.ACTIVITY_REPLICATED,
-          ),
+          createNotification(tx, user.id, facilityId, NotificationType.ACTIVITY_REPLICATED),
         ),
       )
 
@@ -376,10 +378,7 @@ export async function replicateActivities(
       console.error("Error replicating activities:", error)
       return {
         success: false,
-        message:
-          error instanceof Error
-            ? error.message
-            : "Error al replicar las actividades",
+        message: error instanceof Error ? error.message : "Error al replicar las actividades",
       }
     })
 }

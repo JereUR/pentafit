@@ -295,10 +295,7 @@ export async function deletePlans(
   }
 }
 
-export async function replicatePlans(
-  planIds: string[],
-  targetFacilityIds: string[],
-) {
+export async function replicatePlans(planIds: string[], targetFacilityIds: string[]) {
   const { user } = await validateRequest()
   if (!user) throw new Error("Usuario no autenticado")
 
@@ -338,16 +335,21 @@ export async function replicatePlans(
         }
       }
 
+      // Get target facilities information
+      const targetFacilities = await tx.facility.findMany({
+        where: { id: { in: targetFacilityIds } },
+        select: {
+          id: true,
+          name: true,
+          logoUrl: true,
+        },
+      })
+
       const replicationResults = await Promise.all(
         targetFacilityIds.flatMap(async (targetFacilityId) =>
           Promise.all(
             plans.map(async (sourcePlan) => {
-              const {
-                id: sourceId,
-                facilityId: sourceFacilityId,
-                diaryPlans,
-                ...planData
-              } = sourcePlan
+              const { id: sourceId, facilityId: sourceFacilityId, diaryPlans, ...planData } = sourcePlan
 
               const replicatedPlan = await tx.plan.create({
                 data: {
@@ -373,6 +375,11 @@ export async function replicatePlans(
                   targetFacilityId: targetFacilityId,
                   replicatedPlanId: replicatedPlan.id,
                   replicatedPlanName: replicatedPlan.name,
+                  targetFacilities: targetFacilities.map((facility) => ({
+                    id: facility.id,
+                    name: facility.name,
+                    logoUrl: facility.logoUrl,
+                  })),
                 },
               })
 
@@ -390,12 +397,7 @@ export async function replicatePlans(
 
       await Promise.all(
         targetFacilityIds.map((facilityId) =>
-          createNotification(
-            tx,
-            user.id,
-            facilityId,
-            NotificationType.PLAN_REPLICATED,
-          ),
+          createNotification(tx, user.id, facilityId, NotificationType.PLAN_REPLICATED),
         ),
       )
 
@@ -418,10 +420,8 @@ export async function replicatePlans(
       console.error("Error replicating plans:", error)
       return {
         success: false,
-        message:
-          error instanceof Error
-            ? error.message
-            : "Error al replicar los planes",
+        message: error instanceof Error ? error.message : "Error al replicar los planes",
       }
     })
 }
+
