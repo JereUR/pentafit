@@ -44,6 +44,9 @@ export function useCreateRoutineMutation() {
       queryClient.invalidateQueries({
         queryKey: ["latestTransactions", newRoutine?.facilityId],
       })
+      queryClient.invalidateQueries({
+        queryKey: ["metrics", newRoutine?.facilityId],
+      })
       router.push("/entrenamiento/rutinas")
     },
     onError: (error: Error) => {
@@ -85,6 +88,9 @@ export function useUpdateRoutineMutation() {
       queryClient.invalidateQueries({
         queryKey: ["latestTransactions", updatedRoutine?.facilityId],
       })
+      queryClient.invalidateQueries({
+        queryKey: ["metrics", updatedRoutine?.facilityId],
+      })
       router.push("/entrenamiento/rutinas")
     },
     onError: (error: Error) => {
@@ -116,7 +122,7 @@ export function useDeleteRoutineMutation() {
       }
 
       return {
-        success: result.success, // Añadir la propiedad success
+        success: result.success,
         message: result.message,
         deletedCount: result.deletedCount,
         facilityId,
@@ -142,11 +148,67 @@ export function useDeleteRoutineMutation() {
       queryClient.invalidateQueries({
         queryKey: ["latestTransactions", facilityId],
       })
+      queryClient.invalidateQueries({
+        queryKey: ["metrics", facilityId],
+      })
     },
     onError: (error: Error) => {
       toast({
         variant: "destructive",
         title: "Error al eliminar la rutina",
+        description: error.message,
+      })
+    },
+  })
+}
+
+export function useReplicateRoutineMutation() {
+  const { toast } = useToast()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({
+      routineIds,
+      targetFacilityIds,
+    }: {
+      routineIds: string[]
+      targetFacilityIds: string[]
+    }) => {
+      const result = await replicateRoutines(routineIds, targetFacilityIds)
+      if (!result.success) {
+        throw new Error(result.message)
+      }
+      return {
+        ...result,
+        targetFacilityIds,
+      }
+    },
+    onSuccess: (result) => {
+      toast({
+        title: "Rutinas replicadas correctamente",
+        description: result.message,
+      })
+
+      if (result.targetFacilityIds && Array.isArray(result.targetFacilityIds)) {
+        result.targetFacilityIds.forEach((facilityId) => {
+          queryClient.invalidateQueries({
+            queryKey: ["routines", facilityId],
+          })
+
+          queryClient.invalidateQueries({
+            queryKey: ["latestTransactions", facilityId],
+          })
+
+          queryClient.invalidateQueries({
+            queryKey: ["metrics", facilityId],
+          })
+        })
+      }
+    },
+    onError: (error: Error) => {
+      toast({
+        variant: "destructive",
+        title: "Error al replicar las rutinas",
         description: error.message,
       })
     },
@@ -364,43 +426,6 @@ export function useCreateRoutineFromPresetMutation() {
       toast({
         variant: "destructive",
         title: "Error al crear la rutina desde la preestablecida",
-        description: error.message,
-      })
-    },
-  })
-}
-
-export function useReplicateRoutineMutation() {
-  const { toast } = useToast()
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: async ({
-      routineIds,
-      targetFacilityIds,
-    }: {
-      routineIds: string[]
-      targetFacilityIds: string[]
-    }) => {
-      const result = await replicateRoutines(routineIds, targetFacilityIds)
-      if (!result.success) {
-        throw new Error(result.message)
-      }
-      return result
-    },
-    onSuccess: (result) => {
-      toast({
-        title: "Rutinas replicadas correctamente",
-        description: result.message,
-      })
-      queryClient.invalidateQueries({
-        queryKey: ["routines"],
-      })
-    },
-    onError: (error: Error) => {
-      toast({
-        variant: "destructive",
-        title: "Error al replicar las rutinas",
         description: error.message,
       })
     },

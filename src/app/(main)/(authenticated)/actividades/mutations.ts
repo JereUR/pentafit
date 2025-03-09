@@ -34,9 +34,15 @@ export function useCreateActivityMutation() {
       queryClient.invalidateQueries({
         queryKey: ["activities", newActivity?.facilityId],
       })
+
       queryClient.invalidateQueries({
         queryKey: ["latestTransactions", newActivity?.facilityId],
       })
+
+      queryClient.invalidateQueries({
+        queryKey: ["metrics", newActivity?.facilityId],
+      })
+
       router.push("/actividades")
     },
     onError: (error: Error) => {
@@ -79,6 +85,9 @@ export function useUpdateActivityMutation() {
       })
       queryClient.invalidateQueries({
         queryKey: ["latestTransactions", updatedActivity?.facilityId],
+      })
+      queryClient.invalidateQueries({
+        queryKey: ["metrics", updatedActivity?.facilityId],
       })
       router.push("/actividades")
     },
@@ -136,6 +145,9 @@ export function useDeleteActivityMutation() {
       queryClient.invalidateQueries({
         queryKey: ["latestTransactions", facilityId],
       })
+      queryClient.invalidateQueries({
+        queryKey: ["metrics", facilityId],
+      })
     },
     onError: (error: Error) => {
       toast({
@@ -163,20 +175,32 @@ export function useReplicateActivityMutation() {
       if (!result.success) {
         throw new Error(result.message)
       }
-      return result
+      return {
+        ...result,
+        targetFacilityIds,
+      }
     },
     onSuccess: (result) => {
       toast({
         title: "Actividades replicadas correctamente",
         description: result.message,
       })
-      queryClient.invalidateQueries({
-        queryKey: ["activities"],
-      })
 
-      queryClient.invalidateQueries({
-        queryKey: ["latestTransactions"],
-      })
+      if (result.targetFacilityIds && Array.isArray(result.targetFacilityIds)) {
+        result.targetFacilityIds.forEach((facilityId) => {
+          queryClient.invalidateQueries({
+            queryKey: ["activities", facilityId],
+          })
+    
+          queryClient.invalidateQueries({
+            queryKey: ["latestTransactions", facilityId],
+          })
+
+          queryClient.invalidateQueries({
+            queryKey: ["metrics", facilityId],
+          })
+        })
+      }
     },
     onError: (error: Error) => {
       toast({

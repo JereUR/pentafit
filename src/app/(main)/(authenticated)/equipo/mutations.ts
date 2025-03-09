@@ -43,6 +43,16 @@ export function useCreateMemberMutation() {
       queryClient.invalidateQueries({
         queryKey: ["team", newMember?.facilities.map((f) => f.facilityId)],
       })
+      queryClient.invalidateQueries({
+        queryKey: [
+          "latestTransactions",
+          newMember?.facilities.map((f) => f.facilityId),
+        ],
+      })
+      queryClient.invalidateQueries({
+        queryKey: ["metrics", newMember?.facilities.map((f) => f.facilityId)],
+      })
+
       router.push(`/equipo`)
     },
     onError: (error: Error) => {
@@ -97,6 +107,18 @@ export function useUpdateMemberMutation() {
       queryClient.invalidateQueries({
         queryKey: ["team", updatedMember.facilities.map((f) => f.facilityId)],
       })
+      queryClient.invalidateQueries({
+        queryKey: [
+          "latestTransactions",
+          updatedMember?.facilities.map((f) => f.facilityId),
+        ],
+      })
+      queryClient.invalidateQueries({
+        queryKey: [
+          "metrics",
+          updatedMember.facilities.map((f) => f.facilityId),
+        ],
+      })
       router.push(`/equipo`)
     },
     onError: (error: Error) => {
@@ -145,6 +167,12 @@ export function useDeleteMemberMutation() {
       })
       queryClient.invalidateQueries({
         queryKey: ["team", facilityId],
+      })
+      queryClient.invalidateQueries({
+        queryKey: ["latestTransactions", facilityId],
+      })
+      queryClient.invalidateQueries({
+        queryKey: ["metrics", facilityId],
       })
     },
     onError: (error: Error) => {

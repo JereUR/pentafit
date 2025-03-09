@@ -34,8 +34,16 @@ export function useCreateDiaryMutation() {
           title: `Agenda ${result.diary.name} creada correctamente`,
         })
         queryClient.invalidateQueries({
-          queryKey: ["diaries"],
+          queryKey: ["diaries", result.diary.facilityId],
         })
+        queryClient.invalidateQueries({
+          queryKey: ["latestTransactions", result.diary.facilityId],
+        })
+  
+        queryClient.invalidateQueries({
+          queryKey: ["metrics", result.diary.facilityId],
+        })
+
       }
       router.push("/agenda")
     },
@@ -62,8 +70,16 @@ export function useUpdateDiaryMutation() {
         toast({
           title: `Agenda '${result.diary.name}' actualizada correctamente`,
         })
+        
         queryClient.invalidateQueries({
-          queryKey: ["diaries"],
+          queryKey: ["diaries", result.diary.facilityId],
+        })
+        queryClient.invalidateQueries({
+          queryKey: ["latestTransactions", result.diary.facilityId],
+        })
+  
+        queryClient.invalidateQueries({
+          queryKey: ["metrics", result.diary.facilityId],
         })
         router.push("/agenda")
       } else {
@@ -114,6 +130,13 @@ export function useDeleteDiaryMutation() {
       queryClient.invalidateQueries({
         queryKey: ["diaries", facilityId],
       })
+      queryClient.invalidateQueries({
+        queryKey: ["latestTransactions", facilityId],
+      })
+
+      queryClient.invalidateQueries({
+        queryKey: ["metrics", facilityId],
+      })
     },
     onError: (error: Error) => {
       toast({
@@ -141,16 +164,29 @@ export function useReplicateDiaryMutation() {
       if (!result.success) {
         throw new Error(result.message)
       }
-      return result
+      return {...result,targetFacilityIds}
     },
     onSuccess: (result) => {
       toast({
         title: "Agendas replicadas correctamente",
         description: result.message,
       })
-      queryClient.invalidateQueries({
-        queryKey: ["diaries"],
-      })
+      
+      if (result.targetFacilityIds && Array.isArray(result.targetFacilityIds)) {
+        result.targetFacilityIds.forEach((facilityId) => {
+          queryClient.invalidateQueries({
+            queryKey: ["diaries", facilityId],
+          })
+    
+          queryClient.invalidateQueries({
+            queryKey: ["latestTransactions", facilityId],
+          })
+
+          queryClient.invalidateQueries({
+            queryKey: ["metrics", facilityId],
+          })
+        })
+      }
     },
     onError: (error: Error) => {
       toast({

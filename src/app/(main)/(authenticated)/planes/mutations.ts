@@ -20,13 +20,25 @@ export function useCreatePlanMutation() {
         throw new Error(result.error || "Error al crear el plan")
       }
 
-      return result
+      return result.plan
     },
-    onSuccess: () => {
+    onSuccess: (newPlan) => {
       toast({
         title: "Plan creado correctamente",
       })
-      queryClient.invalidateQueries({ queryKey: ["plans"] })
+
+      queryClient.invalidateQueries({
+        queryKey: ["plans", newPlan?.facilityId],
+      })
+
+      queryClient.invalidateQueries({
+        queryKey: ["latestTransactions", newPlan?.facilityId],
+      })
+
+      queryClient.invalidateQueries({
+        queryKey: ["metrics", newPlan?.facilityId],
+      })
+
       router.push("/planes")
     },
     onError: (error: Error) => {
@@ -52,13 +64,25 @@ export function useUpdatePlanMutation() {
         throw new Error(result.error || "Error al actualizar el plan")
       }
 
-      return result
+      return result.plan
     },
-    onSuccess: () => {
+    onSuccess: (updatedPlan) => {
       toast({
         title: "Plan actualizado correctamente",
       })
-      queryClient.invalidateQueries({ queryKey: ["plans"] })
+
+      queryClient.invalidateQueries({
+        queryKey: ["plans", updatedPlan?.facilityId],
+      })
+
+      queryClient.invalidateQueries({
+        queryKey: ["latestTransactions", updatedPlan?.facilityId],
+      })
+
+      queryClient.invalidateQueries({
+        queryKey: ["metrics", updatedPlan?.facilityId],
+      })
+
       router.push("/planes")
     },
     onError: (error: Error) => {
@@ -103,6 +127,12 @@ export function useDeletePlanMutation() {
       queryClient.invalidateQueries({
         queryKey: ["plans", facilityId],
       })
+      queryClient.invalidateQueries({
+        queryKey: ["latestTransactions", facilityId],
+      })
+      queryClient.invalidateQueries({
+        queryKey: ["metrics", facilityId],
+      })
     },
     onError: (error: Error) => {
       toast({
@@ -130,16 +160,29 @@ export function useReplicatePlanMutation() {
       if (!result.success) {
         throw new Error(result.message)
       }
-      return result
+      return { ...result, targetFacilityIds }
     },
     onSuccess: (result) => {
       toast({
         title: "Planes replicados correctamente",
         description: result.message,
       })
-      queryClient.invalidateQueries({
-        queryKey: ["plans"],
-      })
+
+      if (result.targetFacilityIds && Array.isArray(result.targetFacilityIds)) {
+        result.targetFacilityIds.forEach((facilityId) => {
+          queryClient.invalidateQueries({
+            queryKey: ["activities", facilityId],
+          })
+
+          queryClient.invalidateQueries({
+            queryKey: ["latestTransactions", facilityId],
+          })
+
+          queryClient.invalidateQueries({
+            queryKey: ["metrics", facilityId],
+          })
+        })
+      }
     },
     onError: (error: Error) => {
       toast({

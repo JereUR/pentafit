@@ -54,6 +54,7 @@ export function useFacilityMutation(userId: string) {
         title: "Establecimiento creado correctamente",
       })
       queryClient.invalidateQueries({ queryKey: ["facilities"] })
+
       router.push("/establecimientos")
     },
     onError: (error: Error) => {
