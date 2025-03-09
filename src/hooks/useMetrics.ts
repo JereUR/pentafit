@@ -5,6 +5,7 @@ interface FacilityMetrics {
   activeActivities: number
   currentPlans: number
   activeDiaries: number
+  activeRoutines: number
   teamMembers: number
   clientMembers: number
 }
