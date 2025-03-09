@@ -60,5 +60,9 @@ export interface Transaction {
     id: string
     name: string
   } | null
+  routine?: {
+    id: string
+    name: string
+  }
   createdAt: string
 }
