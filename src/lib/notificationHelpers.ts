@@ -32,7 +32,7 @@ export async function createNotification({
   if (!facility) throw new Error("Facility not found")
 
   let recipientUsers = facility.users.filter(
-    (userFacility) => userFacility.userId !== issuerId,
+    (userFacility) => userFacility.user.role != Role.CLIENT,
   )
 
   if (
