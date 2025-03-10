@@ -1,21 +1,51 @@
-import type { NotificationType, Prisma } from "@prisma/client"
+import { Role, type NotificationType, type Prisma } from "@prisma/client"
 
-export async function createNotification(
-  tx: Prisma.TransactionClient,
-  issuerId: string,
-  facilityId: string,
-  type: NotificationType,
-  relatedId?: string,
-) {
+export async function createNotification({
+  tx,
+  issuerId,
+  facilityId,
+  type,
+  relatedId,
+}: {
+  tx: Prisma.TransactionClient
+  issuerId: string
+  facilityId: string
+  type: NotificationType
+  relatedId?: string
+}) {
   const facility = await tx.facility.findUnique({
     where: { id: facilityId },
-    include: { users: true },
+    include: {
+      users: {
+        include: {
+          user: {
+            select: {
+              id: true,
+              role: true,
+            },
+          },
+        },
+      },
+    },
   })
+
   if (!facility) throw new Error("Facility not found")
 
-  const recipientUsers = facility.users.filter(
+  let recipientUsers = facility.users.filter(
     (userFacility) => userFacility.userId !== issuerId,
   )
+
+  if (
+    type === "USER_CREATED" ||
+    type === "USER_UPDATED" ||
+    type === "USER_DELETED"
+  ) {
+    recipientUsers = recipientUsers.filter(
+      (userFacility) =>
+        userFacility.user.role === Role.ADMIN ||
+        userFacility.user.role === Role.SUPER_ADMIN,
+    )
+  }
 
   const notifications = recipientUsers.map((userFacility) => ({
     recipientId: userFacility.userId,

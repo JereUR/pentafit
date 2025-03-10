@@ -143,13 +143,13 @@ export async function createDiary(values: DiaryValues): Promise<DiaryResult> {
         },
       })
 
-      await createNotification(
+      await createNotification({
         tx,
-        user.id,
-        values.facilityId,
-        NotificationType.DIARY_CREATED,
-        diary.id,
-      )
+        issuerId: user.id,
+        facilityId: values.facilityId,
+        type: NotificationType.DIARY_CREATED,
+        relatedId: diary.id,
+      })
 
       revalidatePath(`/agenda`)
       return { success: true, diary }
@@ -222,13 +222,13 @@ export async function updateDiary(
         },
       })
 
-      await createNotification(
+      await createNotification({
         tx,
-        user.id,
-        values.facilityId,
-        NotificationType.DIARY_UPDATED,
-        diary.id,
-      )
+        issuerId: user.id,
+        facilityId: values.facilityId,
+        type: NotificationType.DIARY_UPDATED,
+        relatedId: diary.id,
+      })
 
       revalidatePath(`/agenda`)
       return { success: true, diary }
@@ -312,12 +312,12 @@ export async function deleteDiaries(
             },
           })
 
-          await createNotification(
+          await createNotification({
             tx,
-            user.id,
+            issuerId: user.id,
             facilityId,
-            NotificationType.DIARY_DELETED,
-          )
+            type: NotificationType.DIARY_DELETED,
+          })
 
           revalidatePath("/agenda")
 
@@ -467,12 +467,12 @@ export async function replicateDiaries(
 
       await Promise.all(
         targetFacilityIds.map((facilityId) =>
-          createNotification(
+          createNotification({
             tx,
-            user.id,
+            issuerId: user.id,
             facilityId,
-            NotificationType.DIARY_REPLICATED,
-          ),
+            type: NotificationType.DIARY_REPLICATED,
+          }),
         ),
       )
 

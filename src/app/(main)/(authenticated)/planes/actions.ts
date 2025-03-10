@@ -118,13 +118,13 @@ export async function createPlan(values: PlanValues): Promise<PlanResult> {
         },
       })
 
-      await createNotification(
+      await createNotification({
         tx,
-        user.id,
-        values.facilityId,
-        NotificationType.PLAN_CREATED,
-        plan.id,
-      )
+        issuerId: user.id,
+        facilityId: values.facilityId,
+        type: NotificationType.PLAN_CREATED,
+        relatedId: plan.id,
+      })
 
       revalidatePath(`/planes`)
       return { success: true }
@@ -185,13 +185,13 @@ export async function updatePlan(
         },
       })
 
-      await createNotification(
+      await createNotification({
         tx,
-        user.id,
-        values.facilityId,
-        NotificationType.PLAN_UPDATED,
-        plan.id,
-      )
+        issuerId: user.id,
+        facilityId: values.facilityId,
+        type: NotificationType.PLAN_UPDATED,
+        relatedId: plan.id,
+      })
 
       revalidatePath(`/planes`)
       return { success: true }
@@ -295,7 +295,10 @@ export async function deletePlans(
   }
 }
 
-export async function replicatePlans(planIds: string[], targetFacilityIds: string[]) {
+export async function replicatePlans(
+  planIds: string[],
+  targetFacilityIds: string[],
+) {
   const { user } = await validateRequest()
   if (!user) throw new Error("Usuario no autenticado")
 
@@ -349,7 +352,12 @@ export async function replicatePlans(planIds: string[], targetFacilityIds: strin
         targetFacilityIds.flatMap(async (targetFacilityId) =>
           Promise.all(
             plans.map(async (sourcePlan) => {
-              const { id: sourceId, facilityId: sourceFacilityId, diaryPlans, ...planData } = sourcePlan
+              const {
+                id: sourceId,
+                facilityId: sourceFacilityId,
+                diaryPlans,
+                ...planData
+              } = sourcePlan
 
               const replicatedPlan = await tx.plan.create({
                 data: {
@@ -397,7 +405,12 @@ export async function replicatePlans(planIds: string[], targetFacilityIds: strin
 
       await Promise.all(
         targetFacilityIds.map((facilityId) =>
-          createNotification(tx, user.id, facilityId, NotificationType.PLAN_REPLICATED),
+          createNotification({
+            tx,
+            issuerId: user.id,
+            facilityId,
+            type: NotificationType.PLAN_REPLICATED,
+          }),
         ),
       )
 
@@ -420,8 +433,10 @@ export async function replicatePlans(planIds: string[], targetFacilityIds: strin
       console.error("Error replicating plans:", error)
       return {
         success: false,
-        message: error instanceof Error ? error.message : "Error al replicar los planes",
+        message:
+          error instanceof Error
+            ? error.message
+            : "Error al replicar los planes",
       }
     })
 }
-

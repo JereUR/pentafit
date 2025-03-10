@@ -94,11 +94,11 @@ export async function createActivity(
       })
 
       await createNotification(
-        tx,
-        user.id,
-        values.facilityId,
-        NotificationType.ACTIVITY_CREATED,
-        activity.id,
+       { tx,
+        issuerId:user.id,
+        facilityId:values.facilityId,
+        type:NotificationType.ACTIVITY_CREATED,
+        relatedId:activity.id,}
       )
 
       revalidatePath(`/actividades`)
@@ -152,11 +152,11 @@ export async function updateActivity(
       })
 
       await createNotification(
-        tx,
-        user.id,
-        values.facilityId,
-        NotificationType.ACTIVITY_UPDATED,
-        activity.id,
+        {tx,
+        issuerId:user.id,
+        facilityId:values.facilityId,
+        type:NotificationType.ACTIVITY_UPDATED,
+        relatedId:activity.id,}
       )
 
       revalidatePath(`/actividades`)
@@ -219,10 +219,10 @@ export async function deleteActivities(
           }
 
           await createNotification(
-            tx,
-            user.id,
+            {tx,
+            issuerId:user.id,
             facilityId,
-            NotificationType.ACTIVITY_DELETED,
+            type:NotificationType.ACTIVITY_DELETED,}
           )
 
           const { count } = await tx.activity.deleteMany({
@@ -355,7 +355,7 @@ export async function replicateActivities(activityIds: string[], targetFacilityI
 
       await Promise.all(
         targetFacilityIds.map((facilityId) =>
-          createNotification(tx, user.id, facilityId, NotificationType.ACTIVITY_REPLICATED),
+          createNotification({tx, issuerId:user.id, facilityId, type:NotificationType.ACTIVITY_REPLICATED}),
         ),
       )
 
