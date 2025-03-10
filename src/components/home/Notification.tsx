@@ -7,7 +7,10 @@ import {
   ClipboardPaste,
   ClipboardPen,
   ClipboardType,
-  SquareActivity
+  SquareActivity,
+  UserRoundPen,
+  UserRoundPlus,
+  UserRoundX
 } from "lucide-react"
 import Link from "next/link"
 import type { JSX } from "react"
@@ -18,8 +21,8 @@ import { Card } from "@/components/ui/card"
 import { PlanIcon } from "@/config/icons"
 import { cn } from "@/lib/utils"
 import type { NotificationData } from "@/types/notification"
-import type { NotificationType } from "@prisma/client"
 import noImage from '@/assets/avatar-placeholder.png'
+import { NotificationType } from "@prisma/client"
 
 interface NotificationProps {
   notification: NotificationData
@@ -125,6 +128,24 @@ export default function Notification({ notification }: NotificationProps) {
       icon: <SquareActivity className="h-4 w-4" />,
       href: `/entrenamiento/rutinas`,
       color: "text-purple-500",
+    },
+    USER_CREATED: {
+      message: "creó un usuario",
+      icon: <UserRoundPlus className="h-4 w-4" />,
+      href: `/equipo`,
+      color: "text-green-500",
+    },
+    USER_UPDATED: {
+      message: "editó un usuario",
+      icon: <UserRoundPen className="h-4 w-4" />,
+      href: `/equipo`,
+      color: "text-blue-500",
+    },
+    USER_DELETED: {
+      message: "eliminó un usuario",
+      icon: <UserRoundX className="h-4 w-4" />,
+      href: `/equipo`,
+      color: "text-red-500",
     },
   }
 
