@@ -14,13 +14,19 @@ import {
 } from "@/lib/validation"
 import prisma from "@/lib/prisma"
 import { generateIdFromEntropySize } from "lucia"
-import { Prisma, type Role, TransactionType } from "@prisma/client"
+import {
+  NotificationType,
+  Prisma,
+  type Role,
+  TransactionType,
+} from "@prisma/client"
 import { validateRequest } from "@/auth"
 import type { DeleteEntityResult } from "@/lib/utils"
 import {
   createStaffTransaction,
   createClientTransaction,
 } from "@/lib/transactionHelpers"
+import { createNotification } from "@/lib/notificationHelpers"
 
 export const getMemberById = cache(
   async (id: string): Promise<MemberValues & { id: string }> => {
@@ -136,14 +142,13 @@ export async function createMember(values: MemberValues) {
         },
       })
 
-      // Use the appropriate transaction type based on role
       if (role === "STAFF" || role === "ADMIN" || role === "SUPER_ADMIN") {
         await createStaffTransaction({
           tx,
           type: TransactionType.STAFF_CREATED,
           targetUserId: member.id,
           performedById: user.id,
-          facilityId: facilities[0].id, // Using first facility
+          facilityId: facilities[0].id,
           details: {
             action: "Miembro del equipo creado",
             attachmentId: member.id,
@@ -157,7 +162,7 @@ export async function createMember(values: MemberValues) {
           type: TransactionType.CLIENT_CREATED,
           targetUserId: member.id,
           performedById: user.id,
-          facilityId: facilities[0].id, // Using first facility
+          facilityId: facilities[0].id,
           details: {
             action: "Cliente creado",
             attachmentId: member.id,
@@ -165,6 +170,14 @@ export async function createMember(values: MemberValues) {
           },
         })
       }
+
+      await createNotification({
+        tx,
+        issuerId: user.id,
+        facilityId: facilities[0].id,
+        type: NotificationType.USER_CREATED,
+        relatedId: member.id,
+      })
 
       revalidatePath(`/equipo`)
       return { success: true, member }
@@ -296,6 +309,14 @@ export async function updateMember(id: string, values: UpdateMemberValues) {
         })
       }
 
+      await createNotification({
+        tx,
+        issuerId: user.id,
+        facilityId: member.facilities[0].facilityId,
+        type: NotificationType.USER_UPDATED,
+        relatedId: member.id,
+      })
+
       revalidatePath(`/equipo`)
       return { success: true, member }
     } catch (error) {
@@ -385,6 +406,14 @@ export async function deleteMembers(
                 },
               })
             }
+
+            await createNotification({
+              tx,
+              issuerId: user.id,
+              facilityId,
+              type: NotificationType.USER_DELETED,
+              relatedId: member.id,
+            })
           }
 
           await tx.userFacility.deleteMany({
@@ -427,67 +456,6 @@ export async function deleteMembers(
           error instanceof Error
             ? error.message
             : "Error al eliminar los miembros",
-      }
-    })
-}
-
-export async function updateMemberRole(
-  id: string,
-  newRole: Role,
-  facilityId: string,
-): Promise<{ success: boolean; error?: string }> {
-  const { user } = await validateRequest()
-  if (!user) throw new Error("Usuario no autenticado")
-
-  return await prisma
-    .$transaction(async (tx) => {
-      const member = await tx.user.findUnique({
-        where: { id },
-        select: {
-          id: true,
-          firstName: true,
-          lastName: true,
-          role: true,
-        },
-      })
-
-      if (!member) {
-        return { success: false, error: "Miembro no encontrado" }
-      }
-
-      const oldRole = member.role
-
-      const updatedMember = await tx.user.update({
-        where: { id },
-        data: { role: newRole },
-      })
-
-      await createStaffTransaction({
-        tx,
-        type: TransactionType.STAFF_ROLE_CHANGED,
-        targetUserId: member.id,
-        performedById: user.id,
-        facilityId,
-        details: {
-          action: "Rol de miembro cambiado",
-          attachmentId: member.id,
-          attachmentName: `${member.firstName} ${member.lastName}`,
-          oldRole,
-          newRole,
-        },
-      })
-
-      revalidatePath(`/equipo`)
-      return { success: true }
-    })
-    .catch((error) => {
-      console.error("Error updating member role:", error)
-      return {
-        success: false,
-        error:
-          error instanceof Error
-            ? error.message
-            : "Error al actualizar el rol del miembro",
       }
     })
 }
