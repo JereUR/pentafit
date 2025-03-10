@@ -3,7 +3,6 @@ import { DayOfWeek } from "@prisma/client"
 export const columnsRoutines: { key: keyof RoutineData; label: string }[] = [
   { key: "name", label: "Nombre" },
   { key: "description", label: "Descripción" },
-  { key: "isActive", label: "Activa" },
   { key: "exercises", label: "Ejercicios asociados" },
 ]
 
@@ -29,7 +28,6 @@ export interface RoutineData {
   description: string | null
   facilityId: string
   exercises: ExerciseData[]
-  isActive: boolean
   createdAt: Date
   updatedAt: Date
 }
@@ -37,7 +35,6 @@ export interface RoutineData {
 export interface RoutineDataExport {
   name: string
   description: string
-  isActive: string
   exercises: string
 }
 

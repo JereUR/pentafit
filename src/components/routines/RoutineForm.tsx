@@ -43,7 +43,6 @@ function RoutineForm({ userId, routineData }: RoutineFormProps) {
       name: "",
       description: "",
       facilityId: workingFacility?.id || "",
-      isActive: true,
       exercises: [],
     },
   })
@@ -77,7 +76,6 @@ function RoutineForm({ userId, routineData }: RoutineFormProps) {
       name: values.name,
       description: values.description || "",
       facilityId: values.facilityId || workingFacility?.id || "",
-      isActive: typeof values.isActive === "boolean" ? values.isActive : true,
       exercises: exercises.map((exercise) => ({
         name: exercise.name,
         bodyZone: exercise.bodyZone,

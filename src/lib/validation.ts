@@ -341,7 +341,6 @@ export const routineSchema = z.object({
   name: z.string().min(1, "El nombre es requerido"),
   description: z.string().nullable().optional(),
   facilityId: z.string().min(1, "El establecimiento es requerido"),
-  isActive: z.boolean().default(true),
   exercises: z
     .array(exerciseSchema)
     .min(1, "Debe agregar al menos un ejercicio"),

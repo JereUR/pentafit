@@ -18,7 +18,6 @@ export async function GET(
         id: true,
         name: true,
         description: true,
-        isActive: true,
         exercises: {
           select: {
             id: true,
@@ -43,7 +42,6 @@ export async function GET(
       (routine) => ({
         name: routine.name,
         description: routine.description || "-",
-        isActive: routine.isActive ? "Si" : "No",
         exercises: formatExercisesToString(routine.exercises),
       }),
     )
