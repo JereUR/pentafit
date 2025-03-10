@@ -48,6 +48,7 @@ model User {
   performedTransactions  Transaction[]   @relation("PerformedTransactions")
   targetUserTransactions Transaction[]   @relation("TargetUserTransactions")
   routines               UserRoutine[]
+  notifications          Notification[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -143,6 +144,9 @@ enum NotificationType {
   ROUTINE_UPDATED
   ROUTINE_DELETED
   ROUTINE_REPLICATED
+  USER_CREATED
+  USER_UPDATED
+  USER_DELETED
 }
 
 model Notification {
@@ -161,6 +165,8 @@ model Notification {
   diary       Diary?           @relation(fields: [diaryId], references: [id], onDelete: Cascade)
   routineId   String?
   routine     Routine?         @relation(fields: [routineId], references: [id], onDelete: Cascade)
+  userId      String?
+  user        User?            @relation(fields: [userId], references: [id], onDelete: Cascade)
   type        NotificationType
   read        Boolean          @default(false)
   createdAt   DateTime         @default(now())
@@ -383,7 +389,6 @@ model Routine {
   userRoutines  UserRoutine[]
   notifications Notification[]
   transactions  Transaction[]
-  isActive      Boolean        @default(true)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
