@@ -67,7 +67,7 @@ export default function AuthenticatedLayout({ children, userRole }: Authenticate
               initialNotificationCount={initialNotificationCount}
             />
           )}
-          <main className="flex-1 overflow-auto p-4 max-w-full">{children}</main>
+          <main className="flex-1 overflow-hidden p-4 max-w-full">{children}</main>
         </div>
         <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
           <SheetContent side="left" className="w-80 p-0 lg:hidden">
