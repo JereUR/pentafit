@@ -26,7 +26,7 @@ interface ExercisesDialogProps {
 export function ExercisesDialog({ open, onOpenChange, exercises, routineName }: ExercisesDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto scrollbar-thin">
+      <DialogContent className="max-w-[90vw] max-h-[90vh] md:max-w-[80vw] md:max-h-[80vh] overflow-y-auto scrollbar-thin">
         <DialogHeader>
           <DialogTitle>Ejercicios de {routineName}</DialogTitle>
           <DialogDescription>
@@ -34,8 +34,7 @@ export function ExercisesDialog({ open, onOpenChange, exercises, routineName }: 
             {exercises.length !== 1 ? "s" : ""}.
           </DialogDescription>
         </DialogHeader>
-
-        <ScrollArea className="h-[50vh] pr-4">
+        <ScrollArea className="h-[80vh] md:h-[70vh] pr-4">
           <div className="space-y-4">
             {exercises.map((exercise) => (
               <Card key={exercise.id} className="overflow-hidden">
@@ -91,8 +90,7 @@ export function ExercisesDialog({ open, onOpenChange, exercises, routineName }: 
             ))}
           </div>
         </ScrollArea>
-
-        <DialogFooter>
+        <DialogFooter className="hidden md:flex md:justify-end">
           <Button onClick={() => onOpenChange(false)}>Cerrar</Button>
         </DialogFooter>
       </DialogContent>
