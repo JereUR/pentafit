@@ -1,4 +1,4 @@
-import { Metadata } from "next"
+import type { Metadata } from "next"
 import { Suspense } from "react"
 
 import { validateRequest } from "@/auth"
@@ -17,7 +17,7 @@ export default async function DiaryPage() {
   if (!user) return null
 
   return (
-    <main className="w-full max-w-full overflow-x-hidden">
+    <main className="w-full max-w-full">
       <div className="flex flex-col gap-5 md:p-5">
         <section className="w-full flex justify-center md:justify-start">
           <Suspense fallback={<WorkingFacilitySkeleton />}>
@@ -33,3 +33,4 @@ export default async function DiaryPage() {
     </main>
   )
 }
+
