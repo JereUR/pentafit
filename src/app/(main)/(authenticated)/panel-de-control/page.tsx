@@ -1,4 +1,4 @@
-import { Metadata } from "next"
+import type { Metadata } from "next"
 
 import Dashboard from "@/components/dashboard/Dashboard"
 import { validateRequest } from "@/auth"
@@ -16,8 +16,9 @@ export default async function DashboardPage() {
   }
 
   return (
-    <main className="flex container gap-5 p-5">
+    <main className="h-full">
       <Dashboard userId={user.id} />
     </main>
   )
 }
+

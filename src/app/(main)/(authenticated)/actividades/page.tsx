@@ -1,9 +1,11 @@
-import { validateRequest } from "@/auth"
-import ActivitiesDashboard from "@/components/activities/ActivitiesDashboard"
-import WorkingFacility from "@/components/WorkingFacility"
-import { Loader2 } from 'lucide-react'
 import { Metadata } from "next"
 import { Suspense } from "react"
+
+import { validateRequest } from "@/auth"
+import ActivitiesDashboard from "@/components/activities/ActivitiesDashboard"
+import { TableSkeleton } from "@/components/skeletons/TableSkeleton"
+import { WorkingFacilitySkeleton } from "@/components/skeletons/WorkingFacilitySkeleton"
+import WorkingFacility from "@/components/WorkingFacility"
 
 export const metadata: Metadata = {
   title: "Actividades",
@@ -18,13 +20,13 @@ export default async function ActivitiesPage() {
     <main className="w-full max-w-full overflow-x-hidden">
       <div className="flex flex-col gap-5 md:p-5">
         <section className="w-full flex justify-center md:justify-start">
-          <Suspense fallback={<Loader2 className="mx-auto animate-spin" />}>
+          <Suspense fallback={<WorkingFacilitySkeleton />}>
             <WorkingFacility userId={user.id} />
           </Suspense>
         </section>
         <section className="flex-1">
-          <Suspense fallback={<Loader2 className="mx-auto animate-spin" />}>
-            <ActivitiesDashboard userId={user.id}/>
+          <Suspense fallback={<TableSkeleton />}>
+            <ActivitiesDashboard userId={user.id} />
           </Suspense>
         </section>
       </div>
