@@ -1,23 +1,34 @@
-import { NextResponse } from "next/server"
+import type { NextRequest } from "next/server"
+
+import { validateRequest } from "@/auth"
 import prisma from "@/lib/prisma"
 
-export async function GET(request: Request) {
+const ITEMS_PER_PAGE = 10
+
+export async function GET(req: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url)
-    const facilityId = searchParams.get("facilityId")
+    const facilityId = req.nextUrl.searchParams.get("facilityId")
+    const cursor = req.nextUrl.searchParams.get("cursor") || undefined
 
     if (!facilityId) {
-      return NextResponse.json(
+      return Response.json(
         { error: "Facility ID is required" },
         { status: 400 },
       )
+    }
+
+    const { user } = await validateRequest()
+
+    if (!user) {
+      return Response.json({ error: "No autorizado." }, { status: 401 })
     }
 
     const transactions = await prisma.transaction.findMany({
       where: {
         facilityId,
       },
-      take: 10,
+      take: ITEMS_PER_PAGE + 1,
+      cursor: cursor ? { id: cursor } : undefined,
       orderBy: {
         createdAt: "desc",
       },
@@ -56,14 +67,28 @@ export async function GET(request: Request) {
             name: true,
           },
         },
+        routine: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
       },
     })
 
-    return NextResponse.json(transactions)
+    const nextCursor =
+      transactions.length > ITEMS_PER_PAGE
+        ? transactions[ITEMS_PER_PAGE].id
+        : null
+
+    return Response.json({
+      transactions: transactions.slice(0, ITEMS_PER_PAGE),
+      nextCursor,
+    })
   } catch (error) {
-    console.error("Error fetching latest transactions:", error)
-    return NextResponse.json(
-      { error: "Failed to fetch transactions" },
+    console.error("Error fetching transactions:", error)
+    return Response.json(
+      { error: "Error Interno del Servidor." },
       { status: 500 },
     )
   }
