@@ -50,7 +50,7 @@ export interface RoutineData {
   description: string | null
   facilityId: string
   dailyExercises: DailyExerciseData[]
-  exercises: string
+  exercises?: string
   createdAt: Date
   updatedAt: Date
 }

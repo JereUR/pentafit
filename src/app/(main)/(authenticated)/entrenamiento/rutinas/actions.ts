@@ -21,6 +21,7 @@ import { createRoutineTransaction } from "@/lib/transactionHelpers"
 
 type RoutineResult = {
   success: boolean
+  routine?: RoutineData | null
   error?: string
 }
 
@@ -125,6 +126,17 @@ export async function createRoutine(
         }
       }
 
+      const routineData = await tx.routine.findUnique({
+        where: { id: routine.id },
+        include: {
+          dailyExercises: {
+            include: {
+              exercises: true,
+            },
+          },
+        },
+      })
+
       await createRoutineTransaction({
         tx,
         type: TransactionType.ROUTINE_CREATED,
@@ -147,7 +159,7 @@ export async function createRoutine(
       })
 
       revalidatePath(`/rutinas`)
-      return { success: true }
+      return { success: true, routine: routineData }
     } catch (error) {
       console.error(error)
       return { success: false, error: "Error al crear la rutina" }
@@ -234,6 +246,17 @@ export async function updateRoutine(
         }
       }
 
+      const routineData = await tx.routine.findUnique({
+        where: { id },
+        include: {
+          dailyExercises: {
+            include: {
+              exercises: true,
+            },
+          },
+        },
+      })
+
       await createRoutineTransaction({
         tx,
         type: TransactionType.ROUTINE_UPDATED,
@@ -256,7 +279,7 @@ export async function updateRoutine(
       })
 
       revalidatePath(`/rutinas`)
-      return { success: true }
+      return { success: true, routine: routineData }
     } catch (error) {
       console.error(error)
       return { success: false, error: "Error al actualizar la rutina" }
