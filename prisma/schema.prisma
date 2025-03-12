@@ -380,20 +380,70 @@ enum DayOfWeek {
 }
 
 model Routine {
-  id            String         @id @default(uuid())
-  name          String
-  description   String?
-  facilityId    String
-  facility      Facility       @relation(fields: [facilityId], references: [id], onDelete: Cascade)
-  exercises     Exercise[]
-  userRoutines  UserRoutine[]
-  notifications Notification[]
-  transactions  Transaction[]
+  id             String          @id @default(uuid())
+  name           String
+  description    String?
+  facilityId     String
+  facility       Facility        @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  dailyExercises DailyExercise[]
+  userRoutines   UserRoutine[]
+  notifications  Notification[]
+  transactions   Transaction[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@map("routines")
+}
+
+model DailyExercise {
+  id        String     @id @default(uuid())
+  dayOfWeek DayOfWeek
+  routineId String
+  routine   Routine    @relation(fields: [routineId], references: [id], onDelete: Cascade)
+  exercises Exercise[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([routineId, dayOfWeek])
+  @@map("daily_exercises")
+}
+
+model Exercise {
+  id              String         @id @default(uuid())
+  name            String
+  bodyZone        String
+  series          Int
+  count           Int
+  measure         String
+  rest            Int?
+  description     String?
+  photoUrl        String?
+  dailyExerciseId String?
+  dailyExercise   DailyExercise? @relation(fields: [dailyExerciseId], references: [id], onDelete: Cascade)
+  presetRoutineId String?
+  presetRoutine   PresetRoutine? @relation(fields: [presetRoutineId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("exercises")
+}
+
+model UserRoutine {
+  id        String  @id @default(uuid())
+  userId    String
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  routineId String
+  routine   Routine @relation(fields: [routineId], references: [id], onDelete: Cascade)
+  isActive  Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, routineId])
+  @@map("user_routines")
 }
 
 model PresetRoutine {
@@ -409,41 +459,4 @@ model PresetRoutine {
   updatedAt DateTime @updatedAt
 
   @@map("preset_routines")
-}
-
-model Exercise {
-  id              String         @id @default(uuid())
-  name            String
-  bodyZone        String
-  series          Int
-  count           Int
-  measure         String
-  rest            Int?
-  description     String?
-  photoUrl        String?
-  routineId       String?
-  routine         Routine?       @relation(fields: [routineId], references: [id], onDelete: Cascade)
-  presetRoutineId String?
-  presetRoutine   PresetRoutine? @relation(fields: [presetRoutineId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@map("exercises")
-}
-
-model UserRoutine {
-  id        String    @id @default(uuid())
-  userId    String
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  routineId String
-  routine   Routine   @relation(fields: [routineId], references: [id], onDelete: Cascade)
-  dayOfWeek DayOfWeek
-  isActive  Boolean   @default(true)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([userId, routineId, dayOfWeek])
-  @@map("user_routines")
 }

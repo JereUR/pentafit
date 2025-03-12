@@ -332,19 +332,39 @@ export const exerciseSchema = z.object({
   series: z.number().min(1, "Las series deben ser al menos 1"),
   count: z.number().min(1, "La cantidad debe ser al menos 1"),
   measure: z.string().min(1, "La medida es requerida"),
-  rest: z.number().nullable().optional(),
-  description: z.string().nullable().optional(),
-  photoUrl: z.string().nullable().optional(),
+  rest: z.number().nullable(),
+  description: z.string().nullable(),
+  photoUrl: z.string().nullable(),
+})
+
+export const dailyExercisesSchema = z.object({
+  MONDAY: z.array(exerciseSchema).default([]),
+  TUESDAY: z.array(exerciseSchema).default([]),
+  WEDNESDAY: z.array(exerciseSchema).default([]),
+  THURSDAY: z.array(exerciseSchema).default([]),
+  FRIDAY: z.array(exerciseSchema).default([]),
+  SATURDAY: z.array(exerciseSchema).default([]),
+  SUNDAY: z.array(exerciseSchema).default([]),
 })
 
 export const routineSchema = z.object({
   name: z.string().min(1, "El nombre es requerido"),
-  description: z.string().nullable().optional(),
-  facilityId: z.string().min(1, "El establecimiento es requerido"),
-  exercises: z
-    .array(exerciseSchema)
-    .min(1, "Debe agregar al menos un ejercicio"),
+  description: z.string().optional(),
+  facilityId: z.string().min(1, "La instalación es requerida"),
+  dailyExercises: dailyExercisesSchema.default({
+    MONDAY: [],
+    TUESDAY: [],
+    WEDNESDAY: [],
+    THURSDAY: [],
+    FRIDAY: [],
+    SATURDAY: [],
+    SUNDAY: [],
+  }),
 })
+
+export type ExerciseValues = z.infer<typeof exerciseSchema>
+export type RoutineValues = z.infer<typeof routineSchema>
+export type DailyExercisesValues = z.infer<typeof dailyExercisesSchema>
 
 export const presetRoutineSchema = z.object({
   name: z.string().min(1, "El nombre es requerido"),
@@ -376,7 +396,5 @@ export const userRoutineSchema = z.object({
   isActive: z.boolean().default(true),
 })
 
-export type ExerciseValues = z.infer<typeof exerciseSchema>
-export type RoutineValues = z.infer<typeof routineSchema>
 export type PresetRoutineValues = z.infer<typeof presetRoutineSchema>
 export type UserRoutineValues = z.infer<typeof userRoutineSchema>

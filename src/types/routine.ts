@@ -1,9 +1,22 @@
-import { DayOfWeek } from "@prisma/client"
+import type { DayOfWeek } from "@prisma/client"
 
-export const columnsRoutines: { key: keyof RoutineData; label: string }[] = [
+export const columnsRoutines: {
+  key: keyof RoutineData | keyof RoutineDataExport
+  label: string
+}[] = [
   { key: "name", label: "Nombre" },
   { key: "description", label: "Descripción" },
   { key: "exercises", label: "Ejercicios asociados" },
+]
+
+export const daysOfWeek = [
+  { value: "MONDAY", label: "Lunes" },
+  { value: "TUESDAY", label: "Martes" },
+  { value: "WEDNESDAY", label: "Miércoles" },
+  { value: "THURSDAY", label: "Jueves" },
+  { value: "FRIDAY", label: "Viernes" },
+  { value: "SATURDAY", label: "Sábado" },
+  { value: "SUNDAY", label: "Domingo" },
 ]
 
 export interface ExerciseData {
@@ -16,8 +29,17 @@ export interface ExerciseData {
   rest: number | null
   description: string | null
   photoUrl: string | null
-  routineId?: string | null
+  dailyExerciseId?: string | null
   presetRoutineId?: string | null
+  createdAt?: Date
+  updatedAt?: Date
+}
+
+export interface DailyExerciseData {
+  id: string
+  dayOfWeek: DayOfWeek
+  routineId: string
+  exercises: ExerciseData[]
   createdAt?: Date
   updatedAt?: Date
 }
@@ -27,7 +49,8 @@ export interface RoutineData {
   name: string
   description: string | null
   facilityId: string
-  exercises: ExerciseData[]
+  dailyExercises: DailyExerciseData[]
+  exercises: string
   createdAt: Date
   updatedAt: Date
 }
@@ -38,36 +61,26 @@ export interface RoutineDataExport {
   exercises: string
 }
 
-export interface PresetRoutineData {
-  id: string
-  name: string
-  description: string | null
-  facilityId: string
-  isPublic: boolean
-  exercises: ExerciseData[]
-  createdAt: Date
-  updatedAt: Date
-}
-
-export interface UserRoutineData {
-  id: string
-  userId: string
-  routineId: string
-  dayOfWeek: DayOfWeek
-  isActive: boolean
-  routine: RoutineData
-  createdAt: Date
-  updatedAt: Date
-}
-
 export default function formatExercisesToString(
-  exercises: ExerciseData[],
+  dailyExercises: DailyExerciseData[],
 ): string {
-  if (!exercises.length) return "No exercises"
+  if (!dailyExercises || !dailyExercises.length) return "No exercises"
 
-  return exercises
-    .map((exercise, index) => {
-      return `${index + 1}• ${exercise.name} - ${exercise.bodyZone} - ${exercise.series} series x ${exercise.count} ${exercise.measure}${exercise.rest ? ` - Descanso: ${exercise.rest}s` : ""}${exercise.description ? ` - ${exercise.description}` : ""}.`
+  return dailyExercises
+    .map((dailyExercise) => {
+      const dayLabel =
+        daysOfWeek.find((day) => day.value === dailyExercise.dayOfWeek)
+          ?.label || dailyExercise.dayOfWeek
+
+      const exercisesText = dailyExercise.exercises.length
+        ? dailyExercise.exercises
+            .map((exercise, index) => {
+              return `  ${index + 1}• ${exercise.name} - ${exercise.bodyZone} - ${exercise.series} series x ${exercise.count} ${exercise.measure}${exercise.rest ? ` - Descanso: ${exercise.rest}s` : ""}${exercise.description ? ` - ${exercise.description}` : ""}.`
+            })
+            .join("\n")
+        : "  No hay ejercicios para este día"
+
+      return `${dayLabel}:\n${exercisesText}`
     })
-    .join("\n")
+    .join("\n\n")
 }
