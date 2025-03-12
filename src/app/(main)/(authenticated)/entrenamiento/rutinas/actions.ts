@@ -1,14 +1,11 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use server"
 
 import { revalidatePath } from "next/cache"
 import { cache } from "react"
 import { notFound } from "next/navigation"
 
-import {
-  PresetRoutineValues,
-  RoutineValues,
-  UserRoutineValues,
-} from "@/lib/validation"
+import { DailyExercisesValues, RoutineValues } from "@/lib/validation"
 import prisma from "@/lib/prisma"
 import { createNotification } from "@/lib/notificationHelpers"
 import {
@@ -18,29 +15,12 @@ import {
   type DayOfWeek,
 } from "@prisma/client"
 import { validateRequest } from "@/auth"
-import type {
-  RoutineData,
-  PresetRoutineData,
-  UserRoutineData,
-} from "@/types/routine"
+import type { RoutineData } from "@/types/routine"
 import type { DeleteEntityResult } from "@/lib/utils"
 import { createRoutineTransaction } from "@/lib/transactionHelpers"
 
 type RoutineResult = {
   success: boolean
-  routine?: RoutineData
-  error?: string
-}
-
-type PresetRoutineResult = {
-  success: boolean
-  presetRoutine?: PresetRoutineData
-  error?: string
-}
-
-type UserRoutineResult = {
-  success: boolean
-  userRoutine?: UserRoutineData
   error?: string
 }
 
@@ -50,7 +30,11 @@ export const getRoutineById = cache(
       const routine = await prisma.routine.findUnique({
         where: { id },
         include: {
-          exercises: true,
+          dailyExercises: {
+            include: {
+              exercises: true,
+            },
+          },
         },
       })
 
@@ -58,88 +42,40 @@ export const getRoutineById = cache(
         notFound()
       }
 
+      const dailyExercises: DailyExercisesValues = {
+        MONDAY: [],
+        TUESDAY: [],
+        WEDNESDAY: [],
+        THURSDAY: [],
+        FRIDAY: [],
+        SATURDAY: [],
+        SUNDAY: [],
+      }
+
+      routine.dailyExercises.forEach((dailyExercise) => {
+        const day = dailyExercise.dayOfWeek
+        dailyExercises[day] = dailyExercise.exercises.map((exercise) => ({
+          name: exercise.name,
+          bodyZone: exercise.bodyZone,
+          series: exercise.series,
+          count: exercise.count,
+          measure: exercise.measure,
+          rest: exercise.rest,
+          description: exercise.description,
+          photoUrl: exercise.photoUrl,
+        }))
+      })
+
       return {
         id: routine.id,
         name: routine.name,
         description: routine.description || "",
         facilityId: routine.facilityId,
-        exercises: routine.exercises.map((exercise) => ({
-          name: exercise.name,
-          bodyZone: exercise.bodyZone,
-          series: exercise.series,
-          count: exercise.count,
-          measure: exercise.measure,
-          rest: exercise.rest,
-          description: exercise.description,
-          photoUrl: exercise.photoUrl,
-        })),
+        dailyExercises,
       }
     } catch (error) {
       console.error("Error fetching routine:", error)
       throw new Error("Failed to fetch routine")
-    }
-  },
-)
-
-export const getPresetRoutineById = cache(
-  async (id: string): Promise<PresetRoutineValues & { id: string }> => {
-    try {
-      const presetRoutine = await prisma.presetRoutine.findUnique({
-        where: { id },
-        include: {
-          exercises: true,
-        },
-      })
-
-      if (!presetRoutine) {
-        notFound()
-      }
-
-      return {
-        id: presetRoutine.id,
-        name: presetRoutine.name,
-        description: presetRoutine.description || "",
-        facilityId: presetRoutine.facilityId,
-        isPublic: presetRoutine.isPublic,
-        exercises: presetRoutine.exercises.map((exercise) => ({
-          name: exercise.name,
-          bodyZone: exercise.bodyZone,
-          series: exercise.series,
-          count: exercise.count,
-          measure: exercise.measure,
-          rest: exercise.rest,
-          description: exercise.description,
-          photoUrl: exercise.photoUrl,
-        })),
-      }
-    } catch (error) {
-      console.error("Error fetching preset routine:", error)
-      throw new Error("Failed to fetch preset routine")
-    }
-  },
-)
-
-export const getUserRoutineById = cache(
-  async (id: string): Promise<UserRoutineValues & { id: string }> => {
-    try {
-      const userRoutine = await prisma.userRoutine.findUnique({
-        where: { id },
-      })
-
-      if (!userRoutine) {
-        notFound()
-      }
-
-      return {
-        id: userRoutine.id,
-        userId: userRoutine.userId,
-        routineId: userRoutine.routineId,
-        dayOfWeek: userRoutine.dayOfWeek,
-        isActive: userRoutine.isActive,
-      }
-    } catch (error) {
-      console.error("Error fetching user routine:", error)
-      throw new Error("Failed to fetch user routine")
     }
   },
 )
@@ -157,8 +93,24 @@ export async function createRoutine(
           name: values.name,
           description: values.description ?? undefined,
           facilityId: values.facilityId,
-          exercises: {
-            create: values.exercises.map((exercise) => ({
+        },
+      })
+
+      const daysOfWeek = Object.keys(values.dailyExercises) as DayOfWeek[]
+
+      for (const day of daysOfWeek) {
+        const exercises = values.dailyExercises[day]
+
+        if (exercises.length > 0) {
+          const dailyExercise = await tx.dailyExercise.create({
+            data: {
+              dayOfWeek: day,
+              routineId: routine.id,
+            },
+          })
+
+          await tx.exercise.createMany({
+            data: exercises.map((exercise) => ({
               name: exercise.name,
               bodyZone: exercise.bodyZone,
               series: exercise.series,
@@ -167,13 +119,11 @@ export async function createRoutine(
               rest: exercise.rest ?? null,
               description: exercise.description ?? null,
               photoUrl: exercise.photoUrl ?? null,
+              dailyExerciseId: dailyExercise.id,
             })),
-          },
-        },
-        include: {
-          exercises: true,
-        },
-      })
+          })
+        }
+      }
 
       await createRoutineTransaction({
         tx,
@@ -197,7 +147,7 @@ export async function createRoutine(
       })
 
       revalidatePath(`/rutinas`)
-      return { success: true, routine }
+      return { success: true }
     } catch (error) {
       console.error(error)
       return { success: false, error: "Error al crear la rutina" }
@@ -214,44 +164,86 @@ export async function updateRoutine(
 
   return await prisma.$transaction(async (tx) => {
     try {
-      await tx.exercise.deleteMany({
-        where: { routineId: id },
-      })
-
-      const routine = await tx.routine.update({
+      await tx.routine.update({
         where: { id },
         data: {
           name: values.name,
           description: values.description,
           facilityId: values.facilityId,
-          exercises: {
-            create: values.exercises.map((exercise) => ({
-              name: exercise.name,
-              bodyZone: exercise.bodyZone,
-              series: exercise.series,
-              count: exercise.count,
-              measure: exercise.measure,
-              rest: exercise.rest ?? null,
-              description: exercise.description ?? null,
-              photoUrl: exercise.photoUrl ?? null,
-            })),
-          },
-        },
-        include: {
-          exercises: true,
         },
       })
+
+      const existingDailyExercises = await tx.dailyExercise.findMany({
+        where: { routineId: id },
+        include: { exercises: true },
+      })
+
+      const daysOfWeek = Object.keys(values.dailyExercises) as DayOfWeek[]
+
+      for (const day of daysOfWeek) {
+        const exercises = values.dailyExercises[day]
+        const existingDailyExercise = existingDailyExercises.find(
+          (de) => de.dayOfWeek === day,
+        )
+
+        if (exercises.length > 0) {
+          if (existingDailyExercise) {
+            await tx.exercise.deleteMany({
+              where: { dailyExerciseId: existingDailyExercise.id },
+            })
+
+            await tx.exercise.createMany({
+              data: exercises.map((exercise) => ({
+                name: exercise.name,
+                bodyZone: exercise.bodyZone,
+                series: exercise.series,
+                count: exercise.count,
+                measure: exercise.measure,
+                rest: exercise.rest ?? null,
+                description: exercise.description ?? null,
+                photoUrl: exercise.photoUrl ?? null,
+                dailyExerciseId: existingDailyExercise.id,
+              })),
+            })
+          } else {
+            const dailyExercise = await tx.dailyExercise.create({
+              data: {
+                dayOfWeek: day,
+                routineId: id,
+              },
+            })
+
+            await tx.exercise.createMany({
+              data: exercises.map((exercise) => ({
+                name: exercise.name,
+                bodyZone: exercise.bodyZone,
+                series: exercise.series,
+                count: exercise.count,
+                measure: exercise.measure,
+                rest: exercise.rest ?? null,
+                description: exercise.description ?? null,
+                photoUrl: exercise.photoUrl ?? null,
+                dailyExerciseId: dailyExercise.id,
+              })),
+            })
+          }
+        } else if (existingDailyExercise) {
+          await tx.dailyExercise.delete({
+            where: { id: existingDailyExercise.id },
+          })
+        }
+      }
 
       await createRoutineTransaction({
         tx,
         type: TransactionType.ROUTINE_UPDATED,
-        routineId: routine.id,
+        routineId: id,
         performedById: user.id,
-        facilityId: routine.facilityId,
+        facilityId: values.facilityId,
         details: {
           action: "Rutina actualizada",
-          attachmentId: routine.id,
-          attachmentName: routine.name,
+          attachmentId: id,
+          attachmentName: values.name,
         },
       })
 
@@ -260,11 +252,11 @@ export async function updateRoutine(
         issuerId: user.id,
         facilityId: values.facilityId,
         type: NotificationType.ROUTINE_UPDATED,
-        relatedId: routine.id,
+        relatedId: id,
       })
 
       revalidatePath(`/rutinas`)
-      return { success: true, routine }
+      return { success: true }
     } catch (error) {
       console.error(error)
       return { success: false, error: "Error al actualizar la rutina" }
@@ -329,12 +321,6 @@ export async function deleteRoutines(
             type: NotificationType.ROUTINE_DELETED,
           })
 
-          await tx.exercise.deleteMany({
-            where: {
-              routineId: { in: routineIds },
-            },
-          })
-
           await tx.userRoutine.deleteMany({
             where: {
               routineId: { in: routineIds },
@@ -392,7 +378,11 @@ export async function replicateRoutines(
       const routines = await tx.routine.findMany({
         where: { id: { in: routineIds } },
         include: {
-          exercises: true,
+          dailyExercises: {
+            include: {
+              exercises: true,
+            },
+          },
         },
       })
 
@@ -419,7 +409,7 @@ export async function replicateRoutines(
               const {
                 id: sourceId,
                 facilityId: sourceFacilityId,
-                exercises,
+                dailyExercises,
                 ...routineData
               } = sourceRoutine
 
@@ -427,12 +417,31 @@ export async function replicateRoutines(
                 data: {
                   ...routineData,
                   facilityId: targetFacilityId,
-                  exercises: {
-                    create: exercises.map(
-                      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                      ({ id, routineId, presetRoutineId, ...exerciseData }) =>
-                        exerciseData,
-                    ),
+                  dailyExercises: {
+                    create: dailyExercises.map((dailyExercise) => {
+                      const { id, exercises, ...dailyExData } = dailyExercise
+                      return {
+                        ...dailyExData,
+                        exercises: {
+                          create: exercises.map((exercise) => {
+                            const {
+                              id,
+                              dailyExerciseId,
+                              presetRoutineId,
+                              ...exerciseData
+                            } = exercise
+                            return exerciseData
+                          }),
+                        },
+                      }
+                    }),
+                  },
+                },
+                include: {
+                  dailyExercises: {
+                    include: {
+                      exercises: true,
+                    },
                   },
                 },
               })
@@ -451,7 +460,10 @@ export async function replicateRoutines(
                   targetFacilityId: targetFacilityId,
                   replicatedRoutineId: replicatedRoutine.id,
                   replicatedRoutineName: replicatedRoutine.name,
-                  exercisesCount: exercises.length,
+                  exercisesCount: dailyExercises.reduce(
+                    (count, de) => count + de.exercises.length,
+                    0,
+                  ),
                   targetFacilities: targetFacilities.map((facility) => ({
                     id: facility.id,
                     name: facility.name,
@@ -479,6 +491,9 @@ export async function replicateRoutines(
             issuerId: user.id,
             facilityId,
             type: NotificationType.ROUTINE_REPLICATED,
+            relatedId: flattenedResults.find(
+              (r) => r.targetFacilityId === facilityId,
+            )?.replicatedRoutine.id,
           }),
         ),
       )
@@ -508,379 +523,4 @@ export async function replicateRoutines(
             : "Error al replicar las rutinas",
       }
     })
-}
-
-export async function createPresetRoutine(
-  values: PresetRoutineValues,
-): Promise<PresetRoutineResult> {
-  const { user } = await validateRequest()
-  if (!user) throw new Error("Usuario no autenticado")
-
-  return await prisma.$transaction(async (tx) => {
-    try {
-      const presetRoutine = await tx.presetRoutine.create({
-        data: {
-          name: values.name,
-          description: values.description ?? undefined,
-          facilityId: values.facilityId,
-          isPublic: values.isPublic,
-          exercises: {
-            create: values.exercises.map((exercise) => ({
-              name: exercise.name,
-              bodyZone: exercise.bodyZone,
-              series: exercise.series,
-              count: exercise.count,
-              measure: exercise.measure,
-              rest: exercise.rest ?? null,
-              description: exercise.description ?? null,
-              photoUrl: exercise.photoUrl ?? null,
-            })),
-          },
-        },
-        include: {
-          exercises: true,
-        },
-      })
-
-      await createRoutineTransaction({
-        tx,
-        type: TransactionType.ROUTINE_CREATED,
-        routineId: presetRoutine.id,
-        performedById: user.id,
-        facilityId: presetRoutine.facilityId,
-        details: {
-          action: "Rutina preestablecida creada",
-          attachmentId: presetRoutine.id,
-          attachmentName: presetRoutine.name,
-          isPreset: true,
-        },
-      })
-
-      revalidatePath(`/rutinas/preestablecidas`)
-      return { success: true, presetRoutine }
-    } catch (error) {
-      console.error(error)
-      return {
-        success: false,
-        error: "Error al crear la rutina preestablecida",
-      }
-    }
-  })
-}
-
-export async function createUserRoutine(
-  values: UserRoutineValues,
-): Promise<UserRoutineResult> {
-  const { user } = await validateRequest()
-  if (!user) throw new Error("Usuario no autenticado")
-
-  return await prisma.$transaction(async (tx) => {
-    try {
-      const existingUserRoutine = await tx.userRoutine.findFirst({
-        where: {
-          userId: values.userId,
-          dayOfWeek: values.dayOfWeek,
-        },
-      })
-
-      if (existingUserRoutine) {
-        const userRoutine = await tx.userRoutine.update({
-          where: { id: existingUserRoutine.id },
-          data: {
-            routineId: values.routineId,
-            isActive: values.isActive,
-          },
-          include: {
-            routine: {
-              include: {
-                exercises: true,
-              },
-            },
-          },
-        })
-
-        await createRoutineTransaction({
-          tx,
-          type: TransactionType.ROUTINE_UPDATED,
-          routineId: values.routineId,
-          performedById: user.id,
-          facilityId: userRoutine.routine.facilityId,
-          details: {
-            action: "Rutina de usuario actualizada",
-            attachmentId: userRoutine.id,
-            userId: values.userId,
-            dayOfWeek: values.dayOfWeek,
-          },
-        })
-
-        revalidatePath(`/usuarios/${values.userId}/rutinas`)
-        return { success: true, userRoutine }
-      } else {
-        const userRoutine = await tx.userRoutine.create({
-          data: {
-            userId: values.userId,
-            routineId: values.routineId,
-            dayOfWeek: values.dayOfWeek as DayOfWeek,
-            isActive: values.isActive,
-          },
-          include: {
-            routine: {
-              include: {
-                exercises: true,
-              },
-            },
-          },
-        })
-
-        await createRoutineTransaction({
-          tx,
-          type: TransactionType.ROUTINE_CREATED,
-          routineId: values.routineId,
-          performedById: user.id,
-          facilityId: userRoutine.routine.facilityId,
-          details: {
-            action: "Rutina asignada a usuario",
-            attachmentId: userRoutine.id,
-            userId: values.userId,
-            dayOfWeek: values.dayOfWeek,
-          },
-        })
-
-        revalidatePath(`/usuarios/${values.userId}/rutinas`)
-        return { success: true, userRoutine }
-      }
-    } catch (error) {
-      console.error(error)
-      return { success: false, error: "Error al asignar la rutina al usuario" }
-    }
-  })
-}
-
-export async function updatePresetRoutine(
-  id: string,
-  values: PresetRoutineValues,
-): Promise<PresetRoutineResult> {
-  const { user } = await validateRequest()
-  if (!user) throw new Error("Usuario no autenticado")
-
-  return await prisma.$transaction(async (tx) => {
-    try {
-      await tx.exercise.deleteMany({
-        where: { presetRoutineId: id },
-      })
-
-      const presetRoutine = await tx.presetRoutine.update({
-        where: { id },
-        data: {
-          name: values.name,
-          description: values.description,
-          facilityId: values.facilityId,
-          isPublic: values.isPublic,
-          exercises: {
-            create: values.exercises.map((exercise) => ({
-              name: exercise.name,
-              bodyZone: exercise.bodyZone,
-              series: exercise.series,
-              count: exercise.count,
-              measure: exercise.measure,
-              rest: exercise.rest ?? null,
-              description: exercise.description ?? null,
-              photoUrl: exercise.photoUrl ?? null,
-            })),
-          },
-        },
-        include: {
-          exercises: true,
-        },
-      })
-
-      await createRoutineTransaction({
-        tx,
-        type: TransactionType.ROUTINE_UPDATED,
-        routineId: presetRoutine.id,
-        performedById: user.id,
-        facilityId: presetRoutine.facilityId,
-        details: {
-          action: "Rutina preestablecida actualizada",
-          attachmentId: presetRoutine.id,
-          attachmentName: presetRoutine.name,
-          isPreset: true,
-        },
-      })
-
-      revalidatePath(`/rutinas/preestablecidas`)
-      return { success: true, presetRoutine }
-    } catch (error) {
-      console.error(error)
-      return {
-        success: false,
-        error: "Error al actualizar la rutina preestablecida",
-      }
-    }
-  })
-}
-
-export async function deletePresetRoutines(
-  presetRoutineIds: string[],
-  facilityId: string,
-): Promise<DeleteEntityResult> {
-  const { user } = await validateRequest()
-  if (!user) throw new Error("Usuario no autenticado")
-
-  return await prisma
-    .$transaction(
-      async (tx) => {
-        try {
-          const presetRoutines = await tx.presetRoutine.findMany({
-            where: {
-              id: { in: presetRoutineIds },
-            },
-            select: {
-              id: true,
-              name: true,
-            },
-          })
-
-          if (presetRoutines.length === 0) {
-            return {
-              success: false,
-              message:
-                "No se encontraron rutinas preestablecidas para eliminar",
-            }
-          }
-
-          for (const presetRoutine of presetRoutines) {
-            await createRoutineTransaction({
-              tx,
-              type: TransactionType.ROUTINE_DELETED,
-              routineId: presetRoutine.id,
-              performedById: user.id,
-              facilityId,
-              details: {
-                action: "Rutina preestablecida borrada",
-                attachmentId: presetRoutine.id,
-                attachmentName: presetRoutine.name,
-                isPreset: true,
-              },
-            })
-          }
-
-          await tx.exercise.deleteMany({
-            where: {
-              presetRoutineId: { in: presetRoutineIds },
-            },
-          })
-
-          const { count } = await tx.presetRoutine.deleteMany({
-            where: {
-              id: { in: presetRoutineIds },
-            },
-          })
-
-          revalidatePath("/rutinas/preestablecidas")
-
-          return {
-            success: true,
-            message: `Se ${count === 1 ? "ha" : "han"} eliminado ${count} ${
-              count === 1 ? "rutina preestablecida" : "rutinas preestablecidas"
-            } correctamente`,
-            deletedCount: count,
-          }
-        } catch (error) {
-          console.error("Error deleting preset routines:", error)
-          throw error
-        }
-      },
-      {
-        isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
-        maxWait: 5000,
-        timeout: 10000,
-      },
-    )
-    .catch((error) => {
-      console.error("Transaction failed:", error)
-      return {
-        success: false,
-        message:
-          error instanceof Error
-            ? error.message
-            : "Error al eliminar las rutinas preestablecidas",
-      }
-    })
-}
-
-export async function createRoutineFromPreset(
-  presetRoutineId: string,
-  facilityId: string,
-): Promise<RoutineResult> {
-  const { user } = await validateRequest()
-  if (!user) throw new Error("Usuario no autenticado")
-
-  return await prisma.$transaction(async (tx) => {
-    try {
-      const presetRoutine = await tx.presetRoutine.findUnique({
-        where: { id: presetRoutineId },
-        include: { exercises: true },
-      })
-
-      if (!presetRoutine) {
-        return { success: false, error: "Rutina preestablecida no encontrada" }
-      }
-
-      const routine = await tx.routine.create({
-        data: {
-          name: presetRoutine.name,
-          description: presetRoutine.description,
-          facilityId: facilityId,
-          exercises: {
-            create: presetRoutine.exercises.map((exercise) => ({
-              name: exercise.name,
-              bodyZone: exercise.bodyZone,
-              series: exercise.series,
-              count: exercise.count,
-              measure: exercise.measure,
-              rest: exercise.rest,
-              description: exercise.description,
-              photoUrl: exercise.photoUrl,
-            })),
-          },
-        },
-        include: {
-          exercises: true,
-        },
-      })
-
-      await createRoutineTransaction({
-        tx,
-        type: TransactionType.ROUTINE_CREATED,
-        routineId: routine.id,
-        performedById: user.id,
-        facilityId: routine.facilityId,
-        details: {
-          action: "Rutina creada desde preestablecida",
-          attachmentId: routine.id,
-          attachmentName: routine.name,
-          presetRoutineId: presetRoutine.id,
-          presetRoutineName: presetRoutine.name,
-        },
-      })
-
-      await createNotification({
-        tx,
-        issuerId: user.id,
-        facilityId,
-        type: NotificationType.ROUTINE_CREATED,
-        relatedId: routine.id,
-      })
-
-      revalidatePath(`/rutinas`)
-      return { success: true, routine }
-    } catch (error) {
-      console.error(error)
-      return {
-        success: false,
-        error: "Error al crear la rutina desde la preestablecida",
-      }
-    }
-  })
 }
