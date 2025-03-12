@@ -1,98 +1,136 @@
-"use client"
-
-import Image from "next/image"
-
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import type { ExerciseData } from "@/types/routine"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { type DailyExerciseData, daysOfWeek } from "@/types/routine"
+import Image from "next/image"
+import { useMediaQuery } from "@/hooks/useMediaQuery"
 
 interface ExercisesDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  exercises: ExerciseData[]
+  dailyExercises: DailyExerciseData[]
   routineName: string
 }
 
-export function ExercisesDialog({ open, onOpenChange, exercises, routineName }: ExercisesDialogProps) {
+export function ExercisesDialog({ open, onOpenChange, dailyExercises, routineName }: ExercisesDialogProps) {
+  const isMobile = useMediaQuery("(max-width: 768px)")
+  const defaultTab = dailyExercises.length > 0 ? dailyExercises[0].dayOfWeek : "MONDAY"
+
+  const exerciseCounts = dailyExercises.reduce(
+    (counts, day) => {
+      counts[day.dayOfWeek] = day.exercises.length
+      return counts
+    },
+    {} as Record<string, number>,
+  )
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[90vw] max-h-[90vh] md:max-w-[80vw] md:max-h-[80vh] overflow-y-auto scrollbar-thin">
+      <DialogContent className="sm:max-w-[700px] md:max-w-[800px] lg:max-w-[900px] max-h-[90vh] max-w-[95vw] rounded-md">
         <DialogHeader>
-          <DialogTitle>Ejercicios de {routineName}</DialogTitle>
-          <DialogDescription>
-            Esta rutina tiene {exercises.length} ejercicio{exercises.length !== 1 ? "s" : ""} asociado
-            {exercises.length !== 1 ? "s" : ""}.
-          </DialogDescription>
+          <DialogTitle className="text-xl">Ejercicios de {routineName}</DialogTitle>
         </DialogHeader>
-        <ScrollArea className="h-[80vh] md:h-[70vh] pr-4">
-          <div className="space-y-4">
-            {exercises.map((exercise) => (
-              <Card key={exercise.id} className="overflow-hidden">
-                <CardHeader className="p-4 pb-2">
-                  <div className="flex justify-between items-start">
-                    <CardTitle className="text-lg">{exercise.name}</CardTitle>
-                    <Badge variant="outline">{exercise.bodyZone}</Badge>
-                  </div>
-                </CardHeader>
-                <CardContent className="p-4 pt-0">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <div className="grid grid-cols-2 gap-1">
-                        <span className="text-sm font-medium">Series:</span>
-                        <span className="text-sm">{exercise.series}</span>
-                      </div>
-                      <div className="grid grid-cols-2 gap-1">
-                        <span className="text-sm font-medium">Repeticiones:</span>
-                        <span className="text-sm">
-                          {exercise.count} {exercise.measure}
-                        </span>
-                      </div>
-                      {exercise.rest && (
-                        <div className="grid grid-cols-2 gap-1">
-                          <span className="text-sm font-medium">Descanso:</span>
-                          <span className="text-sm">{exercise.rest} segundos</span>
-                        </div>
-                      )}
-                      {exercise.description && (
-                        <div className="col-span-2 mt-2">
-                          <span className="text-sm font-medium">Descripción:</span>
-                          <p className="text-sm mt-1">{exercise.description}</p>
-                        </div>
-                      )}
-                    </div>
-
-                    {exercise.photoUrl && (
-                      <div className="flex justify-center items-center">
-                        <div className="relative h-32 w-32 overflow-hidden rounded-md">
-                          <Image
-                            src={exercise.photoUrl || "/placeholder.svg"}
-                            alt={`Imagen de ${exercise.name}`}
-                            fill
-                            sizes="(max-width: 768px) 100vw, 128px"
-                            className="object-cover"
-                          />
-                        </div>
-                      </div>
+        <Tabs defaultValue={defaultTab} className="w-full">
+          {isMobile ? (
+            <ScrollArea className="w-full pb-2">
+              <TabsList className="grid w-full grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 mb-4 h-fit">
+                {daysOfWeek.map((day) => (
+                  <TabsTrigger key={day.value} value={day.value} className="text-xs relative">
+                    {day.label.substring(0, 3)}
+                    {exerciseCounts[day.value] > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-foreground text-primary z-50 text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                        {exerciseCounts[day.value]}
+                      </span>
                     )}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </ScrollArea>
-        <DialogFooter className="hidden md:flex md:justify-end">
-          <Button onClick={() => onOpenChange(false)}>Cerrar</Button>
-        </DialogFooter>
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </ScrollArea>
+          ) : (
+            <TabsList className="grid grid-cols-7 w-full">
+              {daysOfWeek.map((day) => (
+                <TabsTrigger key={day.value} value={day.value} className="relative">
+                  {day.label}
+                  {exerciseCounts[day.value] > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-foreground text-primary z-50 text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                      {exerciseCounts[day.value]}
+                    </span>
+                  )}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          )}
+
+          {daysOfWeek.map((day) => {
+            const dailyExercise = dailyExercises.find((de) => de.dayOfWeek === day.value)
+            const exercises = dailyExercise?.exercises || []
+
+            return (
+              <TabsContent key={day.value} value={day.value} className="mt-4">
+                <ScrollArea className="h-[400px] md:h-[500px] rounded-md border p-4">
+                  {exercises.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {exercises.map((exercise) => (
+                        <div key={exercise.id} className="border rounded-lg p-4 shadow-sm">
+                          <div className="flex flex-col h-full">
+                            <div className="flex-1">
+                              <h4 className="font-medium text-lg text-primary">{exercise.name}</h4>
+                              <div className="grid grid-cols-2 gap-2 mt-2 text-sm">
+                                <div>
+                                  <span className="font-semibold">Zona: </span>
+                                  {exercise.bodyZone}
+                                </div>
+                                <div>
+                                  <span className="font-semibold">Series: </span>
+                                  {exercise.series}
+                                </div>
+                                <div>
+                                  <span className="font-semibold">Cantidad: </span>
+                                  {exercise.count} {exercise.measure}
+                                </div>
+                                <div>
+                                  <span className="font-semibold">Descanso: </span>
+                                  {exercise.rest ? `${exercise.rest}s` : "N/A"}
+                                </div>
+                              </div>
+                              {exercise.description && (
+                                <div className="mt-2 text-sm">
+                                  <span className="font-semibold">Descripción: </span>
+                                  {exercise.description}
+                                </div>
+                              )}
+                            </div>
+
+                            {exercise.photoUrl && (
+                              <div className="mt-4 flex justify-center items-center">
+                                <div className="relative h-40 w-full overflow-hidden rounded-md bg-muted">
+                                  <Image
+                                    src={exercise.photoUrl || "/placeholder.svg"}
+                                    alt={`Imagen de ${exercise.name}`}
+                                    fill
+                                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                    className="object-contain"
+                                    onError={(e) => {
+                                      ;(e.target as HTMLImageElement).src = "/placeholder.svg?height=160&width=300"
+                                    }}
+                                  />
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center h-full">
+                      <p className="text-center text-muted-foreground py-8">No hay ejercicios para este día</p>
+                    </div>
+                  )}
+                </ScrollArea>
+              </TabsContent>
+            )
+          })}
+        </Tabs>
       </DialogContent>
     </Dialog>
   )

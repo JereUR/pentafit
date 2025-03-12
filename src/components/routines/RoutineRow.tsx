@@ -64,11 +64,11 @@ export default function RoutineRow({
     )
   }
 
-  const renderCellContent = (column: { key: keyof RoutineData; label: string }) => {
+  const renderCellContent = (column: { key: string; label: string }) => {
     if (column.key === "exercises") {
       return (
         <div className="flex items-center justify-center gap-2">
-          <span>{routine.exercises.length}</span>
+          <span>{routine.dailyExercises.reduce((total, day) => total + day.exercises.length, 0)}</span>
           <Button
             variant="ghost"
             size="icon"
@@ -85,7 +85,7 @@ export default function RoutineRow({
       )
     }
 
-    return routine[column.key]?.toString() || "-"
+    return routine[column.key as keyof RoutineData]?.toString() || "-"
   }
 
   return (
@@ -97,7 +97,7 @@ export default function RoutineRow({
           <Checkbox checked={isSelected} onCheckedChange={() => onToggleRow(routine.id)} />
         </TableCell>
         {columnsRoutines
-          .filter((col) => visibleColumns.has(col.key))
+          .filter((col) => visibleColumns.has(col.key as keyof RoutineData))
           .map((column) => (
             <TableCell key={column.key} className="border-x text-center break-words">
               {renderCellContent(column)}
@@ -121,7 +121,7 @@ export default function RoutineRow({
       <ExercisesDialog
         open={showExercisesDialog}
         onOpenChange={setShowExercisesDialog}
-        exercises={routine.exercises}
+        dailyExercises={routine.dailyExercises}
         routineName={routine.name}
       />
     </>

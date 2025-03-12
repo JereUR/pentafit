@@ -12,7 +12,7 @@ import LoadingButton from "@/components/LoadingButton"
 import ErrorText from "@/components/ErrorText"
 import { useWorkingFacility } from "@/contexts/WorkingFacilityContext"
 import { withClientSideRendering } from "@/hooks/withClientSideRendering"
-import { type ExerciseValues, routineSchema, type RoutineValues } from "@/lib/validation"
+import { type DailyExercisesValues, routineSchema, type RoutineValues } from "@/lib/validation"
 import WorkingFacility from "../WorkingFacility"
 import NoWorkingFacilityMessage from "../NoWorkingFacilityMessage"
 import { GeneralInfoTabRoutineForm } from "./GeneralInfoTabRoutineForm"
@@ -29,7 +29,17 @@ interface RoutineFormProps {
 
 function RoutineForm({ userId, routineData }: RoutineFormProps) {
   const { workingFacility } = useWorkingFacility()
-  const [exercises, setExercises] = useState<ExerciseValues[]>(routineData?.exercises || [])
+  const [dailyExercises, setDailyExercises] = useState<DailyExercisesValues>(
+    routineData?.dailyExercises || {
+      MONDAY: [],
+      TUESDAY: [],
+      WEDNESDAY: [],
+      THURSDAY: [],
+      FRIDAY: [],
+      SATURDAY: [],
+      SUNDAY: [],
+    },
+  )
   const [error, setError] = useState<string>()
   const isEditing = !!routineData
   const router = useRouter()
@@ -43,14 +53,22 @@ function RoutineForm({ userId, routineData }: RoutineFormProps) {
       name: "",
       description: "",
       facilityId: workingFacility?.id || "",
-      exercises: [],
+      dailyExercises: {
+        MONDAY: [],
+        TUESDAY: [],
+        WEDNESDAY: [],
+        THURSDAY: [],
+        FRIDAY: [],
+        SATURDAY: [],
+        SUNDAY: [],
+      },
     },
   })
 
   useEffect(() => {
     if (routineData) {
       form.reset(routineData)
-      setExercises(routineData.exercises)
+      setDailyExercises(routineData.dailyExercises)
     }
   }, [routineData, form])
 
@@ -61,13 +79,16 @@ function RoutineForm({ userId, routineData }: RoutineFormProps) {
   }, [workingFacility, form, isEditing])
 
   useEffect(() => {
-    form.setValue("exercises", exercises)
-  }, [exercises, form])
+    form.setValue("dailyExercises", dailyExercises)
+  }, [dailyExercises, form])
 
   const onSubmit = async (values: RoutineValues) => {
     setError(undefined)
 
-    if (exercises.length === 0) {
+    // Verificar si hay al menos un ejercicio en algún día
+    const totalExercises = Object.values(dailyExercises).reduce((total, exercises) => total + exercises.length, 0)
+
+    if (totalExercises === 0) {
       setError("Debe agregar al menos un ejercicio a la rutina")
       return
     }
@@ -76,16 +97,7 @@ function RoutineForm({ userId, routineData }: RoutineFormProps) {
       name: values.name,
       description: values.description || "",
       facilityId: values.facilityId || workingFacility?.id || "",
-      exercises: exercises.map((exercise) => ({
-        name: exercise.name,
-        bodyZone: exercise.bodyZone,
-        series: exercise.series,
-        count: exercise.count,
-        measure: exercise.measure,
-        rest: exercise.rest || null,
-        description: exercise.description || null,
-        photoUrl: exercise.photoUrl || null,
-      })),
+      dailyExercises: dailyExercises,
     }
 
     if (!sanitizedValues.name || !sanitizedValues.facilityId) {
@@ -175,7 +187,7 @@ function RoutineForm({ userId, routineData }: RoutineFormProps) {
                   <GeneralInfoTabRoutineForm control={form.control} />
                 </TabsContent>
                 <TabsContent value="exercises">
-                  <ExercisesTabRoutineForm exercises={exercises} setExercises={setExercises} />
+                  <ExercisesTabRoutineForm dailyExercises={dailyExercises} setDailyExercises={setDailyExercises} />
                 </TabsContent>
               </Tabs>
               <LoadingButton loading={isPending} type="submit" className="w-full">

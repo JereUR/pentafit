@@ -131,7 +131,7 @@ export default function RoutinesDashboard({ userId }: { userId: string }) {
         addButtonLabel="Agregar Rutina"
         searchPlaceholder="Buscar rutinas..."
         exportApiRoute={`/api/routines/${workingFacility?.id}/all`}
-        exportFileName={`Rutina_${workingFacility?.name}`}
+        exportFileName={`Rutinas_${workingFacility?.name}`}
       />
       <RoutinesTable
         routines={data ? data.routines : []}
