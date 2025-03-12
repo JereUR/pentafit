@@ -1,7 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server"
 
 import prisma from "@/lib/prisma"
-import { RoutineData } from "@/types/routine"
+import type { RoutineData } from "@/types/routine"
+import formatExercisesToString from "@/types/routine"
 
 export async function GET(
   request: NextRequest,
@@ -21,21 +22,12 @@ export async function GET(
       prisma.routine.findMany({
         where: {
           facilityId: id,
-
           OR: [{ name: { contains: search, mode: "insensitive" } }],
         },
         include: {
-          exercises: {
-            select: {
-              id: true,
-              name: true,
-              description: true,
-              bodyZone: true,
-              series: true,
-              rest: true,
-              count: true,
-              measure: true,
-              photoUrl: true,
+          dailyExercises: {
+            include: {
+              exercises: true,
             },
           },
         },
@@ -48,7 +40,6 @@ export async function GET(
       prisma.routine.count({
         where: {
           facilityId: id,
-
           OR: [{ name: { contains: search, mode: "insensitive" } }],
         },
       }),
@@ -58,13 +49,27 @@ export async function GET(
       id: routine.id,
       name: routine.name,
       description: routine.description,
-      exercises: routine.exercises.map((exercise) => ({
-        ...exercise,
-        rest: exercise.rest || null,
-        description: exercise.description || null,
-        photoUrl: exercise.photoUrl || null,
-      })),
       facilityId: id,
+      dailyExercises: routine.dailyExercises.map((dailyExercise) => ({
+        id: dailyExercise.id,
+        dayOfWeek: dailyExercise.dayOfWeek,
+        routineId: dailyExercise.routineId,
+        exercises: dailyExercise.exercises.map((exercise) => ({
+          id: exercise.id,
+          name: exercise.name,
+          bodyZone: exercise.bodyZone,
+          series: exercise.series,
+          count: exercise.count,
+          measure: exercise.measure,
+          rest: exercise.rest || null,
+          description: exercise.description || null,
+          photoUrl: exercise.photoUrl || null,
+          dailyExerciseId: exercise.dailyExerciseId,
+        })),
+        createdAt: dailyExercise.createdAt,
+        updatedAt: dailyExercise.updatedAt,
+      })),
+      exercises: formatExercisesToString(routine.dailyExercises),
       createdAt: routine.createdAt,
       updatedAt: routine.updatedAt,
     }))

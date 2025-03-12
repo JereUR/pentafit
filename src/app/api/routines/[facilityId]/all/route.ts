@@ -1,6 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server"
 
-import formatExercisesToString, { RoutineDataExport } from "@/types/routine"
+import formatExercisesToString, {
+  type RoutineDataExport,
+} from "@/types/routine"
 import prisma from "@/lib/prisma"
 
 export async function GET(
@@ -14,21 +16,10 @@ export async function GET(
       where: {
         facilityId: id,
       },
-      select: {
-        id: true,
-        name: true,
-        description: true,
-        exercises: {
-          select: {
-            id: true,
-            name: true,
-            description: true,
-            bodyZone: true,
-            series: true,
-            rest: true,
-            count: true,
-            measure: true,
-            photoUrl: true,
+      include: {
+        dailyExercises: {
+          include: {
+            exercises: true,
           },
         },
       },
@@ -42,7 +33,7 @@ export async function GET(
       (routine) => ({
         name: routine.name,
         description: routine.description || "-",
-        exercises: formatExercisesToString(routine.exercises),
+        exercises: formatExercisesToString(routine.dailyExercises),
       }),
     )
 
