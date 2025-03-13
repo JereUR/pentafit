@@ -73,6 +73,12 @@ export async function GET(req: NextRequest) {
             name: true,
           },
         },
+        presetRoutine: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
       },
     })
 
