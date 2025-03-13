@@ -147,6 +147,31 @@ export default function Notification({ notification }: NotificationProps) {
       href: `/equipo`,
       color: "text-red-500",
     },
+    PRESET_ROUTINE_CREATED: {
+      message: "creó una rutina",
+      icon: <SquareActivity className="h-4 w-4" />,
+      href: `/entrenamiento/rutinas-preestablecidas`,
+      color: "text-green-500",
+    },
+    PRESET_ROUTINE_UPDATED: {
+      message: "editó una rutina",
+      icon: <SquareActivity className="h-4 w-4" />,
+      href: `/entrenamiento/rutinas-preestablecidas`,
+      color: "text-blue-500",
+    },
+    PRESET_ROUTINE_DELETED: {
+      message: "eliminó una rutina",
+      icon: <SquareActivity className="h-4 w-4" />,
+      href: `/entrenamiento/rutinas-preestablecidas`,
+      color: "text-red-500",
+    },
+    PRESET_ROUTINE_REPLICATED: {
+      message: "replicó rutinas",
+      icon: <SquareActivity className="h-4 w-4" />,
+      href: `/entrenamiento/rutinas-preestablecidas`,
+      color: "text-purple-500",
+    },
+
   }
 
   const { message, icon, href, color } = notificationTypeMap[notification.type]

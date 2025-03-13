@@ -224,17 +224,19 @@ function getReplicationInfo(transaction: TransactionWithDetails) {
       facilityName = transaction.details.replicatedPlanName
     } else if (transaction.type.includes("DIARY") && transaction.details.replicatedDiaryName) {
       facilityName = transaction.details.replicatedDiaryName
-    }
+    } else if (transaction.type.includes("PRESET_ROUTINE") && transaction.details.replicatedPresetRoutineName) {
+      facilityName = transaction.details.replicatedPresetRoutineName
 
-    return {
-      count: 1,
-      facilities: [
-        {
-          id: transaction.details.targetFacilityId,
-          name: facilityName,
-          logoUrl: undefined,
-        },
-      ],
+      return {
+        count: 1,
+        facilities: [
+          {
+            id: transaction.details.targetFacilityId,
+            name: facilityName,
+            logoUrl: undefined,
+          },
+        ],
+      }
     }
   }
 
@@ -258,4 +260,3 @@ function getFormattedDate(dateString: string) {
 
   return format(date, "dd.MM.yyyy HH:mm", { locale: es })
 }
-
