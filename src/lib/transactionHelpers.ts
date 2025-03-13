@@ -205,11 +205,7 @@ export async function createRoutineTransaction({
   details,
 }: {
   tx: Prisma.TransactionClient
-  type:
-    | "ROUTINE_CREATED"
-    | "ROUTINE_UPDATED"
-    | "ROUTINE_DELETED"
-    | "ROUTINE_REPLICATED"
+  type: TransactionType
   routineId: string
   performedById: string
   facilityId: string

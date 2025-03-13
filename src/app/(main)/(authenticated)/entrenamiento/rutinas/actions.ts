@@ -389,6 +389,12 @@ export async function deleteRoutines(
     })
 }
 
+type ReplicationResult = {
+  sourceRoutine: RoutineData
+  replicatedRoutine: RoutineData | null
+  targetFacilityId: string
+}
+
 export async function replicateRoutines(
   routineIds: string[],
   targetFacilityIds: string[],
@@ -397,38 +403,51 @@ export async function replicateRoutines(
   if (!user) throw new Error("Usuario no autenticado")
 
   return await prisma
-    .$transaction(async (tx) => {
-      const routines = await tx.routine.findMany({
-        where: { id: { in: routineIds } },
-        include: {
-          dailyExercises: {
-            include: {
-              exercises: true,
+    .$transaction(
+      async (tx) => {
+        const routines = await tx.routine.findMany({
+          where: {
+            id: { in: routineIds },
+          },
+          include: {
+            dailyExercises: {
+              include: {
+                exercises: true,
+              },
             },
           },
-        },
-      })
+        })
 
-      if (routines.length === 0) {
-        return {
-          success: false,
-          message: "No se encontraron rutinas para replicar",
+        if (routines.length === 0) {
+          return {
+            success: false,
+            message: "No se encontraron rutinas para replicar",
+          }
         }
-      }
 
-      const targetFacilities = await tx.facility.findMany({
-        where: { id: { in: targetFacilityIds } },
-        select: {
-          id: true,
-          name: true,
-          logoUrl: true,
-        },
-      })
+        const targetFacilities = await tx.facility.findMany({
+          where: {
+            id: { in: targetFacilityIds },
+          },
+          select: {
+            id: true,
+            name: true,
+            logoUrl: true,
+          },
+        })
 
-      const replicationResults = await Promise.all(
-        targetFacilityIds.flatMap(async (targetFacilityId) =>
-          Promise.all(
-            routines.map(async (sourceRoutine) => {
+        if (targetFacilities.length === 0) {
+          return {
+            success: false,
+            message: "No se encontraron establecimientos destino",
+          }
+        }
+
+        const replicationResults: ReplicationResult[] = []
+
+        for (const targetFacility of targetFacilities) {
+          for (const sourceRoutine of routines) {
+            try {
               const {
                 id: sourceId,
                 facilityId: sourceFacilityId,
@@ -439,27 +458,43 @@ export async function replicateRoutines(
               const replicatedRoutine = await tx.routine.create({
                 data: {
                   ...routineData,
-                  facilityId: targetFacilityId,
-                  dailyExercises: {
-                    create: dailyExercises.map((dailyExercise) => {
-                      const { id, exercises, ...dailyExData } = dailyExercise
-                      return {
-                        ...dailyExData,
-                        exercises: {
-                          create: exercises.map((exercise) => {
-                            const {
-                              id,
-                              dailyExerciseId,
-                              presetRoutineId,
-                              ...exerciseData
-                            } = exercise
-                            return exerciseData
-                          }),
-                        },
-                      }
-                    }),
-                  },
+                  facilityId: targetFacility.id,
                 },
+              })
+
+              for (const dailyExercise of dailyExercises) {
+                const {
+                  id: dailyExId,
+                  exercises,
+                  ...dailyExData
+                } = dailyExercise
+
+                const newDailyExercise = await tx.dailyExercise.create({
+                  data: {
+                    ...dailyExData,
+                    routineId: replicatedRoutine.id,
+                  },
+                })
+
+                for (const exercise of exercises) {
+                  const {
+                    id: exerciseId,
+                    dailyExerciseId,
+                    presetRoutineId,
+                    ...exerciseData
+                  } = exercise
+
+                  await tx.exercise.create({
+                    data: {
+                      ...exerciseData,
+                      dailyExerciseId: newDailyExercise.id,
+                    },
+                  })
+                }
+              }
+
+              const completeReplicatedRoutine = await tx.routine.findUnique({
+                where: { id: replicatedRoutine.id },
                 include: {
                   dailyExercises: {
                     include: {
@@ -469,73 +504,84 @@ export async function replicateRoutines(
                 },
               })
 
+              const transactionDetails = {
+                action: "Rutina replicada",
+                sourceRoutineId: sourceId,
+                sourceRoutineName: sourceRoutine.name,
+                sourceFacilityId: sourceFacilityId,
+                targetFacilityId: targetFacility.id,
+                targetFacilityName: targetFacility.name,
+                replicatedRoutineId: replicatedRoutine.id,
+                replicatedRoutineName: replicatedRoutine.name,
+                exercisesCount: dailyExercises.reduce(
+                  (count, de) => count + de.exercises.length,
+                  0,
+                ),
+                timestamp: new Date().toISOString(),
+              }
+
               await createRoutineTransaction({
                 tx,
                 type: TransactionType.ROUTINE_REPLICATED,
                 routineId: sourceId,
                 performedById: user.id,
                 facilityId: sourceFacilityId,
-                details: {
-                  action: "Rutina replicada",
-                  sourceRoutineId: sourceId,
-                  sourceRoutineName: sourceRoutine.name,
-                  sourceFacilityId: sourceFacilityId,
-                  targetFacilityId: targetFacilityId,
-                  replicatedRoutineId: replicatedRoutine.id,
-                  replicatedRoutineName: replicatedRoutine.name,
-                  exercisesCount: dailyExercises.reduce(
-                    (count, de) => count + de.exercises.length,
-                    0,
-                  ),
-                  targetFacilities: targetFacilities.map((facility) => ({
-                    id: facility.id,
-                    name: facility.name,
-                    logoUrl: facility.logoUrl,
-                  })),
-                },
+                details: transactionDetails,
               })
 
-              return {
+              replicationResults.push({
                 sourceRoutine,
-                replicatedRoutine,
-                targetFacilityId,
-              }
-            }),
-          ),
-        ),
-      )
+                replicatedRoutine: completeReplicatedRoutine,
+                targetFacilityId: targetFacility.id,
+              })
+            } catch (error) {
+              console.error(
+                `Error replicating routine ${sourceRoutine.id} to facility ${targetFacility.id}:`,
+                error,
+              )
+              throw error
+            }
+          }
+        }
 
-      const flattenedResults = replicationResults.flat()
-
-      await Promise.all(
-        targetFacilityIds.map((facilityId) =>
-          createNotification({
-            tx,
-            issuerId: user.id,
-            facilityId,
-            type: NotificationType.ROUTINE_REPLICATED,
-            relatedId: flattenedResults.find(
+        await Promise.all(
+          targetFacilityIds.map((facilityId) => {
+            const relatedRoutineId = replicationResults.find(
               (r) => r.targetFacilityId === facilityId,
-            )?.replicatedRoutine.id,
-          }),
-        ),
-      )
+            )?.replicatedRoutine?.id
 
-      revalidatePath(`/entrenamiento/rutinas`)
-      return {
-        success: true,
-        message: `Se han replicado ${flattenedResults.length} rutinas en ${targetFacilityIds.length} establecimientos.`,
-        replicatedCount: flattenedResults.length,
-        details: {
-          replicatedRoutines: flattenedResults.map((result) => ({
-            sourceId: result.sourceRoutine.id,
-            sourceName: result.sourceRoutine.name,
-            replicatedId: result.replicatedRoutine.id,
-            targetFacilityId: result.targetFacilityId,
-          })),
-        },
-      }
-    })
+            return createNotification({
+              tx,
+              issuerId: user.id,
+              facilityId,
+              type: NotificationType.ROUTINE_REPLICATED,
+              relatedId: relatedRoutineId,
+            })
+          }),
+        )
+
+        revalidatePath(`/entrenamiento/rutinas`)
+        return {
+          success: true,
+          message: `Se han replicado ${replicationResults.length} rutinas en ${targetFacilities.length} establecimientos.`,
+          replicatedCount: replicationResults.length,
+          details: {
+            replicatedRoutines: replicationResults.map((result) => ({
+              sourceId: result.sourceRoutine.id,
+              sourceName: result.sourceRoutine.name,
+              replicatedId: result.replicatedRoutine?.id,
+              targetFacilityId: result.targetFacilityId,
+              targetFacilityName: targetFacilities.find(
+                (f) => f.id === result.targetFacilityId,
+              )?.name,
+            })),
+          },
+        }
+      },
+      {
+        timeout: 30000,
+      },
+    )
     .catch((error) => {
       console.error("Error replicating routines:", error)
       return {
