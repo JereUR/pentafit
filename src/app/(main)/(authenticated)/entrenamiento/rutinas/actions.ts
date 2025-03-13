@@ -480,7 +480,6 @@ export async function replicateRoutines(
                   const {
                     id: exerciseId,
                     dailyExerciseId,
-                    presetRoutineId,
                     ...exerciseData
                   } = exercise
 
