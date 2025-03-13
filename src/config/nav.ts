@@ -61,6 +61,10 @@ export const navItems: NavItem[] = [
     icon: Dumbbell,
     items: [
       { title: "Rutinas", href: "/entrenamiento/rutinas" },
+      {
+        title: "Rutinas preestablecidas",
+        href: "/entrenamiento/rutinas-preestablecidas",
+      },
       { title: "Planes", href: "/entrenamiento/planes" },
     ],
     roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.STAFF],
