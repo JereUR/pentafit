@@ -18,6 +18,7 @@ import { validateRequest } from "@/auth"
 import type { RoutineData } from "@/types/routine"
 import type { DeleteEntityResult } from "@/lib/utils"
 import { createRoutineTransaction } from "@/lib/transactionHelpers"
+import { TransactionDetails } from "@/types/transactions"
 
 type RoutineResult = {
   success: boolean
@@ -158,7 +159,7 @@ export async function createRoutine(
         relatedId: routine.id,
       })
 
-      revalidatePath(`/rutinas`)
+      revalidatePath(`/entrenamiento/rutinas`)
       return { success: true, routine: routineData }
     } catch (error) {
       console.error(error)
@@ -278,7 +279,7 @@ export async function updateRoutine(
         relatedId: id,
       })
 
-      revalidatePath(`/rutinas`)
+      revalidatePath(`/entrenamiento/rutinas`)
       return { success: true, routine: routineData }
     } catch (error) {
       console.error(error)
@@ -356,7 +357,7 @@ export async function deleteRoutines(
             },
           })
 
-          revalidatePath("/rutinas")
+          revalidatePath("/entrenamiento/rutinas")
 
           return {
             success: true,
@@ -505,13 +506,13 @@ export async function replicateRoutines(
 
               const transactionDetails = {
                 action: "Rutina replicada",
-                sourceRoutineId: sourceId,
-                sourceRoutineName: sourceRoutine.name,
+                sourceId: sourceId,
+                sourceName: sourceRoutine.name,
                 sourceFacilityId: sourceFacilityId,
                 targetFacilityId: targetFacility.id,
                 targetFacilityName: targetFacility.name,
-                replicatedRoutineId: replicatedRoutine.id,
-                replicatedRoutineName: replicatedRoutine.name,
+                replicatedId: replicatedRoutine.id,
+                replicatedName: replicatedRoutine.name,
                 exercisesCount: dailyExercises.reduce(
                   (count, de) => count + de.exercises.length,
                   0,

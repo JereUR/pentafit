@@ -21,48 +21,64 @@ export enum TransactionType {
   DIARY_REPLICATED = "DIARY_REPLICATED",
 }
 
+export interface FacilityReference {
+  id: string
+  name: string
+  logoUrl?: string
+}
+
 export interface TransactionDetails {
+  attachmentId?: string
   attachmentName?: string
-  [key: string]: string | undefined
+  replicatedId?: string
+  replicatedName?: string
+
+  targetFacilityId?: string
+  targetFacilities?: Array<FacilityReference>
+
+  sourceFacilityId?: string
+  sourceId?: string
+  sourceName?: string
+
+  [key: string]: string | undefined | Array<FacilityReference> | null
+}
+
+export interface UserReference {
+  id: string
+  firstName: string
+  lastName: string
+  avatarUrl?: string
+}
+
+export interface EntityReference {
+  id: string
+  name: string
 }
 
 export interface Transaction {
   id: string
   type: TransactionType
   details?: TransactionDetails | null
+
   performedById: string
-  performedBy: {
-    id: string
-    firstName: string
-    lastName: string
-    avatarUrl?: string
-  }
+  performedBy: UserReference
+
   facilityId: string
+
   targetUserId?: string | null
-  targetUser?: {
-    id: string
-    firstName: string
-    lastName: string
-    avatarUrl?: string
-  } | null
+  targetUser?: UserReference | null
+
   activityId?: string | null
-  activity?: {
-    id: string
-    name: string
-  } | null
+  activity?: EntityReference | null
   planId?: string | null
-  plan?: {
-    id: string
-    name: string
-  } | null
+  plan?: EntityReference | null
   diaryId?: string | null
-  diary?: {
-    id: string
-    name: string
-  } | null
-  routine?: {
-    id: string
-    name: string
-  }
+  diary?: EntityReference | null
+  routineId?: string | null
+  routine?: EntityReference | null
+  presetRoutineId?: string | null
+  presetRoutine?: EntityReference | null
+
   createdAt: string
 }
+export type TransactionWithDetails = Transaction

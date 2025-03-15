@@ -93,16 +93,16 @@ export async function createActivity(
         },
       })
 
-      await createNotification(
-       { tx,
-        issuerId:user.id,
-        facilityId:values.facilityId,
-        type:NotificationType.ACTIVITY_CREATED,
-        relatedId:activity.id,}
-      )
+      await createNotification({
+        tx,
+        issuerId: user.id,
+        facilityId: values.facilityId,
+        type: NotificationType.ACTIVITY_CREATED,
+        relatedId: activity.id,
+      })
 
       revalidatePath(`/actividades`)
-      return { success: true, activity}
+      return { success: true, activity }
     } catch (error) {
       console.error(error)
       return { success: false, error: "Error al crear la actividad" }
@@ -151,13 +151,13 @@ export async function updateActivity(
         },
       })
 
-      await createNotification(
-        {tx,
-        issuerId:user.id,
-        facilityId:values.facilityId,
-        type:NotificationType.ACTIVITY_UPDATED,
-        relatedId:activity.id,}
-      )
+      await createNotification({
+        tx,
+        issuerId: user.id,
+        facilityId: values.facilityId,
+        type: NotificationType.ACTIVITY_UPDATED,
+        relatedId: activity.id,
+      })
 
       revalidatePath(`/actividades`)
       return { success: true, activity }
@@ -218,12 +218,12 @@ export async function deleteActivities(
             })
           }
 
-          await createNotification(
-            {tx,
-            issuerId:user.id,
+          await createNotification({
+            tx,
+            issuerId: user.id,
             facilityId,
-            type:NotificationType.ACTIVITY_DELETED,}
-          )
+            type: NotificationType.ACTIVITY_DELETED,
+          })
 
           const { count } = await tx.activity.deleteMany({
             where: {
@@ -264,7 +264,10 @@ export async function deleteActivities(
     })
 }
 
-export async function replicateActivities(activityIds: string[], targetFacilityIds: string[]) {
+export async function replicateActivities(
+  activityIds: string[],
+  targetFacilityIds: string[],
+) {
   const { user } = await validateRequest()
   if (!user) throw new Error("Usuario no autenticado")
 
@@ -296,7 +299,7 @@ export async function replicateActivities(activityIds: string[], targetFacilityI
           message: "No se encontraron actividades para replicar",
         }
       }
-      
+
       const targetFacilities = await tx.facility.findMany({
         where: { id: { in: targetFacilityIds } },
         select: {
@@ -310,7 +313,11 @@ export async function replicateActivities(activityIds: string[], targetFacilityI
         targetFacilityIds.flatMap(async (targetFacilityId) =>
           Promise.all(
             activities.map(async (sourceActivity) => {
-              const { id: sourceId, facilityId: sourceFacilityId, ...activityData } = sourceActivity
+              const {
+                id: sourceId,
+                facilityId: sourceFacilityId,
+                ...activityData
+              } = sourceActivity
 
               const replicatedActivity = await tx.activity.create({
                 data: {
@@ -327,12 +334,12 @@ export async function replicateActivities(activityIds: string[], targetFacilityI
                 facilityId: sourceFacilityId,
                 details: {
                   action: "Actividad replicada",
-                  sourceActivityId: sourceId,
-                  sourceActivityName: activityData.name,
+                  sourceId: sourceId,
+                  sourceName: activityData.name,
                   sourceFacilityId: sourceFacilityId,
                   targetFacilityId: targetFacilityId,
-                  replicatedActivityId: replicatedActivity.id,
-                  replicatedActivityName: replicatedActivity.name,
+                  replicatedId: replicatedActivity.id,
+                  replicatedName: replicatedActivity.name,
                   targetFacilities: targetFacilities.map((facility) => ({
                     id: facility.id,
                     name: facility.name,
@@ -355,7 +362,12 @@ export async function replicateActivities(activityIds: string[], targetFacilityI
 
       await Promise.all(
         targetFacilityIds.map((facilityId) =>
-          createNotification({tx, issuerId:user.id, facilityId, type:NotificationType.ACTIVITY_REPLICATED}),
+          createNotification({
+            tx,
+            issuerId: user.id,
+            facilityId,
+            type: NotificationType.ACTIVITY_REPLICATED,
+          }),
         ),
       )
 
@@ -378,7 +390,10 @@ export async function replicateActivities(activityIds: string[], targetFacilityI
       console.error("Error replicating activities:", error)
       return {
         success: false,
-        message: error instanceof Error ? error.message : "Error al replicar las actividades",
+        message:
+          error instanceof Error
+            ? error.message
+            : "Error al replicar las actividades",
       }
     })
 }

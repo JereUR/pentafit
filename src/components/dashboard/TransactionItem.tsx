@@ -2,7 +2,7 @@
 
 import { format, formatDistanceToNow, isWithinInterval, subDays } from "date-fns"
 import { es } from "date-fns/locale"
-import { Calendar, ClipboardList, Info, Share2, Users, SquareActivity } from "lucide-react"
+import { Calendar, ClipboardList, Info, Share2, Users, SquareActivity } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -12,34 +12,8 @@ import { PlanIcon } from "@/config/icons"
 import type { Transaction, TransactionType } from "@/types/transactions"
 import noAvatarSrc from "@/assets/avatar-placeholder.png"
 
-interface TransactionDetails {
-  attachmentName?: string
-  targetFacilityId?: string
-  replicatedActivityId?: string
-  replicatedActivityName?: string
-  sourceFacilityId?: string
-  sourceActivityId?: string
-  sourceActivityName?: string
-  sourceRoutineName?: string
-  replicatedRoutineName?: string
-  sourcePlanName?: string
-  replicatedPlanName?: string
-  sourceDiaryName?: string
-  replicatedDiaryName?: string
-  targetFacilities?: Array<{
-    id: string
-    name: string
-    logoUrl?: string
-  }>
-  [key: string]: string | undefined | Array<{ id: string; name: string; logoUrl?: string }> | null
-}
-
-export type TransactionWithDetails = Transaction & {
-  details?: TransactionDetails | null
-}
-
 interface TransactionItemProps {
-  transaction: TransactionWithDetails
+  transaction: Transaction
   isLast: boolean
   onShowFacilities: (facilities: Array<{ id: string; name: string; logoUrl?: string }>) => void
 }
@@ -109,7 +83,6 @@ export function TransactionItem({ transaction, isLast, onShowFacilities }: Trans
   )
 }
 
-// Helper functions
 function getTransactionIcon(type: TransactionType) {
   if (type.includes("ACTIVITY")) {
     return <ClipboardList className="h-4 w-4 text-purple-400" />
@@ -126,6 +99,9 @@ function getTransactionIcon(type: TransactionType) {
   if (type.includes("ROUTINE")) {
     return <SquareActivity className="h-4 w-4 text-lime-500" />
   }
+  if (type.includes("PRESET_ROUTINE")) {
+    return <SquareActivity className="h-4 w-4 text-indigo-500" />
+  }
   return null
 }
 
@@ -136,10 +112,11 @@ function getTransactionType(type: TransactionType) {
   if (type.includes("PLAN")) return "Plan"
   if (type.includes("DIARY")) return "Diario"
   if (type.includes("ROUTINE")) return "Rutina"
+  if (type.includes("PRESET_ROUTINE")) return "Rutina preestablecida"
   return "N/A"
 }
 
-function getTransactionName(transaction: TransactionWithDetails) {
+function getTransactionName(transaction: Transaction) {
   if (transaction.targetUser) {
     return `${transaction.targetUser.firstName} ${transaction.targetUser.lastName}`
   }
@@ -147,16 +124,11 @@ function getTransactionName(transaction: TransactionWithDetails) {
   if (transaction.plan) return transaction.plan.name
   if (transaction.diary) return transaction.diary.name
   if (transaction.routine) return transaction.routine.name
+  if (transaction.presetRoutine) return transaction.presetRoutine.name
 
   if (transaction.details) {
-    if (transaction.details.attachmentName) return transaction.details.attachmentName
-    if (transaction.details.sourceActivityName) return transaction.details.sourceActivityName
-    if (transaction.details.sourceRoutineName) return transaction.details.sourceRoutineName
-    if (transaction.details.sourcePlanName) return transaction.details.sourcePlanName
-    if (transaction.details.sourceDiaryName) return transaction.details.sourceDiaryName
+    return transaction.details.attachmentName || transaction.details.replicatedName || "N/A"
   }
-
-  return "N/A"
 }
 
 function getTransactionAvatar(transaction: Transaction) {
@@ -172,6 +144,7 @@ function getTransactionInitials(transaction: Transaction) {
   if (transaction.plan) return transaction.plan.name[0]
   if (transaction.diary) return transaction.diary.name[0]
   if (transaction.routine) return transaction.routine.name[0]
+  if (transaction.presetRoutine) return transaction.presetRoutine.name[0]
   return "?"
 }
 
@@ -199,7 +172,7 @@ function isReplicationTransaction(type: TransactionType) {
   return type.includes("REPLICATED")
 }
 
-function getReplicationInfo(transaction: TransactionWithDetails) {
+function getReplicationInfo(transaction: Transaction) {
   if (!transaction.details || !isReplicationTransaction(transaction.type)) return null
 
   if (transaction.details.targetFacilities && Array.isArray(transaction.details.targetFacilities)) {
@@ -214,29 +187,17 @@ function getReplicationInfo(transaction: TransactionWithDetails) {
   }
 
   if (transaction.details.targetFacilityId) {
-    let facilityName = transaction.details.targetFacilityId
+    const facilityName = transaction.details.replicatedName || transaction.details.targetFacilityId
 
-    if (transaction.type.includes("ACTIVITY") && transaction.details.replicatedActivityName) {
-      facilityName = transaction.details.replicatedActivityName
-    } else if (transaction.type.includes("ROUTINE") && transaction.details.replicatedRoutineName) {
-      facilityName = transaction.details.replicatedRoutineName
-    } else if (transaction.type.includes("PLAN") && transaction.details.replicatedPlanName) {
-      facilityName = transaction.details.replicatedPlanName
-    } else if (transaction.type.includes("DIARY") && transaction.details.replicatedDiaryName) {
-      facilityName = transaction.details.replicatedDiaryName
-    } else if (transaction.type.includes("PRESET_ROUTINE") && transaction.details.replicatedPresetRoutineName) {
-      facilityName = transaction.details.replicatedPresetRoutineName
-
-      return {
-        count: 1,
-        facilities: [
-          {
-            id: transaction.details.targetFacilityId,
-            name: facilityName,
-            logoUrl: undefined,
-          },
-        ],
-      }
+    return {
+      count: 1,
+      facilities: [
+        {
+          id: transaction.details.targetFacilityId,
+          name: facilityName,
+          logoUrl: undefined,
+        },
+      ],
     }
   }
 
