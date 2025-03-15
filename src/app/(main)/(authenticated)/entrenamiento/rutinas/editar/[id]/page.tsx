@@ -9,8 +9,8 @@ import { getRoutineById } from "../../actions"
 import RoutineForm from "@/components/routines/RoutineForm"
 
 export const metadata: Metadata = {
-  title: "Editar agendar",
-  description: "Edita una agenda de tu establecimiento"
+  title: "Editar rutina",
+  description: "Edita una rutina de tu establecimiento"
 }
 
 export default async function EditRoutinePage({ params }: { params: Promise<{ id: string }> }) {
@@ -25,7 +25,7 @@ export default async function EditRoutinePage({ params }: { params: Promise<{ id
   const routine = await getRoutineById(id)
 
   if (!routine) {
-    redirect("/agenda")
+    redirect("/entranamiento/rutinas")
   }
 
   return (
