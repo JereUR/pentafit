@@ -5,9 +5,9 @@ import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useInfiniteTransactions } from "@/hooks/useInfiniteTransactions"
 import { TransactionList } from "./TransactionList"
-import type { TransactionWithDetails } from "./TransactionItem"
 import { FacilityReplicationDialog } from "./FacilityReplicationDialog"
 import { TransactionListSkeleton } from "../skeletons/TransactionListSkeleton"
+import { TransactionWithDetails } from "@/types/transactions"
 
 interface LatestTransactionsProps {
   facilityId: string
