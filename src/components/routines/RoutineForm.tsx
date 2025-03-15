@@ -85,7 +85,6 @@ function RoutineForm({ userId, routineData }: RoutineFormProps) {
   const onSubmit = async (values: RoutineValues) => {
     setError(undefined)
 
-    // Verificar si hay al menos un ejercicio en algún día
     const totalExercises = Object.values(dailyExercises).reduce((total, exercises) => total + exercises.length, 0)
 
     if (totalExercises === 0) {
