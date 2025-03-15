@@ -412,8 +412,8 @@ model Routine {
 model DailyExercise {
   id              String         @id @default(uuid())
   dayOfWeek       DayOfWeek
-  routineId       String
-  routine         Routine        @relation(fields: [routineId], references: [id], onDelete: Cascade)
+  routineId       String?
+  routine         Routine?       @relation(fields: [routineId], references: [id], onDelete: Cascade)
   presetRoutineId String?
   presetRoutine   PresetRoutine? @relation(fields: [presetRoutineId], references: [id], onDelete: Cascade)
   exercises       Exercise[]
@@ -422,6 +422,7 @@ model DailyExercise {
   updatedAt DateTime @updatedAt
 
   @@unique([routineId, dayOfWeek])
+  @@unique([presetRoutineId, dayOfWeek])
   @@map("daily_exercises")
 }
 
