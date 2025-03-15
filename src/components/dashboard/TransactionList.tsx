@@ -2,8 +2,9 @@
 
 import { useEffect, useRef } from "react"
 
-import { TransactionItem, type TransactionWithDetails } from "./TransactionItem"
+import { TransactionItem } from "./TransactionItem"
 import { TransactionSkeleton } from "../skeletons/TransactionSkeleton"
+import { TransactionWithDetails } from "@/types/transactions"
 
 interface TransactionListProps {
   transactions: TransactionWithDetails[]
