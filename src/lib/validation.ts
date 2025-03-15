@@ -366,16 +366,6 @@ export type ExerciseValues = z.infer<typeof exerciseSchema>
 export type RoutineValues = z.infer<typeof routineSchema>
 export type DailyExercisesValues = z.infer<typeof dailyExercisesSchema>
 
-export const presetRoutineSchema = z.object({
-  name: z.string().min(1, "El nombre es requerido"),
-  description: z.string().nullable().optional(),
-  facilityId: z.string().min(1, "El establecimiento es requerido"),
-  isPublic: z.boolean().default(false),
-  exercises: z
-    .array(exerciseSchema)
-    .min(1, "Debe agregar al menos un ejercicio"),
-})
-
 export const userRoutineSchema = z.object({
   userId: z.string().min(1, "El usuario es requerido"),
   routineId: z.string().min(1, "La rutina es requerida"),
@@ -396,5 +386,4 @@ export const userRoutineSchema = z.object({
   isActive: z.boolean().default(true),
 })
 
-export type PresetRoutineValues = z.infer<typeof presetRoutineSchema>
 export type UserRoutineValues = z.infer<typeof userRoutineSchema>
