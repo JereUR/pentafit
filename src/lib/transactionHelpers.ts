@@ -11,6 +11,7 @@ export async function createTransaction({
   planId,
   diaryId,
   routineId,
+  presetRoutineId,
 }: {
   tx: Prisma.TransactionClient
   type: TransactionType
@@ -22,6 +23,7 @@ export async function createTransaction({
   planId?: string
   diaryId?: string
   routineId?: string
+  presetRoutineId?: string
 }) {
   try {
     const safeDetails = details && typeof details === "object" ? details : {}
@@ -36,6 +38,7 @@ export async function createTransaction({
       ...(planId && { planId }),
       ...(diaryId && { diaryId }),
       ...(routineId && { routineId }),
+      ...(presetRoutineId && { presetRoutineId }),
     }
 
     const transaction = await tx.transaction.create({
@@ -205,7 +208,11 @@ export async function createRoutineTransaction({
   details,
 }: {
   tx: Prisma.TransactionClient
-  type: TransactionType
+  type:
+    | "ROUTINE_CREATED"
+    | "ROUTINE_UPDATED"
+    | "ROUTINE_DELETED"
+    | "ROUTINE_REPLICATED"
   routineId: string
   performedById: string
   facilityId: string
@@ -220,5 +227,36 @@ export async function createRoutineTransaction({
     performedById,
     facilityId,
     routineId,
+  })
+}
+
+export async function createPresetRoutineTransaction({
+  tx,
+  type,
+  presetRoutineId,
+  performedById,
+  facilityId,
+  details,
+}: {
+  tx: Prisma.TransactionClient
+  type:
+    | "PRESET_ROUTINE_CREATED"
+    | "PRESET_ROUTINE_UPDATED"
+    | "PRESET_ROUTINE_DELETED"
+    | "PRESET_ROUTINE_REPLICATED"
+  presetRoutineId: string
+  performedById: string
+  facilityId: string
+  details?: Prisma.JsonValue
+}) {
+  const safeDetails = details && typeof details === "object" ? details : {}
+
+  return await createTransaction({
+    tx,
+    type,
+    details: safeDetails,
+    performedById,
+    facilityId,
+    presetRoutineId,
   })
 }
