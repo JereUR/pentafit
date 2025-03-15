@@ -377,12 +377,12 @@ export async function replicatePlans(
                 facilityId: sourceFacilityId,
                 details: {
                   action: "Plan replicado",
-                  sourcePlanId: sourceId,
-                  sourcePlanName: planData.name,
+                  sourceId: sourceId,
+                  sourceName: planData.name,
                   sourceFacilityId: sourceFacilityId,
                   targetFacilityId: targetFacilityId,
-                  replicatedPlanId: replicatedPlan.id,
-                  replicatedPlanName: replicatedPlan.name,
+                  replicatedId: replicatedPlan.id,
+                  replicatedName: replicatedPlan.name,
                   targetFacilities: targetFacilities.map((facility) => ({
                     id: facility.id,
                     name: facility.name,
