@@ -38,7 +38,8 @@ export interface ExerciseData {
 export interface DailyExerciseData {
   id: string
   dayOfWeek: DayOfWeek
-  routineId: string
+  routineId?: string | null
+  presetRoutineId?: string | null
   exercises: ExerciseData[]
   createdAt?: Date
   updatedAt?: Date
