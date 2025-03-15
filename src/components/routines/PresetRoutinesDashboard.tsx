@@ -12,9 +12,9 @@ import { PAGE_SIZE } from "@/lib/prisma"
 import { TableSkeleton } from "../skeletons/TableSkeleton"
 import NoWorkingFacilityMessage from "../NoWorkingFacilityMessage"
 import GenericDataHeader from "../GenericDataHeader"
-import { useDeleteRoutineMutation, useReplicateRoutineMutation } from "@/app/(main)/(authenticated)/entrenamiento/rutinas/mutations"
 import RoutinesTable from "./RoutinesTable"
 import { usePresetRoutines } from "@/hooks/usePresetRoutines"
+import { useDeletePresetRoutineMutation, useReplicatePresetRoutineMutation } from "@/app/(main)/(authenticated)/entrenamiento/rutinas-preestablecidas/mutations"
 
 export default function PresetRoutinesDashboard({ userId }: { userId: string }) {
   const router = useRouter()
@@ -27,8 +27,8 @@ export default function PresetRoutinesDashboard({ userId }: { userId: string }) 
   const [selectedCount, setSelectedCount] = useState(0)
 
   const { data, isLoading, isError, error } = usePresetRoutines(workingFacility?.id, page, debouncedSearch)
-  const { mutate: deleteRoutine, isPending: isDeleting } = useDeleteRoutineMutation()
-  const { mutate: replicateRoutine, isPending: isReplicating } = useReplicateRoutineMutation()
+  const { mutate: deleteRoutine, isPending: isDeleting } = useDeletePresetRoutineMutation()
+  const { mutate: replicateRoutine, isPending: isReplicating } = useReplicatePresetRoutineMutation()
   const { toast } = useToast()
 
   useEffect(() => {
@@ -93,7 +93,7 @@ export default function PresetRoutinesDashboard({ userId }: { userId: string }) 
 
   const handleReplicateToFacility = (targetFacilityIds: string[]) => {
     replicateRoutine(
-      { routineIds: selectedRows, targetFacilityIds },
+      { presetRoutineIds: selectedRows, targetFacilityIds },
       {
         onSuccess: () => {
           setSelectedRows([])
@@ -114,9 +114,9 @@ export default function PresetRoutinesDashboard({ userId }: { userId: string }) 
   return (
     <div className="w-full space-y-6 overflow-x-auto">
       <GenericDataHeader
-        title="Rutinas"
+        title="Rutinas preestablecidas"
         selectedCount={selectedCount}
-        onAdd={() => router.push("/entrenamiento/rutinas- preestablecidas/agregar")}
+        onAdd={() => router.push("/entrenamiento/rutinas-preestablecidas/agregar")}
         onDeleteSelected={handleDeleteSelected}
         onReplicateToFacility={handleReplicateToFacility}
         columns={columnsRoutines}
@@ -142,6 +142,7 @@ export default function PresetRoutinesDashboard({ userId }: { userId: string }) 
         deleteRoutine={deleteRoutine}
         isDeleting={isDeleting}
         isLoading={isLoading}
+        isPreset={true}
       />
       <Pagination currentPage={page} totalPages={totalPages} onPageChange={setPage} />
     </div>
