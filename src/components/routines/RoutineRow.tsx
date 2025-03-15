@@ -35,6 +35,7 @@ interface RoutineRowProps {
     unknown
   >
   isDeleting: boolean
+  isPreset?:boolean
 }
 
 export default function RoutineRow({
@@ -45,6 +46,7 @@ export default function RoutineRow({
   onToggleRow,
   deleteRoutine,
   isDeleting,
+  isPreset=false
 }: RoutineRowProps) {
   const { toast } = useToast()
   const [showExercisesDialog, setShowExercisesDialog] = useState(false)
@@ -106,7 +108,7 @@ export default function RoutineRow({
         <TableCell className="text-center">
           <div className="flex flex-col items-center-center gap-2 text-xs">
             <Button asChild variant="outline" className="w-auto" onClick={(e) => e.stopPropagation()}>
-              <Link href={`/entrenamiento/rutinas/editar/${routine.id}`}>
+              <Link href={!isPreset ? `/entrenamiento/rutinas/editar/${routine.id}` : `/entrenamiento/rutinas-preestablecidas/editar/${routine.id}`}>
                 <Edit className="h-3 w-3" /> Editar
               </Link>
             </Button>

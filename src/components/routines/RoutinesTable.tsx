@@ -28,6 +28,7 @@ interface RoutinesTableProps {
   >
   isDeleting: boolean
   isLoading: boolean
+  isPreset?:boolean
 }
 
 export default function RoutinesTable({
@@ -38,7 +39,8 @@ export default function RoutinesTable({
   onToggleAllRows,
   deleteRoutine,
   isDeleting,
-  isLoading
+  isLoading,
+  isPreset=false
 }: RoutinesTableProps) {
   return (
     <div className="w-full overflow-x-auto border rounded-md px-2 sm:px-4 py-4 sm:py-8">
@@ -80,6 +82,7 @@ export default function RoutinesTable({
               onToggleRow={onToggleRow}
               deleteRoutine={deleteRoutine}
               isDeleting={isDeleting}
+              isPreset={isPreset}
             />
           )) : (
             <TableRow>
