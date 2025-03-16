@@ -7,24 +7,25 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { PlanIcon } from "@/config/icons"
 import noAvatarSrc from "@/assets/avatar-placeholder.png"
-import { AssignedUserReference, Transaction, TransactionType } from "@/types/transactions"
+import { Transaction, TransactionType } from "@/types/transactions"
+import { UserClient } from "@/types/user"
 
 interface TransactionItemProps {
   transaction: Transaction
   isLast: boolean
   onShowFacilities: (facilities: Array<{ id: string; name: string; logoUrl?: string }>) => void
+  onShowUsers: (users: UserClient[]) => void
 }
 
 interface AssignmentInfo {
   assignedCount: number
   alreadyAssignedCount: number
-  assignedUsers: AssignedUserReference[]
+  assignedUsers: UserClient[]
 }
 
-export function TransactionItem({ transaction, isLast, onShowFacilities }: TransactionItemProps) {
+export function TransactionItem({ transaction, isLast, onShowFacilities, onShowUsers }: TransactionItemProps) {
   const replicationInfo = getReplicationInfo(transaction)
 
   function getAssignmentInfo(transaction: Transaction): AssignmentInfo | null {
@@ -100,32 +101,10 @@ export function TransactionItem({ transaction, isLast, onShowFacilities }: Trans
                       <UserCheck className="h-3 w-3" />
                       <span>{assignmentInfo.assignedCount}</span>
                     </Badge>
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-6 w-6 ml-1">
-                            <Info className="h-3.5 w-3.5" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent className="p-2 max-w-xs">
-                          <p className="font-medium mb-1">Usuarios asignados:</p>
-                          {assignmentInfo.assignedUsers && assignmentInfo.assignedUsers.length > 0 ? (
-                            <ul className="space-y-1 text-sm">
-                              {assignmentInfo.assignedUsers.map((user, index) => (
-                                <li key={user.id || index}>{user.name}</li>
-                              ))}
-                            </ul>
-                          ) : (
-                            <p className="text-sm text-muted-foreground">No hay usuarios asignados</p>
-                          )}
-                          {assignmentInfo.alreadyAssignedCount > 0 && (
-                            <p className="mt-2 text-xs text-muted-foreground">
-                              {assignmentInfo.alreadyAssignedCount} usuarios ya estaban asignados
-                            </p>
-                          )}
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
+                    <Button variant="ghost" size="icon" className="h-6 w-6 ml-1"
+                      onClick={() => onShowUsers(assignmentInfo.assignedUsers)}>
+                      <Info className="h-3.5 w-3.5" />
+                    </Button>
                   </div>
                 )}
               </div>
