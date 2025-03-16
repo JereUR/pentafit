@@ -56,3 +56,11 @@ export function getUserDataSelect() {
 export type UserData = Prisma.UserGetPayload<{
   select: ReturnType<typeof getUserDataSelect>
 }>
+
+export interface UserClient {
+  id: string
+  firstName: string
+  lastName: string
+  email: string
+  avatarUrl: string | null
+}
