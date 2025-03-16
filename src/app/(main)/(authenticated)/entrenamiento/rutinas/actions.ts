@@ -644,7 +644,7 @@ export async function assignRoutineToUsers(
 
       const users = await tx.user.findMany({
         where: { id: { in: newUserIds } },
-        select: { id: true, firstName: true, lastName: true },
+        select: { id: true, firstName: true, lastName: true, avatarUrl: true, email:true },
       })
 
       await createRoutineTransaction({
@@ -659,7 +659,10 @@ export async function assignRoutineToUsers(
           attachmentName: routine.name,
           assignedUsers: users.map((u) => ({
             id: u.id,
-            name: `${u.firstName} ${u.lastName}`,
+            firstName: u.firstName,
+            lastName: u.lastName,
+            avatarUrl: u.avatarUrl,
+            email: u.email
           })),
           assignedCount: newUserIds.length,
           alreadyAssignedCount: existingUserIds.length,
