@@ -32,7 +32,19 @@ export async function GET(req: NextRequest) {
       orderBy: {
         createdAt: "desc",
       },
-      include: {
+      select: {
+        id: true,
+        type: true,
+        details: true,
+        createdAt: true,
+        facilityId: true,
+        performedById: true,
+        targetUserId: true,
+        activityId: true,
+        planId: true,
+        diaryId: true,
+        routineId: true,
+        presetRoutineId: true,
         performedBy: {
           select: {
             id: true,
