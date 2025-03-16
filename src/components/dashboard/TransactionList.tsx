@@ -5,15 +5,17 @@ import { useEffect, useRef } from "react"
 import { TransactionItem } from "./TransactionItem"
 import { TransactionSkeleton } from "../skeletons/TransactionSkeleton"
 import { TransactionWithDetails } from "@/types/transactions"
+import { UserClient } from "@/types/user"
 
 interface TransactionListProps {
   transactions: TransactionWithDetails[]
   isLoading: boolean
   onShowFacilities: (facilities: Array<{ id: string; name: string; logoUrl?: string }>) => void
+  onShowUsers: (users: UserClient[]) => void
   onLoadMore: () => void
 }
 
-export function TransactionList({ transactions, isLoading, onShowFacilities, onLoadMore }: TransactionListProps) {
+export function TransactionList({ transactions, isLoading, onShowFacilities, onShowUsers, onLoadMore }: TransactionListProps) {
   const listRef = useRef<HTMLDivElement>(null)
   const observerRef = useRef<IntersectionObserver | null>(null)
   const loadingRef = useRef<HTMLDivElement>(null)
@@ -56,6 +58,7 @@ export function TransactionList({ transactions, isLoading, onShowFacilities, onL
           transaction={transaction}
           isLast={index === transactions.length - 1}
           onShowFacilities={onShowFacilities}
+          onShowUsers={onShowUsers}
         />
       ))}
 
