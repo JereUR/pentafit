@@ -1,6 +1,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import noImage from '@/assets/no-image.png'
 
 interface FacilityInfo {
   id: string
@@ -33,7 +34,7 @@ export function FacilityReplicationDialog({
               facilities.map((facility) => (
                 <div key={facility.id} className="flex items-center space-x-4 p-2 rounded-md hover:bg-secondary">
                   <Avatar className="h-10 w-10">
-                    <AvatarImage src={facility.logoUrl} alt={facility.name} />
+                    <AvatarImage src={facility.logoUrl || noImage.src} alt={facility.name} />
                     <AvatarFallback>{facility.name.charAt(0).toUpperCase()}</AvatarFallback>
                   </Avatar>
                   <div className="flex-1">
