@@ -9,6 +9,7 @@ import {
   updateRoutine,
   deleteRoutines,
   replicateRoutines,
+  assignRoutineToUsers,
 } from "./actions"
 import { RoutineValues } from "@/lib/validation"
 
@@ -200,6 +201,55 @@ export function useReplicateRoutineMutation() {
       toast({
         variant: "destructive",
         title: "Error al replicar las rutinas",
+        description: error.message,
+      })
+    },
+  })
+}
+
+export function useAssignRoutineToUsersMutation() {
+  const { toast } = useToast()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({
+      routineId,
+      userIds,
+      facilityId,
+    }: {
+      routineId: string
+      userIds: string[]
+      facilityId: string
+    }) => {
+      const result = await assignRoutineToUsers(routineId, userIds, facilityId)
+      if (!result.success) {
+        throw new Error(result.message)
+      }
+      return result
+    },
+    onSuccess: (result) => {
+      toast({
+        title: "Rutina asignada correctamente",
+        description: result.message,
+      })
+
+      queryClient.invalidateQueries({
+        queryKey: ["routines"],
+      })
+      queryClient.invalidateQueries({
+        queryKey: ["latestTransactions"],
+      })
+      queryClient.invalidateQueries({
+        queryKey: ["metrics"],
+      })
+      queryClient.invalidateQueries({
+        queryKey: ["userRoutines"],
+      })
+    },
+    onError: (error: Error) => {
+      toast({
+        variant: "destructive",
+        title: "Error al asignar la rutina",
         description: error.message,
       })
     },

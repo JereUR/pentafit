@@ -593,3 +593,100 @@ export async function replicateRoutines(
       }
     })
 }
+
+export async function assignRoutineToUsers(
+  routineId: string,
+  userIds: string[],
+  facilityId: string,
+) {
+  const { user } = await validateRequest()
+  if (!user) throw new Error("Usuario no autenticado")
+
+  return await prisma.$transaction(async (tx) => {
+    try {
+      const routine = await tx.routine.findUnique({
+        where: { id: routineId },
+        select: { id: true, name: true },
+      })
+
+      if (!routine) {
+        return {
+          success: false,
+          message: "No se encontró la rutina especificada",
+        }
+      }
+
+      const existingAssignments = await tx.userRoutine.findMany({
+        where: {
+          routineId,
+          userId: { in: userIds },
+        },
+        select: { userId: true },
+      })
+
+      const existingUserIds = existingAssignments.map((a) => a.userId)
+      const newUserIds = userIds.filter((id) => !existingUserIds.includes(id))
+
+      if (newUserIds.length > 0) {
+        await tx.userRoutine.createMany({
+          data: newUserIds.map((userId) => ({
+            userId,
+            routineId,
+            isActive: true,
+          })),
+          skipDuplicates: true,
+        })
+      }
+
+      const users = await tx.user.findMany({
+        where: { id: { in: newUserIds } },
+        select: { id: true, firstName: true, lastName: true },
+      })
+
+      await createRoutineTransaction({
+        tx,
+        type: TransactionType.ASSIGN_ROUTINE_USER,
+        routineId,
+        performedById: user.id,
+        facilityId,
+        details: {
+          action: "Rutina asignada a usuarios",
+          attachmentId: routineId,
+          attachmentName: routine.name,
+          assignedUsers: users.map((u) => ({
+            id: u.id,
+            name: `${u.firstName} ${u.lastName}`,
+          })),
+          assignedCount: newUserIds.length,
+          alreadyAssignedCount: existingUserIds.length,
+        },
+      })
+
+      await createNotification({
+        tx,
+        issuerId: user.id,
+        facilityId,
+        type: NotificationType.ASSIGN_ROUTINE_USER,
+        relatedId: routineId,
+      })
+
+      revalidatePath("/entrenamiento/rutinas")
+
+      return {
+        success: true,
+        message: `Rutina asignada a ${newUserIds.length} usuarios correctamente${existingUserIds.length > 0 ? ` (${existingUserIds.length} ya estaban asignados)` : ""}`,
+        assignedCount: newUserIds.length,
+        alreadyAssignedCount: existingUserIds.length,
+      }
+    } catch (error) {
+      console.error("Error assigning routine to users:", error)
+      return {
+        success: false,
+        message:
+          error instanceof Error
+            ? error.message
+            : "Error al asignar la rutina a los usuarios",
+      }
+    }
+  })
+}
