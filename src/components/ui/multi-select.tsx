@@ -20,7 +20,13 @@ export interface MultiSelectProps {
   searchText: string
 }
 
-export function MultiSelect({ options, selected, onChange, placeholder = "Seleccionar opción...", searchText }: MultiSelectProps) {
+export function MultiSelect({
+  options,
+  selected,
+  onChange,
+  placeholder = "Seleccionar opción...",
+  searchText,
+}: MultiSelectProps) {
   const [open, setOpen] = React.useState(false)
 
   const handleSelect = (currentValue: string) => {
@@ -58,7 +64,7 @@ export function MultiSelect({ options, selected, onChange, placeholder = "Selecc
             <CommandEmpty>No options found.</CommandEmpty>
             <CommandGroup>
               {options.map((option) => (
-                <CommandItem key={option.value} onSelect={() => handleSelect(option.value)} className='cursor-pointer'>
+                <CommandItem key={option.value} onSelect={() => handleSelect(option.value)} className="cursor-pointer">
                   <Check
                     className={cn("mr-2 h-4 w-4", selected.includes(option.value) ? "opacity-100" : "opacity-0")}
                   />
