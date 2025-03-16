@@ -8,6 +8,8 @@ import { TransactionList } from "./TransactionList"
 import { FacilityReplicationDialog } from "./FacilityReplicationDialog"
 import { TransactionListSkeleton } from "../skeletons/TransactionListSkeleton"
 import { TransactionWithDetails } from "@/types/transactions"
+import { UserAssignmentDialog } from "./UserAssignmentDialog"
+import { UserClient } from "@/types/user"
 
 interface LatestTransactionsProps {
   facilityId: string
@@ -20,13 +22,20 @@ export function LatestTransactions({ facilityId }: LatestTransactionsProps) {
   const [selectedFacilities, setSelectedFacilities] = useState<Array<{ id: string; name: string; logoUrl?: string }>>(
     [],
   )
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [selectedUsers, setSelectedUsers] = useState<UserClient[]>([])
+  const [isDialogFacilityOpen, setIsDialogFacilityOpen] = useState(false)
+  const [isDialogUserOpen, setIsDialogUserOpen] = useState(false)
 
   const transactions = data?.pages.flatMap((page) => page.transactions) || []
 
   const handleShowFacilities = (facilities: Array<{ id: string; name: string; logoUrl?: string }>) => {
     setSelectedFacilities(facilities)
-    setIsDialogOpen(true)
+    setIsDialogFacilityOpen(true)
+  }
+
+  const handleShowUsers = (users: UserClient[]) => {
+    setSelectedUsers(users)
+    setIsDialogUserOpen(true)
   }
 
   if (status === "pending") {
@@ -57,14 +66,20 @@ export function LatestTransactions({ facilityId }: LatestTransactionsProps) {
             transactions={transactions as TransactionWithDetails[]}
             isLoading={isFetchingNextPage}
             onShowFacilities={handleShowFacilities}
+            onShowUsers={handleShowUsers}
             onLoadMore={() => hasNextPage && !isFetching && fetchNextPage()}
           />
         </div>
       </CardContent>
       <FacilityReplicationDialog
-        isOpen={isDialogOpen}
-        onClose={() => setIsDialogOpen(false)}
+        isOpen={isDialogFacilityOpen}
+        onClose={() => setIsDialogFacilityOpen(false)}
         facilities={selectedFacilities}
+      />
+      <UserAssignmentDialog
+        isOpen={isDialogUserOpen}
+        onClose={() => setIsDialogUserOpen(false)}
+        users={selectedUsers}
       />
     </Card>
   )
