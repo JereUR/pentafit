@@ -213,6 +213,7 @@ export async function createRoutineTransaction({
     | "ROUTINE_UPDATED"
     | "ROUTINE_DELETED"
     | "ROUTINE_REPLICATED"
+    | "ASSIGN_ROUTINE_USER"
   routineId: string
   performedById: string
   facilityId: string

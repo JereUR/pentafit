@@ -61,9 +61,12 @@ export async function createNotification({
           ? "planId"
           : type.toLowerCase().includes("diary")
             ? "diaryId"
-            : type.toLowerCase().includes("routine")
+            : type.toLowerCase().startsWith("routine") ||
+                type.toLowerCase().startsWith("assign_routine")
               ? "routineId"
-              : "userId"]: relatedId,
+              : type.toLowerCase().startsWith("preset_routine")
+                ? "presetRoutineId"
+                : "userId"]: relatedId,
     }),
   }))
 
