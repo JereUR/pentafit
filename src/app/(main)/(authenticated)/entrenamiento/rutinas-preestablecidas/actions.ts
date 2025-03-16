@@ -271,7 +271,7 @@ export async function updatePresetRoutine(
           attachmentId: id,
           attachmentName: values.name,
         },
-      }) 
+      })
 
       await createNotification({
         tx,
@@ -503,13 +503,17 @@ export async function replicatePresetRoutines(
                 sourceName: sourcePresetRoutine.name,
                 sourceFacilityId: sourceFacilityId,
                 targetFacilityId: targetFacility.id,
-                targetFacilityName: targetFacility.name,
                 replicatedId: replicatedPresetRoutine.id,
                 replicatedName: replicatedPresetRoutine.name,
                 exercisesCount: dailyExercises.reduce(
                   (count, de) => count + de.exercises.length,
                   0,
                 ),
+                targetFacilities: targetFacilities.map((facility) => ({
+                  id: facility.id,
+                  name: facility.name,
+                  logoUrl: facility.logoUrl,
+                })),
                 timestamp: new Date().toISOString(),
               }
 

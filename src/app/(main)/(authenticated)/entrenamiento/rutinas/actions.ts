@@ -510,13 +510,17 @@ export async function replicateRoutines(
                 sourceName: sourceRoutine.name,
                 sourceFacilityId: sourceFacilityId,
                 targetFacilityId: targetFacility.id,
-                targetFacilityName: targetFacility.name,
                 replicatedId: replicatedRoutine.id,
                 replicatedName: replicatedRoutine.name,
                 exercisesCount: dailyExercises.reduce(
                   (count, de) => count + de.exercises.length,
                   0,
                 ),
+                targetFacilities: targetFacilities.map((facility) => ({
+                  id: facility.id,
+                  name: facility.name,
+                  logoUrl: facility.logoUrl,
+                })),
                 timestamp: new Date().toISOString(),
               }
 
