@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { useState, useEffect } from "react"
-import { CirclePlus, Pencil, Trash2 } from "lucide-react"
+import { Check, ChevronsUpDown, CirclePlus, Pencil, Trash2 } from "lucide-react"
 import Image from "next/image"
 
 import { Button } from "@/components/ui/button"
@@ -18,6 +18,9 @@ import { convertImagePath, getBodyZones, getExercisesByZone } from "@/data/exerc
 import noImage from "@/assets/no-image.png"
 import { daysOfWeek } from "@/types/routine"
 import { useMediaQuery } from "@/hooks/useMediaQuery"
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover"
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "../ui/command"
+import { cn } from "@/lib/utils"
 
 interface ExercisesTabRoutineFormProps {
   dailyExercises: DailyExercisesValues
@@ -182,37 +185,77 @@ export function ExercisesTabRoutineForm({ dailyExercises, setDailyExercises }: E
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="bodyZone">Zona del cuerpo</Label>
-                    <Select value={bodyZone} onValueChange={setBodyZone}>
-                      <SelectTrigger id="bodyZone" className={errors.bodyZone ? "border-destructive" : ""}>
-                        <SelectValue placeholder="Seleccione una zona" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {bodyZones.map((zone) => (
-                          <SelectItem key={zone} value={zone}>
-                            {zone}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          id="bodyZone"
+                          className={cn("w-full justify-between", errors.bodyZone ? "border-destructive" : "")}
+                        >
+                          {bodyZone || "Seleccione una zona"}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="p-0 w-full">
+                        <Command>
+                          <CommandInput placeholder="Buscar zona..." />
+                          <CommandList>
+                            <CommandEmpty>No se encontraron zonas.</CommandEmpty>
+                            <CommandGroup>
+                              {bodyZones.map((zone) => (
+                                <CommandItem
+                                  key={zone}
+                                  value={zone}
+                                  onSelect={() => {
+                                    setBodyZone(zone)
+                                    setName("")
+                                  }}
+                                >
+                                  <Check className={cn("mr-2 h-4 w-4", bodyZone === zone ? "opacity-100" : "opacity-0")} />
+                                  {zone}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
                     {errors.bodyZone && <p className="text-sm text-destructive">{errors.bodyZone}</p>}
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="exercise">Ejercicio</Label>
-                    <Select value={name} onValueChange={handleExerciseSelect} disabled={!bodyZone}>
-                      <SelectTrigger id="exercise" className={errors.name ? "border-destructive" : ""}>
-                        <SelectValue
-                          placeholder={bodyZone ? "Seleccione un ejercicio" : "Primero seleccione una zona"}
-                        />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {availableExercises.map((ex, index) => (
-                          <SelectItem key={index} value={ex.exercise}>
-                            {ex.exercise}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          id="exercise"
+                          disabled={!bodyZone}
+                          className={cn("w-full justify-between", errors.name ? "border-destructive" : "")}
+                        >
+                          {name || (bodyZone ? "Seleccione un ejercicio" : "Primero seleccione una zona")}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="p-0 w-full">
+                        <Command>
+                          <CommandInput placeholder="Buscar ejercicio..." />
+                          <CommandList>
+                            <CommandEmpty>No se encontraron ejercicios.</CommandEmpty>
+                            <CommandGroup>
+                              {availableExercises.map((ex, index) => (
+                                <CommandItem key={index} value={ex.exercise} onSelect={() => handleExerciseSelect(ex.exercise)}>
+                                  <Check className={cn("mr-2 h-4 w-4", name === ex.exercise ? "opacity-100" : "opacity-0")} />
+                                  {ex.exercise}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
                     {errors.name && <p className="text-sm text-destructive">{errors.name}</p>}
                   </div>
 
@@ -289,7 +332,7 @@ export function ExercisesTabRoutineForm({ dailyExercises, setDailyExercises }: E
                           fill
                           className="object-contain p-2"
                           onError={(e) => {
-                            ;(e.target as HTMLImageElement).src = "/placeholder.svg?height=200&width=200"
+                            ; (e.target as HTMLImageElement).src = "/placeholder.svg?height=200&width=200"
                           }}
                         />
                       </div>
@@ -337,7 +380,7 @@ export function ExercisesTabRoutineForm({ dailyExercises, setDailyExercises }: E
                                 fill
                                 className="object-cover"
                                 onError={(e) => {
-                                  ;(e.target as HTMLImageElement).src = "/placeholder.svg?height=100&width=100"
+                                  ; (e.target as HTMLImageElement).src = "/placeholder.svg?height=100&width=100"
                                 }}
                               />
                             </div>
