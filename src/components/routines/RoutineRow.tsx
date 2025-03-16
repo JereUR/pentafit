@@ -1,9 +1,9 @@
 "use client"
 
-import Link from "next/link"
-import { Edit, Info } from "lucide-react"
-import type { UseMutateFunction } from "@tanstack/react-query"
 import { useState } from "react"
+import Link from "next/link"
+import { Edit, Info, Users } from "lucide-react"
+import type { UseMutateFunction } from "@tanstack/react-query"
 
 import { TableCell, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils"
 import { DeleteConfirmationDialog } from "../DeleteConfirmationDialog"
 import { useToast } from "@/hooks/use-toast"
 import { ExercisesDialog } from "./ExercisesDialog"
+import { UserAssignmentDialog } from "./UserAssignmentDialog"
 
 interface RoutineRowProps {
   routine: RoutineData
@@ -35,7 +36,7 @@ interface RoutineRowProps {
     unknown
   >
   isDeleting: boolean
-  isPreset?:boolean
+  isPreset?: boolean
 }
 
 export default function RoutineRow({
@@ -46,10 +47,11 @@ export default function RoutineRow({
   onToggleRow,
   deleteRoutine,
   isDeleting,
-  isPreset=false
+  isPreset = false,
 }: RoutineRowProps) {
   const { toast } = useToast()
   const [showExercisesDialog, setShowExercisesDialog] = useState(false)
+  const [showUserAssignmentDialog, setShowUserAssignmentDialog] = useState(false)
 
   const handleDelete = () => {
     deleteRoutine(
@@ -108,10 +110,30 @@ export default function RoutineRow({
         <TableCell className="text-center">
           <div className="flex flex-col items-center-center gap-2 text-xs">
             <Button asChild variant="outline" className="w-auto" onClick={(e) => e.stopPropagation()}>
-              <Link href={!isPreset ? `/entrenamiento/rutinas/editar/${routine.id}` : `/entrenamiento/rutinas-preestablecidas/editar/${routine.id}`}>
+              <Link
+                href={
+                  !isPreset
+                    ? `/entrenamiento/rutinas/editar/${routine.id}`
+                    : `/entrenamiento/rutinas-preestablecidas/editar/${routine.id}`
+                }
+              >
                 <Edit className="h-3 w-3" /> Editar
               </Link>
             </Button>
+            {!isPreset && (
+              <>
+                <Button
+                  variant="outline"
+                  className="w-auto"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setShowUserAssignmentDialog(true)
+                  }}
+                >
+                  <Users className="h-3 w-3" /> Asignar
+                </Button>
+              </>
+            )}
             <DeleteConfirmationDialog
               itemName={`rutina ${routine.name}`}
               onDelete={handleDelete}
@@ -125,6 +147,13 @@ export default function RoutineRow({
         onOpenChange={setShowExercisesDialog}
         dailyExercises={routine.dailyExercises}
         routineName={routine.name}
+      />
+      <UserAssignmentDialog
+        open={showUserAssignmentDialog}
+        onOpenChange={setShowUserAssignmentDialog}
+        routineId={routine.id}
+        routineName={routine.name}
+        facilityId={routine.facilityId}
       />
     </>
   )
