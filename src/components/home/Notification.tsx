@@ -8,9 +8,10 @@ import {
   ClipboardPen,
   ClipboardType,
   SquareActivity,
-  UserRoundPen,
+  UserCheck,
+  UserRoundIcon as UserRoundPen,
   UserRoundPlus,
-  UserRoundX
+  UserRoundX,
 } from "lucide-react"
 import Link from "next/link"
 import type { JSX } from "react"
@@ -21,8 +22,8 @@ import { Card } from "@/components/ui/card"
 import { PlanIcon } from "@/config/icons"
 import { cn } from "@/lib/utils"
 import type { NotificationData } from "@/types/notification"
-import noImage from '@/assets/avatar-placeholder.png'
-import { NotificationType } from "@prisma/client"
+import noImage from "@/assets/avatar-placeholder.png"
+import type { NotificationType } from "@prisma/client"
 
 interface NotificationProps {
   notification: NotificationData
@@ -148,30 +149,35 @@ export default function Notification({ notification }: NotificationProps) {
       color: "text-red-500",
     },
     PRESET_ROUTINE_CREATED: {
-      message: "creó una rutina",
+      message: "creó una rutina preestablecida",
       icon: <SquareActivity className="h-4 w-4" />,
       href: `/entrenamiento/rutinas-preestablecidas`,
       color: "text-green-500",
     },
     PRESET_ROUTINE_UPDATED: {
-      message: "editó una rutina",
+      message: "editó una rutina preestablecida",
       icon: <SquareActivity className="h-4 w-4" />,
       href: `/entrenamiento/rutinas-preestablecidas`,
       color: "text-blue-500",
     },
     PRESET_ROUTINE_DELETED: {
-      message: "eliminó una rutina",
+      message: "eliminó una rutina preestablecida",
       icon: <SquareActivity className="h-4 w-4" />,
       href: `/entrenamiento/rutinas-preestablecidas`,
       color: "text-red-500",
     },
     PRESET_ROUTINE_REPLICATED: {
-      message: "replicó rutinas",
+      message: "replicó rutinas preestablecidas",
       icon: <SquareActivity className="h-4 w-4" />,
       href: `/entrenamiento/rutinas-preestablecidas`,
       color: "text-purple-500",
     },
-
+    ASSIGN_ROUTINE_USER: {
+      message: "asignó una rutina a un/os usuario/s",
+      icon: <UserCheck className="h-4 w-4" />,
+      href: `/entrenamiento/rutinas`,
+      color: "text-blue-500",
+    },
   }
 
   const { message, icon, href, color } = notificationTypeMap[notification.type]
@@ -201,9 +207,12 @@ export default function Notification({ notification }: NotificationProps) {
             </span>{" "}
             {message}
           </p>
-          {(notification.activity || notification.plan || notification.diary) && (
+          {(notification.activity || notification.plan || notification.diary || notification.routine) && (
             <p className="mt-1 text-xs text-muted-foreground">
-              {notification.activity?.name || notification.plan?.name || notification.diary?.name}
+              {notification.activity?.name ||
+                notification.plan?.name ||
+                notification.diary?.name ||
+                notification.routine?.name}
             </p>
           )}
         </div>
