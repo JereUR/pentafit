@@ -1,3 +1,5 @@
+import { UserClient } from "./user"
+
 export enum TransactionType {
   ACTIVITY_CREATED = "ACTIVITY_CREATED",
   ACTIVITY_UPDATED = "ACTIVITY_UPDATED",
@@ -43,11 +45,6 @@ export interface UserReference {
   avatarUrl?: string
 }
 
-export interface AssignedUserReference {
-  id: string
-  name: string
-}
-
 export interface EntityReference {
   id: string
   name: string
@@ -67,11 +64,16 @@ export interface TransactionDetails {
   sourceId?: string
   sourceName?: string
 
-  assignedUsers?: Array<AssignedUserReference>
+  assignedUsers?: Array<UserClient>
   assignedCount?: number
   alreadyAssignedCount?: number
 
-  [key: string]: string | Array<FacilityReference> | number | undefined
+  [key: string]:
+    | string
+    | Array<UserClient>
+    | Array<FacilityReference>
+    | number
+    | undefined
 }
 
 export interface Transaction {
@@ -104,4 +106,3 @@ export interface Transaction {
 export interface TransactionWithDetails extends Transaction {
   details: TransactionDetails
 }
-
