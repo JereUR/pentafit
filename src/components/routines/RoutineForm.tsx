@@ -21,6 +21,7 @@ import {
   useCreateRoutineMutation,
   useUpdateRoutineMutation,
 } from "@/app/(main)/(authenticated)/entrenamiento/rutinas/mutations"
+import { PresetRoutineSelector } from "./PresetRoutineSelector"
 
 interface RoutineFormProps {
   userId: string
@@ -81,6 +82,13 @@ function RoutineForm({ userId, routineData }: RoutineFormProps) {
   useEffect(() => {
     form.setValue("dailyExercises", dailyExercises)
   }, [dailyExercises, form])
+
+  const handleSelectPreset = (presetRoutine: RoutineValues) => {
+    form.setValue("name", presetRoutine.name)
+    form.setValue("description", presetRoutine.description || "")
+
+    setDailyExercises(presetRoutine.dailyExercises)
+  }
 
   const onSubmit = async (values: RoutineValues) => {
     setError(undefined)
@@ -158,6 +166,7 @@ function RoutineForm({ userId, routineData }: RoutineFormProps) {
           <CardDescription>{pageDescription}</CardDescription>
         </CardHeader>
         <CardContent>
+          <PresetRoutineSelector onSelectPreset={handleSelectPreset} />
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               {(mutationError || error) && (
