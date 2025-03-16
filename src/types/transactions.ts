@@ -19,6 +19,15 @@ export enum TransactionType {
   DIARY_UPDATED = "DIARY_UPDATED",
   DIARY_DELETED = "DIARY_DELETED",
   DIARY_REPLICATED = "DIARY_REPLICATED",
+  ROUTINE_CREATED = "ROUTINE_CREATED",
+  ROUTINE_UPDATED = "ROUTINE_UPDATED",
+  ROUTINE_DELETED = "ROUTINE_DELETED",
+  ROUTINE_REPLICATED = "ROUTINE_REPLICATED",
+  PRESET_ROUTINE_CREATED = "PRESET_ROUTINE_CREATED",
+  PRESET_ROUTINE_UPDATED = "PRESET_ROUTINE_UPDATED",
+  PRESET_ROUTINE_DELETED = "PRESET_ROUTINE_DELETED",
+  PRESET_ROUTINE_REPLICATED = "PRESET_ROUTINE_REPLICATED",
+  ASSIGN_ROUTINE_USER = "ASSIGN_ROUTINE_USER",
 }
 
 export interface FacilityReference {
@@ -27,7 +36,25 @@ export interface FacilityReference {
   logoUrl?: string
 }
 
+export interface UserReference {
+  id: string
+  firstName: string
+  lastName: string
+  avatarUrl?: string
+}
+
+export interface AssignedUserReference {
+  id: string
+  name: string
+}
+
+export interface EntityReference {
+  id: string
+  name: string
+}
+
 export interface TransactionDetails {
+  action?: string
   attachmentId?: string
   attachmentName?: string
   replicatedId?: string
@@ -40,19 +67,11 @@ export interface TransactionDetails {
   sourceId?: string
   sourceName?: string
 
-  [key: string]: string | undefined | Array<FacilityReference> | null
-}
+  assignedUsers?: Array<AssignedUserReference>
+  assignedCount?: number
+  alreadyAssignedCount?: number
 
-export interface UserReference {
-  id: string
-  firstName: string
-  lastName: string
-  avatarUrl?: string
-}
-
-export interface EntityReference {
-  id: string
-  name: string
+  [key: string]: string | Array<FacilityReference> | number | undefined
 }
 
 export interface Transaction {
@@ -81,4 +100,8 @@ export interface Transaction {
 
   createdAt: string
 }
-export type TransactionWithDetails = Transaction
+
+export interface TransactionWithDetails extends Transaction {
+  details: TransactionDetails
+}
+
