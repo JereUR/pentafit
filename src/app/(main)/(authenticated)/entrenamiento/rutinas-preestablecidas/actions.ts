@@ -137,7 +137,7 @@ export async function createPresetRoutine(
         },
       })
 
-      /* await createPresetRoutineTransaction({
+      await createPresetRoutineTransaction({
         tx,
         type: TransactionType.PRESET_ROUTINE_CREATED,
         presetRoutineId: presetRoutine.id,
@@ -148,7 +148,7 @@ export async function createPresetRoutine(
           attachmentId: presetRoutine.id,
           attachmentName: presetRoutine.name,
         },
-      }) 
+      })
 
       await createNotification({
         tx,
@@ -157,7 +157,6 @@ export async function createPresetRoutine(
         type: NotificationType.PRESET_ROUTINE_CREATED,
         relatedId: presetRoutine.id,
       })
-        */
 
       revalidatePath(`/entrenamiento/rutinas-preestablecidas`)
       return { success: true, presetRoutine: presetRoutineData }
@@ -261,7 +260,7 @@ export async function updatePresetRoutine(
         },
       })
 
-      /* await createPresetRoutineTransaction({
+      await createPresetRoutineTransaction({
         tx,
         type: TransactionType.PRESET_ROUTINE_UPDATED,
         presetRoutineId: id,
@@ -280,7 +279,7 @@ export async function updatePresetRoutine(
         facilityId: values.facilityId,
         type: NotificationType.PRESET_ROUTINE_UPDATED,
         relatedId: id,
-      })*/
+      })
 
       revalidatePath(`/entrenamiento/rutinas-preestablecidas`)
       return { success: true, presetRoutine: presetRoutineData }
@@ -323,7 +322,7 @@ export async function deletePresetRoutines(
             }
           }
 
-          /* for (const presetRoutine of presetRoutines) {
+          for (const presetRoutine of presetRoutines) {
             await createPresetRoutineTransaction({
               tx,
               type: TransactionType.PRESET_ROUTINE_DELETED,
@@ -343,13 +342,13 @@ export async function deletePresetRoutines(
             issuerId: user.id,
             facilityId,
             type: NotificationType.PRESET_ROUTINE_DELETED,
-          })*/
+          })
 
           const { count } = await tx.presetRoutine.deleteMany({
             where: {
               id: { in: presetRoutineIds },
             },
-          }) 
+          })
 
           revalidatePath("/entrenamiento/rutinas-preestablecidas")
 
@@ -514,14 +513,14 @@ export async function replicatePresetRoutines(
                 timestamp: new Date().toISOString(),
               }
 
-              /* await createPresetRoutineTransaction({
+              await createPresetRoutineTransaction({
                 tx,
                 type: TransactionType.PRESET_ROUTINE_REPLICATED,
                 presetRoutineId: sourceId,
                 performedById: user.id,
                 facilityId: sourceFacilityId,
                 details: transactionDetails,
-              }) */
+              })
 
               replicationResults.push({
                 sourcePresetRoutine,
@@ -538,7 +537,7 @@ export async function replicatePresetRoutines(
           }
         }
 
-        /* await Promise.all(
+        await Promise.all(
           targetFacilityIds.map((facilityId) => {
             const relatedPresetRoutineId = replicationResults.find(
               (r) => r.targetFacilityId === facilityId,
@@ -552,7 +551,7 @@ export async function replicatePresetRoutines(
               relatedId: relatedPresetRoutineId,
             })
           }),
-        ) */
+        )
 
         revalidatePath(`/entrenamiento/rutinas-preestablecidas`)
         return {
