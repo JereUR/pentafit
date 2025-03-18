@@ -11,6 +11,7 @@ export const columnsActivities: { key: keyof ActivityData; label: string }[] = [
   { key: "endDate", label: "Fecha de fin" },
   { key: "paymentType", label: "Tipo de pago" },
   { key: "activityType", label: "Tipo de actividad" },
+  { key: "staffMembers", label: "Staff asignado" },
 ]
 
 export const paymentsType = [
@@ -21,6 +22,14 @@ export const paymentsType = [
 ]
 
 export const activitiesType = ["Individual", "Grupal"]
+
+export type StaffMember = {
+  id: string
+  firstName: string
+  lastName: string
+  email: string | null
+  avatarUrl: string | null
+}
 
 export type ActivityData = {
   id: string
@@ -37,6 +46,8 @@ export type ActivityData = {
   paymentType: string
   activityType: string
   facilityId: string
+  staffMembers?: StaffMember[]
+  staffIds?: string[]
 }
 
 export type ActivityExportData = {
@@ -52,4 +63,21 @@ export type ActivityExportData = {
   endDate: string
   paymentType: string
   activityType: string
+  staffMembers: string
+}
+
+export function formatStaffMembersForExport(
+  staffMembers: StaffMember[] | undefined,
+): string {
+  if (!staffMembers || staffMembers.length === 0) {
+    return "Sin personal asignado"
+  }
+
+  return staffMembers
+    .map((staff) => {
+      const name = `${staff.firstName} ${staff.lastName}`
+      const email = staff.email ? ` (${staff.email})` : ""
+      return `• ${name}${email}`
+    })
+    .join("\n")
 }
