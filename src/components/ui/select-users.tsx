@@ -2,14 +2,16 @@
 
 import { useState } from "react"
 import { Check } from "lucide-react"
+import { User } from "lucide-react"
+
 import type { UserClient } from "@/types/user"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { User } from "lucide-react"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Input } from "@/components/ui/input"
+import { StaffMember } from "@/types/activity"
 
 interface SelectUsersProps {
-  users: UserClient[]
+  users: UserClient[] | StaffMember[]
   selectedUserIds: string[]
   onChange: (selectedIds: string[]) => void
 }
