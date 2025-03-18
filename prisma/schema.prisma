@@ -49,6 +49,7 @@ model User {
   targetUserTransactions Transaction[]   @relation("TargetUserTransactions")
   routines               UserRoutine[]
   notifications          Notification[]
+  staffActivities        ActivityStaff[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -248,7 +249,7 @@ model Transaction {
 }
 
 model Activity {
-  id              String         @id @default(uuid())
+  id              String          @id @default(uuid())
   name            String
   description     String?
   price           Float
@@ -262,16 +263,30 @@ model Activity {
   paymentType     String
   activityType    String
   facilityId      String
-  facility        Facility       @relation(fields: [facilityId], references: [id])
+  facility        Facility        @relation(fields: [facilityId], references: [id])
   notifications   Notification[]
   diaryPlans      DiaryPlan[]
   diaries         Diary[]
   transactions    Transaction[]
+  staffMembers    ActivityStaff[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@map("activities")
+}
+
+model ActivityStaff {
+  id         String   @id @default(uuid())
+  activityId String
+  userId     String
+  activity   Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([activityId, userId])
+  @@map("activity_staff")
 }
 
 enum PlanType {
