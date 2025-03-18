@@ -124,14 +124,14 @@ export const activitySchema = z.object({
   name: z.string().min(1, "El nombre es requerido"),
   description: z.string().optional().nullable(),
   price: z.union([z.number().min(0), z.string()]).transform((val) => {
-    const parsed = parseFloat(val as string)
+    const parsed = Number.parseFloat(val as string)
     return isNaN(parsed) ? 0 : parsed
   }),
   isPublic: z.boolean().default(false),
   publicName: z.string().optional().nullable(),
   generateInvoice: z.boolean().default(false),
   maxSessions: z.union([z.number().min(1), z.string()]).transform((val) => {
-    const parsed = parseInt(val as string, 10)
+    const parsed = Number.parseInt(val as string, 10)
     return isNaN(parsed) ? 1 : parsed
   }),
   mpAvailable: z.boolean().default(false),
@@ -140,6 +140,7 @@ export const activitySchema = z.object({
   paymentType: z.string().min(1, "El tipo de pago es requerido"),
   activityType: z.string().min(1, "El tipo de actividad es requerido"),
   facilityId: z.string().uuid("ID de establecimiento inválido"),
+  staffIds: z.array(z.string()).default([]),
 })
 
 export type ActivityValues = z.infer<typeof activitySchema>
