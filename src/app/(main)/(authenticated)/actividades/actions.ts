@@ -10,7 +10,7 @@ import prisma from "@/lib/prisma"
 import { createNotification } from "@/lib/notificationHelpers"
 import { NotificationType, Prisma, TransactionType } from "@prisma/client"
 import { validateRequest } from "@/auth"
-import { ActivityData } from "@/types/activity"
+import { ActivityData, StaffMember } from "@/types/activity"
 import { DeleteEntityResult } from "@/lib/utils"
 import { createActivityTransaction } from "@/lib/transactionHelpers"
 
@@ -21,15 +21,43 @@ type ActivityResult = {
 }
 
 export const getActivityById = cache(
-  async (id: string): Promise<ActivityValues & { id: string }> => {
+  async (
+    id: string,
+  ): Promise<
+    ActivityValues & {
+      id: string
+      staffIds?: string[]
+      staffMembers?: StaffMember[]
+    }
+  > => {
     try {
       const activity = await prisma.activity.findUnique({
         where: { id },
+        include: {
+          staffMembers: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  firstName: true,
+                  lastName: true,
+                  email: true,
+                  avatarUrl: true,
+                },
+              },
+            },
+          },
+        },
       })
 
       if (!activity) {
         notFound()
       }
+
+      const staffMembers = activity.staffMembers.map(
+        (staff) => staff.user,
+      ) as StaffMember[]
+      const staffIds = staffMembers.map((staff) => staff.id)
 
       return {
         id: activity.id,
@@ -46,6 +74,8 @@ export const getActivityById = cache(
         paymentType: activity.paymentType,
         activityType: activity.activityType,
         facilityId: activity.facilityId,
+        staffIds,
+        staffMembers,
       }
     } catch (error) {
       console.error("Error fetching activity:", error)
@@ -53,6 +83,35 @@ export const getActivityById = cache(
     }
   },
 )
+
+export async function getStaffForFacility(
+  facilityId: string,
+): Promise<StaffMember[]> {
+  try {
+    const staffMembers = await prisma.user.findMany({
+      where: {
+        role: "STAFF",
+        facilities: {
+          some: {
+            facilityId,
+          },
+        },
+      },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        avatarUrl: true,
+      },
+    })
+
+    return staffMembers
+  } catch (error) {
+    console.error("Error fetching staff members:", error)
+    throw new Error("Failed to fetch staff members")
+  }
+}
 
 export async function createActivity(
   values: ActivityValues,
@@ -79,6 +138,15 @@ export async function createActivity(
           facilityId: values.facilityId,
         },
       })
+
+      if (values.staffIds && values.staffIds.length > 0) {
+        await tx.activityStaff.createMany({
+          data: values.staffIds.map((userId) => ({
+            activityId: activity.id,
+            userId,
+          })),
+        })
+      }
 
       await createActivityTransaction({
         tx,
@@ -117,6 +185,8 @@ export async function updateActivity(
   const { user } = await validateRequest()
   if (!user) throw new Error("Usuario no autenticado")
 
+  console.log("Server action updateActivity received values:", values)
+
   return await prisma
     .$transaction(async (tx) => {
       const activity = await tx.activity.update({
@@ -137,6 +207,19 @@ export async function updateActivity(
           facilityId: values.facilityId,
         },
       })
+
+      await tx.activityStaff.deleteMany({
+        where: { activityId: id },
+      })
+
+      if (values.staffIds && values.staffIds.length > 0) {
+        await tx.activityStaff.createMany({
+          data: values.staffIds.map((userId) => ({
+            activityId: activity.id,
+            userId,
+          })),
+        })
+      }
 
       await createActivityTransaction({
         tx,
@@ -197,6 +280,12 @@ export async function deleteActivities(
           }
 
           const diariesCount = await tx.diary.count({
+            where: {
+              activityId: { in: activityIds },
+            },
+          })
+
+          await tx.activityStaff.deleteMany({
             where: {
               activityId: { in: activityIds },
             },
@@ -275,21 +364,16 @@ export async function replicateActivities(
     .$transaction(async (tx) => {
       const activities = await tx.activity.findMany({
         where: { id: { in: activityIds } },
-        select: {
-          id: true,
-          name: true,
-          facilityId: true,
-          description: true,
-          price: true,
-          isPublic: true,
-          publicName: true,
-          generateInvoice: true,
-          maxSessions: true,
-          mpAvailable: true,
-          startDate: true,
-          endDate: true,
-          paymentType: true,
-          activityType: true,
+        include: {
+          staffMembers: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                },
+              },
+            },
+          },
         },
       })
 
@@ -316,15 +400,53 @@ export async function replicateActivities(
               const {
                 id: sourceId,
                 facilityId: sourceFacilityId,
+                staffMembers,
                 ...activityData
               } = sourceActivity
 
               const replicatedActivity = await tx.activity.create({
                 data: {
-                  ...activityData,
+                  name: activityData.name,
+                  description: activityData.description,
+                  price: activityData.price,
+                  isPublic: activityData.isPublic,
+                  publicName: activityData.publicName,
+                  generateInvoice: activityData.generateInvoice,
+                  maxSessions: activityData.maxSessions,
+                  mpAvailable: activityData.mpAvailable,
+                  startDate: activityData.startDate,
+                  endDate: activityData.endDate,
+                  paymentType: activityData.paymentType,
+                  activityType: activityData.activityType,
                   facilityId: targetFacilityId,
                 },
               })
+
+              if (staffMembers && staffMembers.length > 0) {
+                const staffIds = staffMembers.map((staff) => staff.user.id)
+
+                const targetFacilityStaff = await tx.userFacility.findMany({
+                  where: {
+                    facilityId: targetFacilityId,
+                    userId: { in: staffIds },
+                    user: {
+                      role: "STAFF",
+                    },
+                  },
+                  select: {
+                    userId: true,
+                  },
+                })
+
+                if (targetFacilityStaff.length > 0) {
+                  await tx.activityStaff.createMany({
+                    data: targetFacilityStaff.map((staff) => ({
+                      activityId: replicatedActivity.id,
+                      userId: staff.userId,
+                    })),
+                  })
+                }
+              }
 
               await createActivityTransaction({
                 tx,
@@ -349,7 +471,10 @@ export async function replicateActivities(
               })
 
               return {
-                sourceActivity,
+                sourceActivity: {
+                  id: sourceId,
+                  name: activityData.name,
+                },
                 replicatedActivity,
                 targetFacilityId,
               }

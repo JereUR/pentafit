@@ -191,7 +191,7 @@ export function useReplicateActivityMutation() {
           queryClient.invalidateQueries({
             queryKey: ["activities", facilityId],
           })
-    
+
           queryClient.invalidateQueries({
             queryKey: ["latestTransactions", facilityId],
           })
