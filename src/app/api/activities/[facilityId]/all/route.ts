@@ -28,6 +28,19 @@ export async function GET(
         paymentType: true,
         activityType: true,
         facilityId: true,
+        staffMembers: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+                avatarUrl: true,
+              },
+            },
+          },
+        },
       },
     })
 
@@ -35,7 +48,31 @@ export async function GET(
       return NextResponse.json({ activities: [], total: 0 })
     }
 
-    return NextResponse.json({ activities: activities })
+    const formattedActivities: ActivityData[] = activities.map((activity) => ({
+      id: activity.id,
+      name: activity.name,
+      description: activity.description,
+      price: activity.price,
+      isPublic: activity.isPublic,
+      publicName: activity.publicName,
+      generateInvoice: activity.generateInvoice,
+      maxSessions: activity.maxSessions,
+      mpAvailable: activity.mpAvailable,
+      startDate: activity.startDate,
+      endDate: activity.endDate,
+      paymentType: activity.paymentType,
+      activityType: activity.activityType,
+      facilityId: activity.facilityId,
+      staffMembers: activity.staffMembers.map((staff) => ({
+        id: staff.user.id,
+        firstName: staff.user.firstName,
+        lastName: staff.user.lastName,
+        email: staff.user.email,
+        avatarUrl: staff.user.avatarUrl,
+      })),
+    }))
+
+    return NextResponse.json({ activities: formattedActivities })
   } catch (error) {
     console.error("Error fetching activities:", error)
     return NextResponse.json(

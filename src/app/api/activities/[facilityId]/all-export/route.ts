@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server"
+import {
+  ActivityExportData,
+  formatStaffMembersForExport,
+} from "@/types/activity"
 import prisma from "@/lib/prisma"
-import { ActivityExportData } from "@/types/activity"
 
 export async function GET(
   request: NextRequest,
@@ -13,21 +16,20 @@ export async function GET(
       where: {
         facilityId: id,
       },
-      select: {
-        id: true,
-        name: true,
-        description: true,
-        price: true,
-        isPublic: true,
-        publicName: true,
-        generateInvoice: true,
-        maxSessions: true,
-        mpAvailable: true,
-        startDate: true,
-        endDate: true,
-        paymentType: true,
-        activityType: true,
-        facilityId: true,
+      include: {
+        staffMembers: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+                avatarUrl: true,
+              },
+            },
+          },
+        },
       },
     })
 
@@ -37,6 +39,14 @@ export async function GET(
 
     const formattedAllActivities: ActivityExportData[] = allActivities.map(
       (activity) => {
+        const staffMembers = activity.staffMembers.map((staff) => ({
+          id: staff.user.id,
+          firstName: staff.user.firstName,
+          lastName: staff.user.lastName,
+          email: staff.user.email,
+          avatarUrl: staff.user.avatarUrl,
+        }))
+
         return {
           name: activity.name,
           description: activity.description || "-",
@@ -50,6 +60,7 @@ export async function GET(
           endDate: activity.endDate.toLocaleDateString(),
           paymentType: activity.paymentType,
           activityType: activity.activityType,
+          staffMembers: formatStaffMembersForExport(staffMembers),
         }
       },
     )
