@@ -97,6 +97,8 @@ export const replicateActionSchema = z.object({
 
 export type ReplicateActionValues = z.infer<typeof replicateActionSchema>
 
+// Facility
+
 export const facilitySchema = z.object({
   name: z.string().min(1, "El nombre es requerido"),
   description: z.string().optional(),
@@ -119,6 +121,8 @@ export const facilitySchema = z.object({
 })
 
 export type FacilityValues = z.infer<typeof facilitySchema>
+
+// Activity
 
 export const activitySchema = z.object({
   name: z.string().min(1, "El nombre es requerido"),
@@ -144,6 +148,8 @@ export const activitySchema = z.object({
 })
 
 export type ActivityValues = z.infer<typeof activitySchema>
+
+// User membership
 
 export const memberSchema = z
   .object({
@@ -225,6 +231,8 @@ export const updateMemberSchema = z.object({
 
 export type UpdateMemberValues = z.infer<typeof updateMemberSchema>
 
+// Plan
+
 export const planSchema = z.object({
   name: z.string().min(1, "El nombre es requerido"),
   description: z.string(),
@@ -270,6 +278,8 @@ export const planSchema = z.object({
 })
 
 export type PlanValues = z.infer<typeof planSchema>
+
+// Diary
 
 const dayAvailableSchema = z.object({
   available: z.boolean(),
@@ -326,6 +336,8 @@ export const diarySchema = z
   })
 
 export type DiaryValues = z.infer<typeof diarySchema>
+
+// Routine
 
 export const exerciseSchema = z.object({
   name: z.string().min(1, "El nombre es requerido"),
@@ -388,3 +400,78 @@ export const userRoutineSchema = z.object({
 })
 
 export type UserRoutineValues = z.infer<typeof userRoutineSchema>
+
+// Nutritional plan
+
+export const foodItemSchema = z.object({
+  name: z.string().min(1, "El nombre es requerido"),
+  portion: z.number().min(0, "La porción debe ser un número positivo"),
+  unit: z.string().min(1, "La unidad es requerida"),
+  calories: z.number().nullable(),
+  protein: z.number().nullable(),
+  carbs: z.number().nullable(),
+  fat: z.number().nullable(),
+  notes: z.string().nullable(),
+})
+
+export const mealSchema = z.object({
+  name: z.string().min(1, "El nombre es requerido"),
+  mealType: z.enum(
+    [
+      "BREAKFAST",
+      "PRE_WORKOUT",
+      "LUNCH",
+      "SNACK",
+      "DINNER",
+      "POST_WORKOUT",
+      "OTHER",
+    ],
+    {
+      required_error: "El tipo de comida es requerido",
+    },
+  ),
+  time: z.string().nullable(),
+  foodItems: z.array(foodItemSchema).default([]),
+})
+
+export const dailyMealsSchema = z.object({
+  MONDAY: z.array(mealSchema).default([]),
+  TUESDAY: z.array(mealSchema).default([]),
+  WEDNESDAY: z.array(mealSchema).default([]),
+  THURSDAY: z.array(mealSchema).default([]),
+  FRIDAY: z.array(mealSchema).default([]),
+  SATURDAY: z.array(mealSchema).default([]),
+  SUNDAY: z.array(mealSchema).default([]),
+})
+
+export const nutritionalPlanSchema = z.object({
+  name: z.string().min(1, "El nombre es requerido"),
+  description: z.string().optional(),
+  facilityId: z.string().min(1, "La instalación es requerida"),
+  dailyMeals: dailyMealsSchema.default({
+    MONDAY: [],
+    TUESDAY: [],
+    WEDNESDAY: [],
+    THURSDAY: [],
+    FRIDAY: [],
+    SATURDAY: [],
+    SUNDAY: [],
+  }),
+})
+
+export type FoodItemValues = z.infer<typeof foodItemSchema>
+export type MealValues = z.infer<typeof mealSchema>
+export type DailyMealsValues = z.infer<typeof dailyMealsSchema>
+export type NutritionalPlanValues = z.infer<typeof nutritionalPlanSchema>
+
+export const userNutritionalPlanSchema = z.object({
+  userId: z.string().min(1, "El usuario es requerido"),
+  nutritionalPlanId: z.string().min(1, "El plan nutricional es requerido"),
+  isActive: z.boolean().default(true),
+  startDate: z.date().default(() => new Date()),
+  endDate: z.date().nullable(),
+})
+
+export type UserNutritionalPlanValues = z.infer<
+  typeof userNutritionalPlanSchema
+>
