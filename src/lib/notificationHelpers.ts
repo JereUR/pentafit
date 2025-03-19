@@ -1,4 +1,6 @@
-import { Role, type NotificationType, type Prisma } from "@prisma/client"
+import { type Prisma, Role, type NotificationType } from "@prisma/client"
+
+// Update the createNotification function to handle nutritional plan notifications
 
 export async function createNotification({
   tx,
@@ -33,8 +35,9 @@ export async function createNotification({
 
   let recipientUsers = facility.users.filter(
     (userFacility) =>
-      userFacility.user.role != Role.CLIENT &&
-      userFacility.user.id !== issuerId,
+      userFacility.user.role === Role.SUPER_ADMIN ||
+      (userFacility.user.role === Role.ADMIN &&
+        userFacility.user.id !== issuerId),
   )
 
   if (
@@ -57,7 +60,8 @@ export async function createNotification({
     ...(relatedId && {
       [type.toLowerCase().includes("activity")
         ? "activityId"
-        : type.toLowerCase().includes("plan")
+        : type.toLowerCase().includes("plan") &&
+            !type.toLowerCase().includes("nutritional")
           ? "planId"
           : type.toLowerCase().includes("diary")
             ? "diaryId"
@@ -66,7 +70,12 @@ export async function createNotification({
               ? "routineId"
               : type.toLowerCase().startsWith("preset_routine")
                 ? "presetRoutineId"
-                : "userId"]: relatedId,
+                : type.toLowerCase().includes("nutritional_plan") &&
+                    !type.toLowerCase().includes("preset")
+                  ? "nutritionalPlanId"
+                  : type.toLowerCase().includes("preset_nutritional_plan")
+                    ? "presetNutritionalPlanId"
+                    : "userId"]: relatedId,
     }),
   }))
 

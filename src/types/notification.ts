@@ -26,18 +26,36 @@ export const notificationsInclude = {
       name: true,
     },
   },
-  routine:{
-    select:{
-      id:true,
-      name:true
-    }
+  routine: {
+    select: {
+      id: true,
+      name: true,
+    },
   },
-  user:{
-    select:{
-      firstName:true,
-      lastName:true
-    }
-  }
+  presetRoutine: {
+    select: {
+      id: true,
+      name: true,
+    },
+  },
+  nutritionalPlan: {
+    select: {
+      id: true,
+      name: true,
+    },
+  },
+  presetNutritionalPlan: {
+    select: {
+      id: true,
+      name: true,
+    },
+  },
+  user: {
+    select: {
+      firstName: true,
+      lastName: true,
+    },
+  },
 } satisfies Prisma.NotificationInclude
 
 export type NotificationData = Prisma.NotificationGetPayload<{

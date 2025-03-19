@@ -12,6 +12,12 @@ import {
   UserRoundIcon as UserRoundPen,
   UserRoundPlus,
   UserRoundX,
+  Utensils,
+  UtensilsCrossed,
+  Apple,
+  Salad,
+  Copy,
+  Users,
 } from "lucide-react"
 import Link from "next/link"
 import type { JSX } from "react"
@@ -178,6 +184,60 @@ export default function Notification({ notification }: NotificationProps) {
       href: `/entrenamiento/rutinas`,
       color: "text-blue-500",
     },
+    NUTRITIONAL_PLAN_CREATED: {
+      message: "creó un plan nutricional",
+      icon: <Utensils className="h-4 w-4" />,
+      href: `/nutricion/planes`,
+      color: "text-green-500",
+    },
+    NUTRITIONAL_PLAN_UPDATED: {
+      message: "editó un plan nutricional",
+      icon: <Utensils className="h-4 w-4" />,
+      href: `/nutricion/planes`,
+      color: "text-blue-500",
+    },
+    NUTRITIONAL_PLAN_DELETED: {
+      message: "eliminó un plan nutricional",
+      icon: <UtensilsCrossed className="h-4 w-4" />,
+      href: `/nutricion/planes`,
+      color: "text-red-500",
+    },
+    NUTRITIONAL_PLAN_REPLICATED: {
+      message: "replicó planes nutricionales",
+      icon: <Copy className="h-4 w-4" />,
+      href: `/nutricion/planes`,
+      color: "text-purple-500",
+    },
+    NUTRITIONAL_PLAN_ASSIGNED: {
+      message: "asignó un plan nutricional a un/os usuario/s",
+      icon: <Users className="h-4 w-4" />,
+      href: `/nutricion/planes`,
+      color: "text-blue-500",
+    },
+    PRESET_NUTRITIONAL_PLAN_CREATED: {
+      message: "creó un plan nutricional preestablecido",
+      icon: <Apple className="h-4 w-4" />,
+      href: `/nutricion/planes-preestablecidos`,
+      color: "text-green-500",
+    },
+    PRESET_NUTRITIONAL_PLAN_UPDATED: {
+      message: "editó un plan nutricional preestablecido",
+      icon: <Apple className="h-4 w-4" />,
+      href: `/nutricion/planes-preestablecidos`,
+      color: "text-blue-500",
+    },
+    PRESET_NUTRITIONAL_PLAN_DELETED: {
+      message: "eliminó un plan nutricional preestablecido",
+      icon: <UtensilsCrossed className="h-4 w-4" />,
+      href: `/nutricion/planes-preestablecidos`,
+      color: "text-red-500",
+    },
+    PRESET_NUTRITIONAL_PLAN_REPLICATED: {
+      message: "replicó planes nutricionales preestablecidos",
+      icon: <Salad className="h-4 w-4" />,
+      href: `/nutricion/planes-preestablecidos`,
+      color: "text-purple-500",
+    },
   }
 
   const { message, icon, href, color } = notificationTypeMap[notification.type]
@@ -207,14 +267,23 @@ export default function Notification({ notification }: NotificationProps) {
             </span>{" "}
             {message}
           </p>
-          {(notification.activity || notification.plan || notification.diary || notification.routine) && (
-            <p className="mt-1 text-xs text-muted-foreground">
-              {notification.activity?.name ||
-                notification.plan?.name ||
-                notification.diary?.name ||
-                notification.routine?.name}
-            </p>
-          )}
+          {(notification.activity ||
+            notification.plan ||
+            notification.diary ||
+            notification.routine ||
+            notification.presetRoutine ||
+            notification.nutritionalPlan ||
+            notification.presetNutritionalPlan) && (
+              <p className="mt-1 text-xs text-muted-foreground">
+                {notification.activity?.name ||
+                  notification.plan?.name ||
+                  notification.diary?.name ||
+                  notification.routine?.name ||
+                  notification.presetRoutine?.name ||
+                  notification.nutritionalPlan?.name ||
+                  notification.presetNutritionalPlan?.name}
+              </p>
+            )}
         </div>
         <Badge variant="outline" className={cn("ml-auto", color)}>
           {icon}
