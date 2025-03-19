@@ -91,6 +91,18 @@ export async function GET(req: NextRequest) {
             name: true,
           },
         },
+        nutritionalPlan: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        presetNutritionalPlan: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
       },
     })
 

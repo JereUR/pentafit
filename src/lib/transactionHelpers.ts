@@ -12,6 +12,8 @@ export async function createTransaction({
   diaryId,
   routineId,
   presetRoutineId,
+  nutritionalPlanId,
+  presetNutritionalPlanId,
 }: {
   tx: Prisma.TransactionClient
   type: TransactionType
@@ -24,6 +26,8 @@ export async function createTransaction({
   diaryId?: string
   routineId?: string
   presetRoutineId?: string
+  nutritionalPlanId?: string
+  presetNutritionalPlanId?: string
 }) {
   try {
     const safeDetails = details && typeof details === "object" ? details : {}
@@ -39,6 +43,8 @@ export async function createTransaction({
       ...(diaryId && { diaryId }),
       ...(routineId && { routineId }),
       ...(presetRoutineId && { presetRoutineId }),
+      ...(nutritionalPlanId && { nutritionalPlanId }),
+      ...(presetNutritionalPlanId && { presetNutritionalPlanId }),
     }
 
     const transaction = await tx.transaction.create({
@@ -259,5 +265,68 @@ export async function createPresetRoutineTransaction({
     performedById,
     facilityId,
     presetRoutineId,
+  })
+}
+
+export async function createNutritionalPlanTransaction({
+  tx,
+  type,
+  nutritionalPlanId,
+  performedById,
+  facilityId,
+  details,
+}: {
+  tx: Prisma.TransactionClient
+  type:
+    | "NUTRITIONAL_PLAN_CREATED"
+    | "NUTRITIONAL_PLAN_UPDATED"
+    | "NUTRITIONAL_PLAN_DELETED"
+    | "NUTRITIONAL_PLAN_REPLICATED"
+    | "NUTRITIONAL_PLAN_ASSIGNED"
+  nutritionalPlanId: string
+  performedById: string
+  facilityId: string
+  details?: Prisma.JsonValue
+}) {
+  const safeDetails = details && typeof details === "object" ? details : {}
+
+  return await createTransaction({
+    tx,
+    type,
+    details: safeDetails,
+    performedById,
+    facilityId,
+    nutritionalPlanId,
+  })
+}
+
+export async function createPresetNutritionalPlanTransaction({
+  tx,
+  type,
+  presetNutritionalPlanId,
+  performedById,
+  facilityId,
+  details,
+}: {
+  tx: Prisma.TransactionClient
+  type:
+    | "PRESET_NUTRITIONAL_PLAN_CREATED"
+    | "PRESET_NUTRITIONAL_PLAN_UPDATED"
+    | "PRESET_NUTRITIONAL_PLAN_DELETED"
+    | "PRESET_NUTRITIONAL_PLAN_REPLICATED"
+  presetNutritionalPlanId: string
+  performedById: string
+  facilityId: string
+  details?: Prisma.JsonValue
+}) {
+  const safeDetails = details && typeof details === "object" ? details : {}
+
+  return await createTransaction({
+    tx,
+    type,
+    details: safeDetails,
+    performedById,
+    facilityId,
+    presetNutritionalPlanId,
   })
 }
