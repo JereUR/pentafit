@@ -1,7 +1,5 @@
 import { type Prisma, Role, type NotificationType } from "@prisma/client"
 
-// Update the createNotification function to handle nutritional plan notifications
-
 export async function createNotification({
   tx,
   issuerId,
@@ -66,7 +64,8 @@ export async function createNotification({
           : type.toLowerCase().includes("diary")
             ? "diaryId"
             : type.toLowerCase().startsWith("routine") ||
-                type.toLowerCase().startsWith("assign_routine")
+                type.toLowerCase().startsWith("assign_routine") ||
+                type.toLowerCase().startsWith("unassign_routine")
               ? "routineId"
               : type.toLowerCase().startsWith("preset_routine")
                 ? "presetRoutineId"
@@ -78,6 +77,8 @@ export async function createNotification({
                     : "userId"]: relatedId,
     }),
   }))
+
+  console.log("notifications", notifications)
 
   if (notifications.length > 0) {
     await tx.notification.createMany({ data: notifications })
