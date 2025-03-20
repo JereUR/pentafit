@@ -28,7 +28,7 @@ interface RoutinesTableProps {
   >
   isDeleting: boolean
   isLoading: boolean
-  isPreset?:boolean
+  isPreset?: boolean
 }
 
 export default function RoutinesTable({
@@ -40,7 +40,7 @@ export default function RoutinesTable({
   deleteRoutine,
   isDeleting,
   isLoading,
-  isPreset=false
+  isPreset = false
 }: RoutinesTableProps) {
   return (
     <div className="w-full overflow-x-auto border rounded-md px-2 sm:px-4 py-4 sm:py-8">
@@ -53,14 +53,27 @@ export default function RoutinesTable({
                 onCheckedChange={onToggleAllRows}
               />
             </TableHead>
-            {columnsRoutines.filter(col => visibleColumns.has(col.key)).map((column) => (
-              <TableHead
-                key={column.key}
-                className='font-medium text-center border-r'
-              >
-                {column.label}
-              </TableHead>
-            ))}
+            {columnsRoutines.filter(col => visibleColumns.has(col.key)).map((column) => {
+              if (column.key === "assignedUsersCount" && !isPreset) {
+                return (<TableHead
+                  key={column.key}
+                  className='font-medium text-center border-r'
+                >
+                  {column.label}
+                </TableHead>)
+              } else if (column.key === "assignedUsersCount" && isPreset) {
+                return null
+              } else
+
+                return (
+                  <TableHead
+                    key={column.key}
+                    className='font-medium text-center border-r'
+                  >
+                    {column.label}
+                  </TableHead>
+                )
+            })}
             <TableHead className="font-medium text-center">Acciones</TableHead>
           </TableRow>
         </TableHeader>

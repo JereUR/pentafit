@@ -126,7 +126,12 @@ export default function RoutineRow({
           <Checkbox checked={isSelected} onCheckedChange={() => onToggleRow(routine.id)} />
         </TableCell>
         {columnsRoutines
-          .filter((col) => visibleColumns.has(col.key as keyof RoutineData))
+          .filter((col) => {
+            if (isPreset && col.key === "assignedUsersCount") {
+              return false
+            }
+            return visibleColumns.has(col.key as keyof RoutineData)
+          })
           .map((column) => (
             <TableCell key={column.key} className="border-x text-center break-words">
               {renderCellContent(column)}
