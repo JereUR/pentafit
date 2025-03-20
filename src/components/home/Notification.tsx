@@ -184,6 +184,18 @@ export default function Notification({ notification }: NotificationProps) {
       href: `/entrenamiento/rutinas`,
       color: "text-blue-500",
     },
+    UNASSIGN_ROUTINE_USER: {
+      message: "desasignó una rutina de un/os usuario/s",
+      icon: <UserRoundX className="h-4 w-4" />,
+      href: `/entrenamiento/rutinas`,
+      color: "text-red-500",
+    },
+    ROUTINE_CONVERTED_TO_PRESET: {
+      message: "convirtió una rutina a preestablecida",
+      icon: <Copy className="h-4 w-4" />,
+      href: `/entrenamiento/rutinas-preestablecidas`,
+      color: "text-purple-500",
+    },
     NUTRITIONAL_PLAN_CREATED: {
       message: "creó un plan nutricional",
       icon: <Utensils className="h-4 w-4" />,
