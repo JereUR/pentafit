@@ -10,6 +10,8 @@ import {
   deleteRoutines,
   replicateRoutines,
   assignRoutineToUsers,
+  convertToPresetRoutine,
+  unassignRoutineFromUsers,
 } from "./actions"
 import { RoutineValues } from "@/lib/validation"
 
@@ -225,7 +227,7 @@ export function useAssignRoutineToUsersMutation() {
       if (!result.success) {
         throw new Error(result.message)
       }
-      return result
+      return { ...result, routineId }
     },
     onSuccess: (result) => {
       toast({
@@ -243,13 +245,113 @@ export function useAssignRoutineToUsersMutation() {
         queryKey: ["metrics"],
       })
       queryClient.invalidateQueries({
-        queryKey: ["userRoutines"],
+        queryKey: ["assignedUsers", result.routineId],
       })
     },
     onError: (error: Error) => {
       toast({
         variant: "destructive",
         title: "Error al asignar la rutina",
+        description: error.message,
+      })
+    },
+  })
+}
+
+export function useUnassignRoutineFromUsersMutation() {
+  const { toast } = useToast()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({
+      routineId,
+      userIds,
+      facilityId,
+    }: {
+      routineId: string
+      userIds: string[]
+      facilityId: string
+    }) => {
+      const result = await unassignRoutineFromUsers(
+        routineId,
+        userIds,
+        facilityId,
+      )
+      if (!result.success) {
+        throw new Error(result.message)
+      }
+      return { ...result, routineId }
+    },
+    onSuccess: (result) => {
+      toast({
+        title: "Rutina desasignada correctamente",
+        description: result.message,
+      })
+
+      queryClient.invalidateQueries({
+        queryKey: ["routines"],
+      })
+      queryClient.invalidateQueries({
+        queryKey: ["latestTransactions"],
+      })
+      queryClient.invalidateQueries({
+        queryKey: ["metrics"],
+      })
+      queryClient.invalidateQueries({
+        queryKey: ["assignedUsers", result.routineId],
+      })
+    },
+    onError: (error: Error) => {
+      toast({
+        variant: "destructive",
+        title: "Error al desasignar la rutina",
+        description: error.message,
+      })
+    },
+  })
+}
+
+export function useConvertToPresetRoutineMutation() {
+  const { toast } = useToast()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({
+      routineId,
+      facilityId,
+    }: {
+      routineId: string
+      facilityId: string
+    }) => {
+      const result = await convertToPresetRoutine(routineId, facilityId)
+      if (!result.success) {
+        throw new Error(result.message)
+      }
+      return result
+    },
+    onSuccess: (result) => {
+      toast({
+        title: "Rutina convertida a preestablecida correctamente",
+        description: result.message,
+      })
+
+      queryClient.invalidateQueries({
+        queryKey: ["routines"],
+      })
+      queryClient.invalidateQueries({
+        queryKey: ["presetRoutines"],
+      })
+      queryClient.invalidateQueries({
+        queryKey: ["latestTransactions"],
+      })
+      queryClient.invalidateQueries({
+        queryKey: ["metrics"],
+      })
+    },
+    onError: (error: Error) => {
+      toast({
+        variant: "destructive",
+        title: "Error al convertir la rutina",
         description: error.message,
       })
     },

@@ -620,16 +620,108 @@ export async function assignRoutineToUsers(
         }
       }
 
-      const existingAssignments = await tx.userRoutine.findMany({
+      const existingUserRoutines = await tx.userRoutine.findMany({
         where: {
-          routineId,
           userId: { in: userIds },
+          isActive: true,
         },
-        select: { userId: true },
+        include: {
+          routine: {
+            select: { name: true },
+          },
+        },
       })
 
-      const existingUserIds = existingAssignments.map((a) => a.userId)
-      const newUserIds = userIds.filter((id) => !existingUserIds.includes(id))
+      const userRoutinesMap = existingUserRoutines.reduce(
+        (acc, ur) => {
+          if (!acc[ur.userId]) {
+            acc[ur.userId] = []
+          }
+          acc[ur.userId].push(ur)
+          return acc
+        },
+        {} as Record<string, typeof existingUserRoutines>,
+      )
+
+      const usersWithOtherRoutines = existingUserRoutines
+        .filter((ur) => ur.routineId !== routineId)
+        .map((ur) => ({
+          userId: ur.userId,
+          routineId: ur.routineId,
+          routineName: ur.routine.name,
+        }))
+
+      if (usersWithOtherRoutines.length > 0) {
+        const routineIdsToUnassign = [
+          ...new Set(usersWithOtherRoutines.map((u) => u.routineId)),
+        ]
+        const userIdsToUnassign = [
+          ...new Set(usersWithOtherRoutines.map((u) => u.userId)),
+        ]
+
+        await tx.userRoutine.deleteMany({
+          where: {
+            userId: { in: userIdsToUnassign },
+            routineId: { in: routineIdsToUnassign },
+          },
+        })
+
+        const unassignedUsers = await tx.user.findMany({
+          where: { id: { in: userIdsToUnassign } },
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            avatarUrl: true,
+            email: true,
+          },
+        })
+
+        for (const routineIdToUnassign of routineIdsToUnassign) {
+          const routineName =
+            usersWithOtherRoutines.find(
+              (u) => u.routineId === routineIdToUnassign,
+            )?.routineName || "Desconocida"
+          const usersForThisRoutine = usersWithOtherRoutines.filter(
+            (u) => u.routineId === routineIdToUnassign,
+          )
+
+          await createRoutineTransaction({
+            tx,
+            type: TransactionType.UNASSIGN_ROUTINE_USER,
+            routineId: routineIdToUnassign,
+            performedById: user.id,
+            facilityId,
+            details: {
+              action: "Rutina desasignada de usuarios (reemplazo automático)",
+              attachmentId: routineIdToUnassign,
+              attachmentName: routineName,
+              unassignedUsers: unassignedUsers.filter((u) =>
+                usersForThisRoutine.some((usr) => usr.userId === u.id),
+              ),
+              unassignedCount: usersForThisRoutine.length,
+              replacedByRoutineId: routineId,
+              replacedByRoutineName: routine.name,
+            },
+          })
+
+          await createNotification({
+            tx,
+            issuerId: user.id,
+            facilityId,
+            type: NotificationType.UNASSIGN_ROUTINE_USER,
+            relatedId: routineIdToUnassign,
+          })
+        }
+      }
+
+      const existingAssignments = existingUserRoutines
+        .filter((ur) => ur.routineId === routineId)
+        .map((ur) => ur.userId)
+
+      const newUserIds = userIds.filter(
+        (id) => !existingAssignments.includes(id),
+      )
 
       if (newUserIds.length > 0) {
         await tx.userRoutine.createMany({
@@ -644,7 +736,13 @@ export async function assignRoutineToUsers(
 
       const users = await tx.user.findMany({
         where: { id: { in: newUserIds } },
-        select: { id: true, firstName: true, lastName: true, avatarUrl: true, email:true },
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          avatarUrl: true,
+          email: true,
+        },
       })
 
       await createRoutineTransaction({
@@ -662,10 +760,11 @@ export async function assignRoutineToUsers(
             firstName: u.firstName,
             lastName: u.lastName,
             avatarUrl: u.avatarUrl,
-            email: u.email
+            email: u.email,
           })),
           assignedCount: newUserIds.length,
-          alreadyAssignedCount: existingUserIds.length,
+          alreadyAssignedCount: existingAssignments.length,
+          replacedRoutinesCount: usersWithOtherRoutines.length,
         },
       })
 
@@ -679,11 +778,22 @@ export async function assignRoutineToUsers(
 
       revalidatePath("/entrenamiento/rutinas")
 
+      let message = `Rutina asignada a ${newUserIds.length} usuarios correctamente`
+
+      if (existingAssignments.length > 0) {
+        message += ` (${existingAssignments.length} ya estaban asignados)`
+      }
+
+      if (usersWithOtherRoutines.length > 0) {
+        message += `. Se reemplazaron ${usersWithOtherRoutines.length} asignaciones previas`
+      }
+
       return {
         success: true,
-        message: `Rutina asignada a ${newUserIds.length} usuarios correctamente${existingUserIds.length > 0 ? ` (${existingUserIds.length} ya estaban asignados)` : ""}`,
+        message,
         assignedCount: newUserIds.length,
-        alreadyAssignedCount: existingUserIds.length,
+        alreadyAssignedCount: existingAssignments.length,
+        replacedRoutinesCount: usersWithOtherRoutines.length,
       }
     } catch (error) {
       console.error("Error assigning routine to users:", error)
@@ -693,6 +803,224 @@ export async function assignRoutineToUsers(
           error instanceof Error
             ? error.message
             : "Error al asignar la rutina a los usuarios",
+      }
+    }
+  })
+}
+
+export async function unassignRoutineFromUsers(
+  routineId: string,
+  userIds: string[],
+  facilityId: string,
+) {
+  const { user } = await validateRequest()
+  if (!user) throw new Error("Usuario no autenticado")
+
+  return await prisma.$transaction(async (tx) => {
+    try {
+      const routine = await tx.routine.findUnique({
+        where: { id: routineId },
+        select: { id: true, name: true },
+      })
+
+      if (!routine) {
+        return {
+          success: false,
+          message: "No se encontró la rutina especificada",
+        }
+      }
+
+      const existingAssignments = await tx.userRoutine.findMany({
+        where: {
+          routineId,
+          userId: { in: userIds },
+        },
+        select: { userId: true },
+      })
+
+      const existingUserIds = existingAssignments.map((a) => a.userId)
+
+      if (existingUserIds.length === 0) {
+        return {
+          success: false,
+          message: "No hay usuarios asignados a esta rutina para desasignar",
+        }
+      }
+
+      const { count } = await tx.userRoutine.deleteMany({
+        where: {
+          routineId,
+          userId: { in: existingUserIds },
+        },
+      })
+
+      const users = await tx.user.findMany({
+        where: { id: { in: existingUserIds } },
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          avatarUrl: true,
+          email: true,
+        },
+      })
+
+      await createRoutineTransaction({
+        tx,
+        type: TransactionType.UNASSIGN_ROUTINE_USER,
+        routineId,
+        performedById: user.id,
+        facilityId,
+        details: {
+          action: "Rutina desasignada de usuarios",
+          attachmentId: routineId,
+          attachmentName: routine.name,
+          unassignedUsers: users.map((u) => ({
+            id: u.id,
+            firstName: u.firstName,
+            lastName: u.lastName,
+            avatarUrl: u.avatarUrl,
+            email: u.email,
+          })),
+          unassignedCount: count,
+        },
+      })
+
+      await createNotification({
+        tx,
+        issuerId: user.id,
+        facilityId,
+        type: NotificationType.UNASSIGN_ROUTINE_USER,
+        relatedId: routineId,
+      })
+
+      revalidatePath("/entrenamiento/rutinas")
+
+      return {
+        success: true,
+        message: `Rutina desasignada de ${count} ${count === 1 ? "usuario" : "usuarios"} correctamente`,
+        unassignedCount: count,
+      }
+    } catch (error) {
+      console.error("Error unassigning routine from users:", error)
+      return {
+        success: false,
+        message:
+          error instanceof Error
+            ? error.message
+            : "Error al desasignar la rutina de los usuarios",
+      }
+    }
+  })
+}
+
+export async function convertToPresetRoutine(
+  routineId: string,
+  facilityId: string,
+) {
+  const { user } = await validateRequest()
+  if (!user) throw new Error("Usuario no autenticado")
+
+  return await prisma.$transaction(async (tx) => {
+    try {
+      const sourceRoutine = await tx.routine.findUnique({
+        where: { id: routineId },
+        include: {
+          dailyExercises: {
+            include: {
+              exercises: true,
+            },
+          },
+        },
+      })
+
+      if (!sourceRoutine) {
+        return {
+          success: false,
+          message: "No se encontró la rutina especificada",
+        }
+      }
+
+      const presetRoutine = await tx.presetRoutine.create({
+        data: {
+          name: `${sourceRoutine.name} (Preestablecida)`,
+          description: sourceRoutine.description,
+          facilityId: sourceRoutine.facilityId,
+        },
+      })
+
+      for (const dailyExercise of sourceRoutine.dailyExercises) {
+        const newDailyExercise = await tx.dailyExercise.create({
+          data: {
+            dayOfWeek: dailyExercise.dayOfWeek,
+            presetRoutineId: presetRoutine.id,
+          },
+        })
+
+        if (dailyExercise.exercises.length > 0) {
+          await tx.exercise.createMany({
+            data: dailyExercise.exercises.map((exercise) => ({
+              name: exercise.name,
+              bodyZone: exercise.bodyZone,
+              series: exercise.series,
+              count: exercise.count,
+              measure: exercise.measure,
+              rest: exercise.rest,
+              description: exercise.description,
+              photoUrl: exercise.photoUrl,
+              dailyExerciseId: newDailyExercise.id,
+            })),
+          })
+        }
+      }
+
+      const transactionDetails = {
+        action: "Rutina convertida a preestablecida",
+        attachmentId: routineId,
+        attachmentName: sourceRoutine.name,
+        presetRoutineId: presetRoutine.id,
+        presetRoutineName: presetRoutine.name,
+        exercisesCount: sourceRoutine.dailyExercises.reduce(
+          (count, de) => count + de.exercises.length,
+          0,
+        ),
+        timestamp: new Date().toISOString(),
+      }
+
+      await createRoutineTransaction({
+        tx,
+        type: TransactionType.ROUTINE_CONVERTED_TO_PRESET,
+        routineId: routineId,
+        performedById: user.id,
+        facilityId: facilityId,
+        details: transactionDetails,
+      })
+
+      await createNotification({
+        tx,
+        issuerId: user.id,
+        facilityId: facilityId,
+        type: NotificationType.ROUTINE_CONVERTED_TO_PRESET,
+        relatedId: presetRoutine.id,
+      })
+
+      revalidatePath("/entrenamiento/rutinas")
+      revalidatePath("/entrenamiento/rutinas-preestablecidas")
+
+      return {
+        success: true,
+        message: `Rutina "${sourceRoutine.name}" convertida a preestablecida correctamente`,
+        sourceRoutineId: routineId,
+        presetRoutineId: presetRoutine.id,
+      }
+    } catch (error) {
+      console.error("Error converting routine to preset:", error)
+      return {
+        success: false,
+        message:
+          error instanceof Error
+            ? error.message
+            : "Error al convertir la rutina a preestablecida",
       }
     }
   })
