@@ -1,4 +1,5 @@
 import type { DayOfWeek } from "@prisma/client"
+import { UserClient } from "./user"
 
 export const columnsRoutines: {
   key: keyof RoutineData | keyof RoutineDataExport
@@ -7,6 +8,7 @@ export const columnsRoutines: {
   { key: "name", label: "Nombre" },
   { key: "description", label: "Descripción" },
   { key: "exercises", label: "Ejercicios asociados" },
+  { key: "assignedUsersCount", label: "Usuarios Asignados" }
 ]
 
 export const daysOfWeek = [
@@ -51,6 +53,8 @@ export interface RoutineData {
   description: string | null
   facilityId: string
   dailyExercises: DailyExerciseData[]
+  assignedUsers?: UserClient[]
+  assignedUsersCount?: number
   exercises?: string
   createdAt: Date
   updatedAt: Date

@@ -61,6 +61,6 @@ export interface UserClient {
   id: string
   firstName: string
   lastName: string
-  email: string
+  email?: string | null
   avatarUrl: string | null
 }
