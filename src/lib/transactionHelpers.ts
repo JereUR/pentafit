@@ -220,6 +220,8 @@ export async function createRoutineTransaction({
     | "ROUTINE_DELETED"
     | "ROUTINE_REPLICATED"
     | "ASSIGN_ROUTINE_USER"
+    | "UNASSIGN_ROUTINE_USER"
+    | "ROUTINE_CONVERTED_TO_PRESET"
   routineId: string
   performedById: string
   facilityId: string
