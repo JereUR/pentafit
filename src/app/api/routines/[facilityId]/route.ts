@@ -1,8 +1,6 @@
-import { type NextRequest, NextResponse } from "next/server"
-
 import prisma from "@/lib/prisma"
-import type { RoutineData } from "@/types/routine"
-import formatExercisesToString from "@/types/routine"
+import formatExercisesToString, { RoutineData } from "@/types/routine"
+import { type NextRequest, NextResponse } from "next/server"
 
 export async function GET(
   request: NextRequest,
@@ -28,6 +26,22 @@ export async function GET(
           dailyExercises: {
             include: {
               exercises: true,
+            },
+          },
+          userRoutines: {
+            where: {
+              isActive: true,
+            },
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  firstName: true,
+                  lastName: true,
+                  email: true,
+                  avatarUrl: true,
+                },
+              },
             },
           },
         },
@@ -70,6 +84,8 @@ export async function GET(
         updatedAt: dailyExercise.updatedAt,
       })),
       exercises: formatExercisesToString(routine.dailyExercises),
+      assignedUsers: routine.userRoutines.map((ur) => ur.user),
+      assignedUsersCount: routine.userRoutines.length,
       createdAt: routine.createdAt,
       updatedAt: routine.updatedAt,
     }))
