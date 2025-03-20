@@ -996,13 +996,15 @@ export async function convertToPresetRoutine(
         details: transactionDetails,
       })
 
-      await createNotification({
+      /* await createNotification({
         tx,
         issuerId: user.id,
         facilityId: facilityId,
         type: NotificationType.ROUTINE_CONVERTED_TO_PRESET,
         relatedId: presetRoutine.id,
-      })
+      }) */
+
+      console.log("test")
 
       revalidatePath("/entrenamiento/rutinas")
       revalidatePath("/entrenamiento/rutinas-preestablecidas")
