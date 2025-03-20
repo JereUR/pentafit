@@ -14,6 +14,8 @@ import { DeleteConfirmationDialog } from "../DeleteConfirmationDialog"
 import { useToast } from "@/hooks/use-toast"
 import { ExercisesDialog } from "./ExercisesDialog"
 import { UserAssignmentDialog } from "./UserAssignmentDialog"
+import { ConvertToPresetButton } from "./ConvertToPresetButton"
+import { AssignedUsersDialog } from "./AssignedUsersDialog"
 
 interface RoutineRowProps {
   routine: RoutineData
@@ -52,6 +54,7 @@ export default function RoutineRow({
   const { toast } = useToast()
   const [showExercisesDialog, setShowExercisesDialog] = useState(false)
   const [showUserAssignmentDialog, setShowUserAssignmentDialog] = useState(false)
+  const [showAssignedUsersDialog, setShowAssignedUsersDialog] = useState(false)
 
   const handleDelete = () => {
     deleteRoutine(
@@ -85,6 +88,28 @@ export default function RoutineRow({
             <Info className="h-4 w-4" />
             <span className="sr-only">Ver ejercicios</span>
           </Button>
+        </div>
+      )
+    }
+
+    if (column.key === "assignedUsersCount") {
+      return (
+        <div className="flex items-center justify-center gap-2">
+          <span>{routine.assignedUsersCount || 0}</span>
+          {routine.assignedUsersCount && routine.assignedUsersCount > 0 ? (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={(e) => {
+                e.stopPropagation()
+                setShowAssignedUsersDialog(true)
+              }}
+              className="h-6 w-6"
+            >
+              <Info className="h-4 w-4" />
+              <span className="sr-only">Ver usuarios asignados</span>
+            </Button>
+          ) : null}
         </div>
       )
     }
@@ -130,8 +155,9 @@ export default function RoutineRow({
                     setShowUserAssignmentDialog(true)
                   }}
                 >
-                  <Users className="h-3 w-3" /> Asignar
+                  <Users className="h-3 w-3 mr-1" /> Asignar
                 </Button>
+                <ConvertToPresetButton routineId={routine.id} facilityId={routine.facilityId} />
               </>
             )}
             <DeleteConfirmationDialog
@@ -154,6 +180,12 @@ export default function RoutineRow({
         routineId={routine.id}
         routineName={routine.name}
         facilityId={routine.facilityId}
+      />
+      <AssignedUsersDialog
+        open={showAssignedUsersDialog}
+        onOpenChange={setShowAssignedUsersDialog}
+        users={routine.assignedUsers || []}
+        routineName={routine.name}
       />
     </>
   )
