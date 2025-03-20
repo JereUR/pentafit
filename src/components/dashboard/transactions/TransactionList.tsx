@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react"
 
 import { TransactionItem } from "./TransactionItem"
-import { TransactionSkeleton } from "../skeletons/TransactionSkeleton"
+import { TransactionSkeleton } from "../../skeletons/TransactionSkeleton"
 import { TransactionWithDetails } from "@/types/transactions"
 import { UserClient } from "@/types/user"
 
