@@ -227,7 +227,7 @@ export function useAssignRoutineToUsersMutation() {
       if (!result.success) {
         throw new Error(result.message)
       }
-      return { ...result, routineId }
+      return result
     },
     onSuccess: (result) => {
       toast({
@@ -245,7 +245,7 @@ export function useAssignRoutineToUsersMutation() {
         queryKey: ["metrics"],
       })
       queryClient.invalidateQueries({
-        queryKey: ["assignedUsers", result.routineId],
+        queryKey: ["assignedUsers"],
       })
     },
     onError: (error: Error) => {
@@ -280,7 +280,7 @@ export function useUnassignRoutineFromUsersMutation() {
       if (!result.success) {
         throw new Error(result.message)
       }
-      return { ...result, routineId }
+      return result
     },
     onSuccess: (result) => {
       toast({
@@ -298,7 +298,7 @@ export function useUnassignRoutineFromUsersMutation() {
         queryKey: ["metrics"],
       })
       queryClient.invalidateQueries({
-        queryKey: ["assignedUsers", result.routineId],
+        queryKey: ["assignedUsers"],
       })
     },
     onError: (error: Error) => {
