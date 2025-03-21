@@ -43,7 +43,7 @@ export function useCreateNutritionalPlanMutation() {
       queryClient.invalidateQueries({
         queryKey: ["metrics", newNutritionalPlan?.facilityId],
       })
-      router.push("/nutricion/planes")
+      router.push("/entrenamiento/planes-nutricionales")
     },
     onError: (error: Error) => {
       toast({
@@ -89,7 +89,7 @@ export function useUpdateNutritionalPlanMutation() {
       queryClient.invalidateQueries({
         queryKey: ["metrics", updatedNutritionalPlan?.facilityId],
       })
-      router.push("/nutricion/planes")
+      router.push("/entrenamiento/planes-nutricionales")
     },
     onError: (error: Error) => {
       toast({
