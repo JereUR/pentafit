@@ -91,10 +91,11 @@ export function MealList({ meals, onEditMeal, onDeleteMeal, onUpdateFoodItems }:
             </div>
             <div className="flex items-center gap-2 mt-2 md:mt-0">
               <Button variant="outline" size="sm" onClick={() => onEditMeal(mealIndex)} className="h-8 px-2">
-                <Pencil className="h-4 w-4 mr-1" />
+                <Pencil type="button" className="h-4 w-4 mr-1" />
                 Editar
               </Button>
               <Button
+                type="button"
                 variant="outline"
                 size="sm"
                 onClick={() => onDeleteMeal(mealIndex)}
@@ -130,7 +131,6 @@ export function MealList({ meals, onEditMeal, onDeleteMeal, onUpdateFoodItems }:
                 />
               </Dialog>
             </div>
-
             <FoodItemList
               foodItems={meal.foodItems}
               onEditFoodItem={(foodItemIndex) => handleEditFoodItem(mealIndex, foodItemIndex)}

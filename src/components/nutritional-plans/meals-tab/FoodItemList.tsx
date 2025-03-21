@@ -37,10 +37,11 @@ export function FoodItemList({ foodItems, onEditFoodItem, onDeleteFoodItem }: Fo
               {foodItem.notes && <div className="text-sm mt-1">{foodItem.notes}</div>}
             </div>
             <div className="flex gap-1">
-              <Button variant="ghost" size="icon" onClick={() => onEditFoodItem(foodItemIndex)} className="h-8 w-8">
+              <Button type="button" variant="ghost" size="icon" onClick={() => onEditFoodItem(foodItemIndex)} className="h-8 w-8">
                 <Pencil className="h-4 w-4" />
               </Button>
               <Button
+                type="button"
                 variant="ghost"
                 size="icon"
                 onClick={() => onDeleteFoodItem(foodItemIndex)}
