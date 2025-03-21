@@ -17,7 +17,6 @@ import {
   Apple,
   Salad,
   Copy,
-  Users,
 } from "lucide-react"
 import Link from "next/link"
 import type { JSX } from "react"
@@ -220,12 +219,6 @@ export default function Notification({ notification }: NotificationProps) {
       href: `/entrenamiento/planes-nutricionales`,
       color: "text-purple-500",
     },
-    NUTRITIONAL_PLAN_ASSIGNED: {
-      message: "asignó un plan nutricional a un/os usuario/s",
-      icon: <Users className="h-4 w-4" />,
-      href: `/entrenamiento/planes-nutricionales`,
-      color: "text-blue-500",
-    },
     PRESET_NUTRITIONAL_PLAN_CREATED: {
       message: "creó un plan nutricional preestablecido",
       icon: <Apple className="h-4 w-4" />,
@@ -249,6 +242,24 @@ export default function Notification({ notification }: NotificationProps) {
       icon: <Salad className="h-4 w-4" />,
       href: `/entrenamiento/planes-nutricionales-preestablecidos`,
       color: "text-purple-500",
+    },
+    NUTRITIONAL_PLAN_CONVERTED_TO_PRESET: {
+      message: "convirtió un plan nutricional a preestablecido",
+      icon: <Copy className="h-4 w-4" />,
+      href: `/entrenamiento/planes-nutricionales-preestablecidos`,
+      color: "text-purple-500",
+    },
+    ASSIGN_NUTRITIONAL_PLAN_USER: {
+      message: "asignó un plan nutricional a un/os usuario/s",
+      icon: <UserCheck className="h-4 w-4" />,
+      href: `/entrenamiento/planes-nutricionales`,
+      color: "text-blue-500",
+    },
+    UNASSIGN_NUTRITIONAL_PLAN_USER: {
+      message: "desasignó un plan nutricional de un/os usuario/s",
+      icon: <UserRoundX className="h-4 w-4" />,
+      href: `/entrenamiento/planes-nutricionales`,
+      color: "text-red-500",
     },
   }
 

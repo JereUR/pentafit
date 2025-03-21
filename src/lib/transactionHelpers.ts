@@ -284,7 +284,9 @@ export async function createNutritionalPlanTransaction({
     | "NUTRITIONAL_PLAN_UPDATED"
     | "NUTRITIONAL_PLAN_DELETED"
     | "NUTRITIONAL_PLAN_REPLICATED"
-    | "NUTRITIONAL_PLAN_ASSIGNED"
+    | "ASSIGN_NUTRITIONAL_PLAN_USER"
+    | "UNASSIGN_NUTRITIONAL_PLAN_USER"
+    | "NUTRITIONAL_PLAN_CONVERTED_TO_PRESET"
   nutritionalPlanId: string
   performedById: string
   facilityId: string

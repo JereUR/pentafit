@@ -69,10 +69,11 @@ export async function createNotification({
               ? "routineId"
               : type.toLowerCase().startsWith("preset_routine")
                 ? "presetRoutineId"
-                : type.toLowerCase().includes("nutritional_plan") &&
-                    !type.toLowerCase().includes("preset")
+                : type.toLowerCase().startsWith("nutritional_plan") ||
+                    type.toLowerCase().startsWith("assign_nutritional_plan") ||
+                    type.toLowerCase().startsWith("unassign_nutritional_plan")
                   ? "nutritionalPlanId"
-                  : type.toLowerCase().includes("preset_nutritional_plan")
+                  : type.toLowerCase().startsWith("preset_nutritional_plan")
                     ? "presetNutritionalPlanId"
                     : "userId"]: relatedId,
     }),
