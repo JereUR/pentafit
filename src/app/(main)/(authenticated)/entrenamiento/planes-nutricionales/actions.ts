@@ -60,7 +60,6 @@ export const getNutritionalPlanById = cache(
       nutritionalPlan.dailyMeals.forEach((dailyMeal) => {
         const day = dailyMeal.dayOfWeek
         dailyMeals[day] = dailyMeal.meals.map((meal) => ({
-          name: meal.name,
           mealType: meal.mealType,
           time: meal.time,
           foodItems: meal.foodItems.map((foodItem) => ({
@@ -122,7 +121,6 @@ export async function createNutritionalPlan(
           for (const meal of meals) {
             const createdMeal = await tx.meal.create({
               data: {
-                name: meal.name,
                 mealType: meal.mealType,
                 time: meal.time ?? null,
                 dailyMealId: dailyMeal.id,
@@ -245,7 +243,6 @@ export async function updateNutritionalPlan(
             for (const meal of meals) {
               const createdMeal = await tx.meal.create({
                 data: {
-                  name: meal.name,
                   mealType: meal.mealType,
                   time: meal.time ?? null,
                   dailyMealId: existingDailyMeal.id,
@@ -279,7 +276,6 @@ export async function updateNutritionalPlan(
             for (const meal of meals) {
               const createdMeal = await tx.meal.create({
                 data: {
-                  name: meal.name,
                   mealType: meal.mealType,
                   time: meal.time ?? null,
                   dailyMealId: dailyMeal.id,
@@ -1059,7 +1055,6 @@ export async function convertToPresetNutritionalPlan(
         for (const meal of dailyMeal.meals) {
           const newMeal = await tx.meal.create({
             data: {
-              name: meal.name,
               mealType: meal.mealType,
               time: meal.time,
               dailyMealId: newDailyMeal.id,

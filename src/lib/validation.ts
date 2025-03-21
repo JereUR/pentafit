@@ -415,7 +415,6 @@ export const foodItemSchema = z.object({
 })
 
 export const mealSchema = z.object({
-  name: z.string().min(1, "El nombre es requerido"),
   mealType: z.enum(
     [
       "BREAKFAST",

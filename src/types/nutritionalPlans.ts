@@ -39,7 +39,6 @@ export interface FoodItemData {
 
 export interface MealData {
   id: string
-  name: string
   mealType: MealType
   time: string | null
   dailyMealId: string
@@ -103,7 +102,7 @@ export default function formatMealsToString(
                     .join("\n")
                 : "    No hay alimentos para esta comida"
 
-              return `  ${mealTypeLabel}${meal.time ? ` (${meal.time})` : ""}: ${meal.name}\n${foodItemsText}`
+              return `  ${mealTypeLabel}${meal.time ? ` (${meal.time})` : ""}: \n${foodItemsText}`
             })
             .join("\n\n")
         : "  No hay comidas para este día"

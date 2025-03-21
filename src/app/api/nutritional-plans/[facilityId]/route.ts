@@ -80,7 +80,6 @@ export async function GET(
           nutritionalPlanId: dailyMeal.nutritionalPlanId,
           meals: dailyMeal.meals.map((meal) => ({
             id: meal.id,
-            name: meal.name,
             mealType: meal.mealType,
             time: meal.time,
             dailyMealId: meal.dailyMealId,

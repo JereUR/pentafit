@@ -625,7 +625,6 @@ model DailyMeal {
 
 model Meal {
   id          String     @id @default(uuid())
-  name        String
   mealType    MealType
   time        String?
   dailyMealId String
