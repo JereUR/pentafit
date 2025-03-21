@@ -63,7 +63,7 @@ export default function RoutineRow({
         onError: (error) => {
           toast({
             variant: "destructive",
-            title: "Error al eliminar la agenda",
+            title: "Error al eliminar la rutina",
             description: error.message,
           })
         },
