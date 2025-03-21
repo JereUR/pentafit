@@ -10,6 +10,8 @@ import {
   deleteNutritionalPlans,
   replicateNutritionalPlans,
   assignNutritionalPlanToUsers,
+  unassignNutritionalPlanFromUsers,
+  convertToPresetNutritionalPlan,
 } from "./actions"
 import { NutritionalPlanValues } from "@/lib/validation"
 
@@ -256,13 +258,116 @@ export function useAssignNutritionalPlanToUsersMutation() {
         queryKey: ["metrics"],
       })
       queryClient.invalidateQueries({
-        queryKey: ["userNutritionalPlans"],
+        queryKey: ["assignedNutritionalPlanUsers"],
       })
     },
     onError: (error: Error) => {
       toast({
         variant: "destructive",
         title: "Error al asignar el plan nutricional",
+        description: error.message,
+      })
+    },
+  })
+}
+
+export function useUnassignNutritionalPlanFromUsersMutation() {
+  const { toast } = useToast()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({
+      nutritionalPlanId,
+      userIds,
+      facilityId,
+    }: {
+      nutritionalPlanId: string
+      userIds: string[]
+      facilityId: string
+    }) => {
+      const result = await unassignNutritionalPlanFromUsers(
+        nutritionalPlanId,
+        userIds,
+        facilityId,
+      )
+      if (!result.success) {
+        throw new Error(result.message)
+      }
+      return result
+    },
+    onSuccess: (result) => {
+      toast({
+        title: "Plan nutricional desasignado correctamente",
+        description: result.message,
+      })
+
+      queryClient.invalidateQueries({
+        queryKey: ["nutritionalPlans"],
+      })
+      queryClient.invalidateQueries({
+        queryKey: ["latestTransactions"],
+      })
+      queryClient.invalidateQueries({
+        queryKey: ["metrics"],
+      })
+      queryClient.invalidateQueries({
+        queryKey: ["assignedNutritionalPlanUsers"],
+      })
+    },
+    onError: (error: Error) => {
+      toast({
+        variant: "destructive",
+        title: "Error al desasignar el plan nutricional",
+        description: error.message,
+      })
+    },
+  })
+}
+
+export function useConvertToPresetNutritionalPlanMutation() {
+  const { toast } = useToast()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({
+      nutritionalPlanId,
+      facilityId,
+    }: {
+      nutritionalPlanId: string
+      facilityId: string
+    }) => {
+      const result = await convertToPresetNutritionalPlan(
+        nutritionalPlanId,
+        facilityId,
+      )
+      if (!result.success) {
+        throw new Error(result.message)
+      }
+      return result
+    },
+    onSuccess: (result) => {
+      toast({
+        title: "Plan nutricional convertido a preestablecido correctamente",
+        description: result.message,
+      })
+
+      queryClient.invalidateQueries({
+        queryKey: ["nutritionalPlans"],
+      })
+      queryClient.invalidateQueries({
+        queryKey: ["presetNutritionalPlans"],
+      })
+      queryClient.invalidateQueries({
+        queryKey: ["latestTransactions"],
+      })
+      queryClient.invalidateQueries({
+        queryKey: ["metrics"],
+      })
+    },
+    onError: (error: Error) => {
+      toast({
+        variant: "destructive",
+        title: "Error al convertir el plan nutricional",
         description: error.message,
       })
     },

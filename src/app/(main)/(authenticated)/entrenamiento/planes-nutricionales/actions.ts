@@ -713,16 +713,109 @@ export async function assignNutritionalPlanToUsers(
         }
       }
 
-      const existingAssignments = await tx.userNutritionalPlan.findMany({
+      const existingUserPlans = await tx.userNutritionalPlan.findMany({
         where: {
-          nutritionalPlanId,
           userId: { in: userIds },
+          isActive: true,
         },
-        select: { userId: true },
+        include: {
+          nutritionalPlan: {
+            select: { name: true },
+          },
+        },
       })
 
-      const existingUserIds = existingAssignments.map((a) => a.userId)
-      const newUserIds = userIds.filter((id) => !existingUserIds.includes(id))
+      const userPlansMap = existingUserPlans.reduce(
+        (acc, up) => {
+          if (!acc[up.userId]) {
+            acc[up.userId] = []
+          }
+          acc[up.userId].push(up)
+          return acc
+        },
+        {} as Record<string, typeof existingUserPlans>,
+      )
+
+      const usersWithOtherPlans = existingUserPlans
+        .filter((up) => up.nutritionalPlanId !== nutritionalPlanId)
+        .map((up) => ({
+          userId: up.userId,
+          nutritionalPlanId: up.nutritionalPlanId,
+          nutritionalPlanName: up.nutritionalPlan.name,
+        }))
+
+      if (usersWithOtherPlans.length > 0) {
+        const planIdsToUnassign = [
+          ...new Set(usersWithOtherPlans.map((u) => u.nutritionalPlanId)),
+        ]
+        const userIdsToUnassign = [
+          ...new Set(usersWithOtherPlans.map((u) => u.userId)),
+        ]
+
+        await tx.userNutritionalPlan.deleteMany({
+          where: {
+            userId: { in: userIdsToUnassign },
+            nutritionalPlanId: { in: planIdsToUnassign },
+          },
+        })
+
+        const unassignedUsers = await tx.user.findMany({
+          where: { id: { in: userIdsToUnassign } },
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            avatarUrl: true,
+            email: true,
+          },
+        })
+
+        for (const planIdToUnassign of planIdsToUnassign) {
+          const planName =
+            usersWithOtherPlans.find(
+              (u) => u.nutritionalPlanId === planIdToUnassign,
+            )?.nutritionalPlanName || "Desconocido"
+          const usersForThisPlan = usersWithOtherPlans.filter(
+            (u) => u.nutritionalPlanId === planIdToUnassign,
+          )
+
+          await createNutritionalPlanTransaction({
+            tx,
+            type: TransactionType.UNASSIGN_NUTRITIONAL_PLAN_USER,
+            nutritionalPlanId: planIdToUnassign,
+            performedById: user.id,
+            facilityId,
+            details: {
+              action:
+                "Plan nutricional desasignado de usuarios (reemplazo automático)",
+              attachmentId: planIdToUnassign,
+              attachmentName: planName,
+              unassignedUsers: unassignedUsers.filter((u) =>
+                usersForThisPlan.some((usr) => usr.userId === u.id),
+              ),
+              unassignedCount: usersForThisPlan.length,
+              replacedByPlanId: nutritionalPlanId,
+              replacedByPlanName: nutritionalPlan.name,
+            },
+          })
+
+          await createNotification({
+            tx,
+            issuerId: user.id,
+            facilityId,
+            type: NotificationType.UNASSIGN_NUTRITIONAL_PLAN_USER,
+            relatedId: planIdToUnassign,
+          })
+        }
+      }
+
+      const existingAssignments = existingUserPlans
+        .filter((up) => up.nutritionalPlanId === nutritionalPlanId)
+        .map((up) => up.userId)
+
+      const newUserIds = userIds.filter(
+        (id) => !existingAssignments.includes(id),
+      )
 
       if (newUserIds.length > 0) {
         await tx.userNutritionalPlan.createMany({
@@ -730,7 +823,6 @@ export async function assignNutritionalPlanToUsers(
             userId,
             nutritionalPlanId,
             isActive: true,
-            startDate: new Date(),
           })),
           skipDuplicates: true,
         })
@@ -749,7 +841,7 @@ export async function assignNutritionalPlanToUsers(
 
       await createNutritionalPlanTransaction({
         tx,
-        type: TransactionType.NUTRITIONAL_PLAN_ASSIGNED,
+        type: TransactionType.ASSIGN_NUTRITIONAL_PLAN_USER,
         nutritionalPlanId,
         performedById: user.id,
         facilityId,
@@ -765,7 +857,8 @@ export async function assignNutritionalPlanToUsers(
             email: u.email,
           })),
           assignedCount: newUserIds.length,
-          alreadyAssignedCount: existingUserIds.length,
+          alreadyAssignedCount: existingAssignments.length,
+          replacedPlansCount: usersWithOtherPlans.length,
         },
       })
 
@@ -773,17 +866,28 @@ export async function assignNutritionalPlanToUsers(
         tx,
         issuerId: user.id,
         facilityId,
-        type: NotificationType.NUTRITIONAL_PLAN_ASSIGNED,
+        type: NotificationType.ASSIGN_NUTRITIONAL_PLAN_USER,
         relatedId: nutritionalPlanId,
       })
 
-      revalidatePath(`/entrenamiento/planes-nutricionales`)
+      revalidatePath("/nutricion/planes-nutricionales")
+
+      let message = `Plan nutricional asignado a ${newUserIds.length} usuarios correctamente`
+
+      if (existingAssignments.length > 0) {
+        message += ` (${existingAssignments.length} ya estaban asignados)`
+      }
+
+      if (usersWithOtherPlans.length > 0) {
+        message += `. Se reemplazaron ${usersWithOtherPlans.length} asignaciones previas`
+      }
 
       return {
         success: true,
-        message: `Plan nutricional asignado a ${newUserIds.length} usuarios correctamente${existingUserIds.length > 0 ? ` (${existingUserIds.length} ya estaban asignados)` : ""}`,
+        message,
         assignedCount: newUserIds.length,
-        alreadyAssignedCount: existingUserIds.length,
+        alreadyAssignedCount: existingAssignments.length,
+        replacedPlansCount: usersWithOtherPlans.length,
       }
     } catch (error) {
       console.error("Error assigning nutritional plan to users:", error)
@@ -793,6 +897,253 @@ export async function assignNutritionalPlanToUsers(
           error instanceof Error
             ? error.message
             : "Error al asignar el plan nutricional a los usuarios",
+      }
+    }
+  })
+}
+
+export async function unassignNutritionalPlanFromUsers(
+  nutritionalPlanId: string,
+  userIds: string[],
+  facilityId: string,
+) {
+  const { user } = await validateRequest()
+  if (!user) throw new Error("Usuario no autenticado")
+
+  return await prisma.$transaction(async (tx) => {
+    try {
+      const nutritionalPlan = await tx.nutritionalPlan.findUnique({
+        where: { id: nutritionalPlanId },
+        select: { id: true, name: true },
+      })
+
+      if (!nutritionalPlan) {
+        return {
+          success: false,
+          message: "No se encontró el plan nutricional especificado",
+        }
+      }
+
+      const existingAssignments = await tx.userNutritionalPlan.findMany({
+        where: {
+          nutritionalPlanId,
+          userId: { in: userIds },
+        },
+        select: { userId: true },
+      })
+
+      const existingUserIds = existingAssignments.map((a) => a.userId)
+
+      if (existingUserIds.length === 0) {
+        return {
+          success: false,
+          message:
+            "No hay usuarios asignados a este plan nutricional para desasignar",
+        }
+      }
+
+      const { count } = await tx.userNutritionalPlan.deleteMany({
+        where: {
+          nutritionalPlanId,
+          userId: { in: existingUserIds },
+        },
+      })
+
+      const users = await tx.user.findMany({
+        where: { id: { in: existingUserIds } },
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          avatarUrl: true,
+          email: true,
+        },
+      })
+
+      await createNutritionalPlanTransaction({
+        tx,
+        type: TransactionType.UNASSIGN_NUTRITIONAL_PLAN_USER,
+        nutritionalPlanId,
+        performedById: user.id,
+        facilityId,
+        details: {
+          action: "Plan nutricional desasignado de usuarios",
+          attachmentId: nutritionalPlanId,
+          attachmentName: nutritionalPlan.name,
+          unassignedUsers: users.map((u) => ({
+            id: u.id,
+            firstName: u.firstName,
+            lastName: u.lastName,
+            avatarUrl: u.avatarUrl,
+            email: u.email,
+          })),
+          unassignedCount: count,
+        },
+      })
+
+      await createNotification({
+        tx,
+        issuerId: user.id,
+        facilityId,
+        type: NotificationType.UNASSIGN_NUTRITIONAL_PLAN_USER,
+        relatedId: nutritionalPlanId,
+      })
+
+      revalidatePath("/nutricion/planes-nutricionales")
+
+      return {
+        success: true,
+        message: `Plan nutricional desasignado de ${count} ${count === 1 ? "usuario" : "usuarios"} correctamente`,
+        unassignedCount: count,
+      }
+    } catch (error) {
+      console.error("Error unassigning nutritional plan from users:", error)
+      return {
+        success: false,
+        message:
+          error instanceof Error
+            ? error.message
+            : "Error al desasignar el plan nutricional de los usuarios",
+      }
+    }
+  })
+}
+
+export async function convertToPresetNutritionalPlan(
+  nutritionalPlanId: string,
+  facilityId: string,
+) {
+  const { user } = await validateRequest()
+  if (!user) throw new Error("Usuario no autenticado")
+
+  return await prisma.$transaction(async (tx) => {
+    try {
+      const sourceNutritionalPlan = await tx.nutritionalPlan.findUnique({
+        where: { id: nutritionalPlanId },
+        include: {
+          dailyMeals: {
+            include: {
+              meals: {
+                include: {
+                  foodItems: true,
+                },
+              },
+            },
+          },
+        },
+      })
+
+      if (!sourceNutritionalPlan) {
+        return {
+          success: false,
+          message: "No se encontró el plan nutricional especificado",
+        }
+      }
+
+      const presetNutritionalPlan = await tx.presetNutritionalPlan.create({
+        data: {
+          name: `${sourceNutritionalPlan.name} (Preestablecido)`,
+          description: sourceNutritionalPlan.description,
+          facilityId: sourceNutritionalPlan.facilityId,
+        },
+      })
+
+      for (const dailyMeal of sourceNutritionalPlan.dailyMeals) {
+        const newDailyMeal = await tx.dailyMeal.create({
+          data: {
+            dayOfWeek: dailyMeal.dayOfWeek,
+            presetNutritionalPlanId: presetNutritionalPlan.id,
+          },
+        })
+
+        for (const meal of dailyMeal.meals) {
+          const newMeal = await tx.meal.create({
+            data: {
+              name: meal.name,
+              mealType: meal.mealType,
+              time: meal.time,
+              dailyMealId: newDailyMeal.id,
+            },
+          })
+
+          if (meal.foodItems.length > 0) {
+            await tx.foodItem.createMany({
+              data: meal.foodItems.map((item) => ({
+                name: item.name,
+                portion: item.portion,
+                unit: item.unit,
+                calories: item.calories,
+                protein: item.protein,
+                carbs: item.carbs,
+                fat: item.fat,
+                notes: item.notes,
+                mealId: newMeal.id,
+              })),
+            })
+          }
+        }
+      }
+
+      const totalMeals = sourceNutritionalPlan.dailyMeals.reduce(
+        (count, dm) => count + dm.meals.length,
+        0,
+      )
+
+      const totalFoodItems = sourceNutritionalPlan.dailyMeals.reduce(
+        (count, dm) =>
+          count +
+          dm.meals.reduce(
+            (mealCount, meal) => mealCount + meal.foodItems.length,
+            0,
+          ),
+        0,
+      )
+
+      const transactionDetails = {
+        action: "Plan nutricional convertido a preestablecido",
+        attachmentId: nutritionalPlanId,
+        attachmentName: sourceNutritionalPlan.name,
+        presetNutritionalPlanId: presetNutritionalPlan.id,
+        presetNutritionalPlanName: presetNutritionalPlan.name,
+        mealsCount: totalMeals,
+        foodItemsCount: totalFoodItems,
+        timestamp: new Date().toISOString(),
+      }
+
+      await createNutritionalPlanTransaction({
+        tx,
+        type: TransactionType.NUTRITIONAL_PLAN_CONVERTED_TO_PRESET,
+        nutritionalPlanId: nutritionalPlanId,
+        performedById: user.id,
+        facilityId: facilityId,
+        details: transactionDetails,
+      })
+
+      /* await createNotification({
+        tx,
+        issuerId: user.id,
+        facilityId: facilityId,
+        type: NotificationType.NUTRITIONAL_PLAN_CONVERTED_TO_PRESET,
+        relatedId: presetNutritionalPlan.id,
+      }) */
+
+      revalidatePath("/nutricion/planes-nutricionales")
+      revalidatePath("/nutricion/planes-nutricionales-preestablecidos")
+
+      return {
+        success: true,
+        message: `Plan nutricional "${sourceNutritionalPlan.name}" convertido a preestablecido correctamente`,
+        sourceNutritionalPlanId: nutritionalPlanId,
+        presetNutritionalPlanId: presetNutritionalPlan.id,
+      }
+    } catch (error) {
+      console.error("Error converting nutritional plan to preset:", error)
+      return {
+        success: false,
+        message:
+          error instanceof Error
+            ? error.message
+            : "Error al convertir el plan nutricional a preestablecido",
       }
     }
   })
