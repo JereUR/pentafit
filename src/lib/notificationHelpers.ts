@@ -33,9 +33,9 @@ export async function createNotification({
 
   let recipientUsers = facility.users.filter(
     (userFacility) =>
-      userFacility.user.role === Role.SUPER_ADMIN ||
-      (userFacility.user.role === Role.ADMIN &&
-        userFacility.user.id !== issuerId),
+      (userFacility.user.role === Role.ADMIN ||
+        userFacility.user.role === Role.SUPER_ADMIN) &&
+      userFacility.user.id !== issuerId,
   )
 
   if (
@@ -79,9 +79,11 @@ export async function createNotification({
     }),
   }))
 
-  console.log("notifications", notifications)
+  /* console.log("notifications", notifications) */
 
   if (notifications.length > 0) {
     await tx.notification.createMany({ data: notifications })
   }
+
+  /* console.log("Notifications created") */
 }
