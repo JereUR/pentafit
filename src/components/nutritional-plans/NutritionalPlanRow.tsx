@@ -143,8 +143,8 @@ export default function NutritionalPlanRow({
               <Link
                 href={
                   !isPreset
-                    ? `/nutricion/planes-nutricionales/editar/${nutritionalPlan.id}`
-                    : `/nutricion/planes-nutricionales-preestablecidos/editar/${nutritionalPlan.id}`
+                    ? `/entrenamiento/planes-nutricionales/editar/${nutritionalPlan.id}`
+                    : `/entrenamiento/planes-nutricionales-preestablecidos/editar/${nutritionalPlan.id}`
                 }
               >
                 <Edit className="h-3 w-3" /> Editar

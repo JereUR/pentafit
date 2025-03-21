@@ -866,7 +866,7 @@ export async function assignNutritionalPlanToUsers(
         relatedId: nutritionalPlanId,
       })
 
-      revalidatePath("/nutricion/planes-nutricionales")
+      revalidatePath("/entrenamiento/planes-nutricionales")
 
       let message = `Plan nutricional asignado a ${newUserIds.length} usuarios correctamente`
 
@@ -985,7 +985,7 @@ export async function unassignNutritionalPlanFromUsers(
         relatedId: nutritionalPlanId,
       })
 
-      revalidatePath("/nutricion/planes-nutricionales")
+      revalidatePath("/entrenamiento/planes-nutricionales")
 
       return {
         success: true,
@@ -1122,8 +1122,8 @@ export async function convertToPresetNutritionalPlan(
         relatedId: presetNutritionalPlan.id,
       }) */
 
-      revalidatePath("/nutricion/planes-nutricionales")
-      revalidatePath("/nutricion/planes-nutricionales-preestablecidos")
+      revalidatePath("/entrenamiento/planes-nutricionales")
+      revalidatePath("/entrenamiento/planes-nutricionales-preestablecidos")
 
       return {
         success: true,

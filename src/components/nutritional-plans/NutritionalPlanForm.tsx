@@ -126,7 +126,7 @@ function NutritionalPlanForm({ userId, nutritionalPlanData }: NutritionalPlanFor
         {
           onSuccess: () => {
             form.reset()
-            router.push("/nutricion/planes")
+            router.push("/entrenamiento/planes")
           },
           onError: (error) => {
             console.error("Error completo:", error)
@@ -138,7 +138,7 @@ function NutritionalPlanForm({ userId, nutritionalPlanData }: NutritionalPlanFor
       createNutritionalPlan(sanitizedValues, {
         onSuccess: () => {
           form.reset()
-          router.push("/nutricion/planes")
+          router.push("/entrenamiento/planes")
         },
         onError: (error: unknown) => {
           console.error("Error al crear el plan nutricional:", error)
