@@ -65,7 +65,14 @@ export const navItems: NavItem[] = [
         title: "Rutinas preestablecidas",
         href: "/entrenamiento/rutinas-preestablecidas",
       },
-      { title: "Planes", href: "/entrenamiento/planes" },
+      {
+        title: "Planes nutricionales",
+        href: "/entrenamiento/planes-nutricionales",
+      },
+      {
+        title: "Planes nutricionales preestablecidos",
+        href: "/entrenamiento/planes-nutricionales-preestablecidos",
+      },
     ],
     roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.STAFF],
   },
