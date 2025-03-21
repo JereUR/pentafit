@@ -3,7 +3,6 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useState, useEffect } from "react"
 import { useForm } from "react-hook-form"
-import { useRouter } from "next/navigation"
 
 import { Form } from "@/components/ui/form"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -40,7 +39,6 @@ function NutritionalPlanForm({ userId, nutritionalPlanData }: NutritionalPlanFor
   )
   const [error, setError] = useState<string>()
   const isEditing = !!nutritionalPlanData
-  const router = useRouter()
 
   const {
     mutate: createNutritionalPlan,
@@ -126,7 +124,6 @@ function NutritionalPlanForm({ userId, nutritionalPlanData }: NutritionalPlanFor
         {
           onSuccess: () => {
             form.reset()
-            router.push("/entrenamiento/planes")
           },
           onError: (error) => {
             console.error("Error completo:", error)
@@ -138,7 +135,6 @@ function NutritionalPlanForm({ userId, nutritionalPlanData }: NutritionalPlanFor
       createNutritionalPlan(sanitizedValues, {
         onSuccess: () => {
           form.reset()
-          router.push("/entrenamiento/planes")
         },
         onError: (error: unknown) => {
           console.error("Error al crear el plan nutricional:", error)
