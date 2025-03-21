@@ -34,7 +34,6 @@ export function PresetNutritionalPlanSelector({ onSelectPreset }: PresetNutritio
           (acc, dailyMeal) => {
             const dayOfWeek = dailyMeal.dayOfWeek
             const meals = dailyMeal.meals.map((meal) => ({
-              name: meal.name,
               mealType: meal.mealType,
               time: meal.time,
               foodItems: meal.foodItems.map((foodItem) => ({
