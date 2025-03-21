@@ -25,6 +25,16 @@ export const daysOfWeekFull = [
   "Domingo",
 ]
 
+export const daysOfWeekMap = [
+  { value: "MONDAY", label: "Lunes" },
+  { value: "TUESDAY", label: "Martes" },
+  { value: "WEDNESDAY", label: "Miércoles" },
+  { value: "THURSDAY", label: "Jueves" },
+  { value: "FRIDAY", label: "Viernes" },
+  { value: "SATURDAY", label: "Sábado" },
+  { value: "SUNDAY", label: "Domingo" },
+]
+
 export interface SelectOption {
   key: string
   value: string

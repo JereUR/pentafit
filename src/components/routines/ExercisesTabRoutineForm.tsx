@@ -16,11 +16,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import type { ExerciseValues, DailyExercisesValues } from "@/lib/validation"
 import { convertImagePath, getBodyZones, getExercisesByZone } from "@/data/exercisesData"
 import noImage from "@/assets/no-image.png"
-import { daysOfWeek } from "@/types/routine"
 import { useMediaQuery } from "@/hooks/useMediaQuery"
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "../ui/command"
-import { cn } from "@/lib/utils"
+import { cn, daysOfWeekMap } from "@/lib/utils"
 
 interface ExercisesTabRoutineFormProps {
   dailyExercises: DailyExercisesValues
@@ -151,7 +150,7 @@ export function ExercisesTabRoutineForm({ dailyExercises, setDailyExercises }: E
         {isMobile ? (
           <ScrollArea className="w-full pb-2">
             <TabsList className="grid w-full grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 mb-4 h-fit">
-              {daysOfWeek.map((day) => (
+              {daysOfWeekMap.map((day) => (
                 <TabsTrigger key={day.value} value={day.value} className="relative">
                   {day.label.substring(0, 3)}
                   {dailyExercises[day.value as keyof DailyExercisesValues].length > 0 && (
@@ -165,7 +164,7 @@ export function ExercisesTabRoutineForm({ dailyExercises, setDailyExercises }: E
           </ScrollArea>
         ) : (
           <TabsList className="grid grid-cols-7 w-full">
-            {daysOfWeek.map((day) => (
+            {daysOfWeekMap.map((day) => (
               <TabsTrigger key={day.value} value={day.value} className="relative">
                 {day.label}
                 {dailyExercises[day.value as keyof DailyExercisesValues].length > 0 && (
@@ -178,7 +177,7 @@ export function ExercisesTabRoutineForm({ dailyExercises, setDailyExercises }: E
           </TabsList>
         )}
 
-        {daysOfWeek.map((day) => (
+        {daysOfWeekMap.map((day) => (
           <TabsContent key={day.value} value={day.value}>
             <Card>
               <CardContent className="pt-6">
@@ -364,7 +363,7 @@ export function ExercisesTabRoutineForm({ dailyExercises, setDailyExercises }: E
             {dailyExercises[currentDay].length > 0 && (
               <div className="space-y-4 mt-6">
                 <h3 className="text-lg font-medium text-primary">
-                  Ejercicios para {daysOfWeek.find((d) => d.value === currentDay)?.label} (
+                  Ejercicios para {daysOfWeekMap.find((d) => d.value === currentDay)?.label} (
                   {dailyExercises[currentDay].length})
                 </h3>
                 <ScrollArea className="h-[400px] rounded-md border">
@@ -430,7 +429,7 @@ export function ExercisesTabRoutineForm({ dailyExercises, setDailyExercises }: E
         <div className="mt-4 p-4 bg-muted rounded-lg">
           <h3 className="font-medium">Resumen de ejercicios</h3>
           <div className={`grid ${isMobile ? "grid-cols-2 sm:grid-cols-4" : "grid-cols-7"} gap-2 mt-2`}>
-            {daysOfWeek.map((day) => (
+            {daysOfWeekMap.map((day) => (
               <div key={day.value} className="text-center">
                 <div className="font-medium">{day.label}</div>
                 <div

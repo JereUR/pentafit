@@ -1,9 +1,10 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { type DailyExerciseData, daysOfWeek } from "@/types/routine"
+import { type DailyExerciseData } from "@/types/routine"
 import Image from "next/image"
 import { useMediaQuery } from "@/hooks/useMediaQuery"
+import { daysOfWeekMap } from "@/lib/utils"
 
 interface ExercisesDialogProps {
   open: boolean
@@ -34,7 +35,7 @@ export function ExercisesDialog({ open, onOpenChange, dailyExercises, routineNam
           {isMobile ? (
             <ScrollArea className="w-full pb-2">
               <TabsList className="grid w-full grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 mb-4 h-fit">
-                {daysOfWeek.map((day) => (
+                {daysOfWeekMap.map((day) => (
                   <TabsTrigger key={day.value} value={day.value} className="text-xs relative">
                     {day.label.substring(0, 3)}
                     {exerciseCounts[day.value] > 0 && (
@@ -48,7 +49,7 @@ export function ExercisesDialog({ open, onOpenChange, dailyExercises, routineNam
             </ScrollArea>
           ) : (
             <TabsList className="grid grid-cols-7 w-full">
-              {daysOfWeek.map((day) => (
+              {daysOfWeekMap.map((day) => (
                 <TabsTrigger key={day.value} value={day.value} className="relative">
                   {day.label}
                   {exerciseCounts[day.value] > 0 && (
@@ -61,7 +62,7 @@ export function ExercisesDialog({ open, onOpenChange, dailyExercises, routineNam
             </TabsList>
           )}
 
-          {daysOfWeek.map((day) => {
+          {daysOfWeekMap.map((day) => {
             const dailyExercise = dailyExercises.find((de) => de.dayOfWeek === day.value)
             const exercises = dailyExercise?.exercises || []
 
@@ -111,7 +112,7 @@ export function ExercisesDialog({ open, onOpenChange, dailyExercises, routineNam
                                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                                     className="object-contain"
                                     onError={(e) => {
-                                      ;(e.target as HTMLImageElement).src = "/placeholder.svg?height=160&width=300"
+                                      ; (e.target as HTMLImageElement).src = "/placeholder.svg?height=160&width=300"
                                     }}
                                   />
                                 </div>

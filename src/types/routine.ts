@@ -1,5 +1,6 @@
 import type { DayOfWeek } from "@prisma/client"
 import { UserClient } from "./user"
+import { daysOfWeekMap } from "@/lib/utils"
 
 export const columnsRoutines: {
   key: keyof RoutineData | keyof RoutineDataExport
@@ -8,17 +9,7 @@ export const columnsRoutines: {
   { key: "name", label: "Nombre" },
   { key: "description", label: "Descripción" },
   { key: "exercises", label: "Ejercicios asociados" },
-  { key: "assignedUsersCount", label: "Usuarios Asignados" }
-]
-
-export const daysOfWeek = [
-  { value: "MONDAY", label: "Lunes" },
-  { value: "TUESDAY", label: "Martes" },
-  { value: "WEDNESDAY", label: "Miércoles" },
-  { value: "THURSDAY", label: "Jueves" },
-  { value: "FRIDAY", label: "Viernes" },
-  { value: "SATURDAY", label: "Sábado" },
-  { value: "SUNDAY", label: "Domingo" },
+  { key: "assignedUsersCount", label: "Usuarios Asignados" },
 ]
 
 export interface ExerciseData {
@@ -74,7 +65,7 @@ export default function formatExercisesToString(
   return dailyExercises
     .map((dailyExercise) => {
       const dayLabel =
-        daysOfWeek.find((day) => day.value === dailyExercise.dayOfWeek)
+        daysOfWeekMap.find((day) => day.value === dailyExercise.dayOfWeek)
           ?.label || dailyExercise.dayOfWeek
 
       const exercisesText = dailyExercise.exercises.length
