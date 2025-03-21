@@ -25,13 +25,24 @@ export enum TransactionType {
   ROUTINE_UPDATED = "ROUTINE_UPDATED",
   ROUTINE_DELETED = "ROUTINE_DELETED",
   ROUTINE_REPLICATED = "ROUTINE_REPLICATED",
+  ROUTINE_CONVERTED_TO_PRESET = "ROUTINE_CONVERTED_TO_PRESET",
   PRESET_ROUTINE_CREATED = "PRESET_ROUTINE_CREATED",
   PRESET_ROUTINE_UPDATED = "PRESET_ROUTINE_UPDATED",
   PRESET_ROUTINE_DELETED = "PRESET_ROUTINE_DELETED",
   PRESET_ROUTINE_REPLICATED = "PRESET_ROUTINE_REPLICATED",
   ASSIGN_ROUTINE_USER = "ASSIGN_ROUTINE_USER",
   UNASSIGN_ROUTINE_USER = "UNASSIGN_ROUTINE_USER",
-  ROUTINE_CONVERTED_TO_PRESET = "ROUTINE_CONVERTED_TO_PRESET",
+  NUTRITIONAL_PLAN_CREATED = "NUTRITIONAL_PLAN_CREATED",
+  NUTRITIONAL_PLAN_UPDATED = "NUTRITIONAL_PLAN_UPDATED",
+  NUTRITIONAL_PLAN_DELETED = "NUTRITIONAL_PLAN_DELETED",
+  NUTRITIONAL_PLAN_REPLICATED = "NUTRITIONAL_PLAN_REPLICATED",
+  NUTRITIONAL_PLAN_CONVERTED_TO_PRESET = "NUTRITIONAL_PLAN_CONVERTED_TO_PRESET",
+  ASSIGN_NUTRITIONAL_PLAN_USER = "ASSIGN_NUTRITIONAL_PLAN_USER",
+  UNASSIGN_NUTRITIONAL_PLAN_USER = "UNASSIGN_NUTRITIONAL_PLAN_USER",
+  PRESET_NUTRITIONAL_PLAN_CREATED = "PRESET_NUTRITIONAL_PLAN_CREATED",
+  PRESET_NUTRITIONAL_PLAN_UPDATED = "PRESET_NUTRITIONAL_PLAN_UPDATED",
+  PRESET_NUTRITIONAL_PLAN_DELETED = "PRESET_NUTRITIONAL_PLAN_DELETED",
+  PRESET_NUTRITIONAL_PLAN_REPLICATED = "PRESET_NUTRITIONAL_PLAN_REPLICATED",
 }
 
 export interface FacilityReference {
@@ -70,6 +81,15 @@ export interface TransactionDetails {
   assignedCount?: number
   alreadyAssignedCount?: number
 
+  unassignedUsers?: Array<UserClient>
+  unassignedCount?: number
+
+  presetRoutineId?: string
+  presetRoutineName?: string
+
+  presetNutritionalPlanId?: string
+  presetNutritionalPlanName?: string
+
   [key: string]:
     | string
     | Array<UserClient>
@@ -101,6 +121,10 @@ export interface Transaction {
   routine?: EntityReference | null
   presetRoutineId?: string | null
   presetRoutine?: EntityReference | null
+  nutritionalPlanId?: string | null
+  nutritionalPlan?: EntityReference | null
+  presetNutritionalPlanId?: string | null
+  presetNutritionalPlan?: EntityReference | null
 
   createdAt: string
 }

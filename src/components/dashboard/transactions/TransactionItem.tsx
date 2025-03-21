@@ -1,5 +1,7 @@
 "use client"
 
+import type React from "react"
+
 import { Info, Share2, UserCheck, UserX, Copy } from "lucide-react"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -85,7 +87,7 @@ export function TransactionItem({ transaction, isLast, onShowFacilities, onShowU
                 {conversionInfo && (
                   <Badge variant="outline" className="ml-2 flex items-center gap-1">
                     <Copy className="h-3 w-3" />
-                    <span className="max-w-[100px] truncate">{conversionInfo.presetRoutineName}</span>
+                    <span className="max-w-[100px] truncate">{conversionInfo.presetName}</span>
                   </Badge>
                 )}
               </div>

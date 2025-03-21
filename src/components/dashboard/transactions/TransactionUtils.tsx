@@ -7,13 +7,18 @@ export function getTransactionType(type: TransactionType): string {
   if (type.includes("ACTIVITY")) return "Actividad"
   if (type.includes("STAFF")) return "Staff"
   if (type.includes("CLIENT")) return "Cliente"
-  if (type.includes("PLAN")) return "Plan"
+  if (type.startsWith("PLAN")) return "Plan"
   if (type.includes("DIARY")) return "Diario"
   if (type === TransactionType.ASSIGN_ROUTINE_USER) return "Asignación de Rutina"
   if (type === TransactionType.UNASSIGN_ROUTINE_USER) return "Desasignación de Rutina"
   if (type === TransactionType.ROUTINE_CONVERTED_TO_PRESET) return "Conversión a Preestablecida"
   if (type.startsWith("ROUTINE")) return "Rutina"
   if (type.startsWith("PRESET_ROUTINE")) return "Rutina preestablecida"
+  if (type === TransactionType.ASSIGN_NUTRITIONAL_PLAN_USER) return "Asignación de Plan Nutricional"
+  if (type === TransactionType.UNASSIGN_NUTRITIONAL_PLAN_USER) return "Desasignación de Plan Nutricional"
+  if (type === TransactionType.NUTRITIONAL_PLAN_CONVERTED_TO_PRESET) return "Conversión a Plan Preestablecido"
+  if (type.includes("NUTRITIONAL_PLAN") && !type.includes("PRESET")) return "Plan Nutricional"
+  if (type.includes("PRESET_NUTRITIONAL_PLAN")) return "Plan Nutricional preestablecido"
   return "N/A"
 }
 
@@ -26,6 +31,8 @@ export function getTransactionName(transaction: Transaction): string {
   if (transaction.diary) return transaction.diary.name
   if (transaction.routine) return transaction.routine.name
   if (transaction.presetRoutine) return transaction.presetRoutine.name
+  if (transaction.nutritionalPlan) return transaction.nutritionalPlan.name
+  if (transaction.presetNutritionalPlan) return transaction.presetNutritionalPlan.name
 
   if (transaction.details) {
     return transaction.details.attachmentName || transaction.details.replicatedName || "N/A"
@@ -93,7 +100,11 @@ export function getReplicationInfo(transaction: Transaction) {
 }
 
 export function getAssignmentInfo(transaction: Transaction) {
-  if (transaction.type !== TransactionType.ASSIGN_ROUTINE_USER || !transaction.details) {
+  if (
+    (transaction.type !== TransactionType.ASSIGN_ROUTINE_USER &&
+      transaction.type !== TransactionType.ASSIGN_NUTRITIONAL_PLAN_USER) ||
+    !transaction.details
+  ) {
     return null
   }
 
@@ -119,7 +130,11 @@ export function getAssignmentInfo(transaction: Transaction) {
 }
 
 export function getUnassignmentInfo(transaction: Transaction) {
-  if (transaction.type !== TransactionType.UNASSIGN_ROUTINE_USER || !transaction.details) {
+  if (
+    (transaction.type !== TransactionType.UNASSIGN_ROUTINE_USER &&
+      transaction.type !== TransactionType.UNASSIGN_NUTRITIONAL_PLAN_USER) ||
+    !transaction.details
+  ) {
     return null
   }
 
@@ -143,16 +158,27 @@ export function getUnassignmentInfo(transaction: Transaction) {
 }
 
 export function getConversionInfo(transaction: Transaction) {
-  if (transaction.type !== TransactionType.ROUTINE_CONVERTED_TO_PRESET || !transaction.details) {
+  if (
+    (transaction.type !== TransactionType.ROUTINE_CONVERTED_TO_PRESET &&
+      transaction.type !== TransactionType.NUTRITIONAL_PLAN_CONVERTED_TO_PRESET) ||
+    !transaction.details
+  ) {
     return null
   }
 
   if (typeof transaction.details === "string") {
     try {
       const parsedDetails = JSON.parse(transaction.details)
-      return {
-        presetRoutineId: parsedDetails.presetRoutineId || "",
-        presetRoutineName: parsedDetails.presetRoutineName || "",
+      if (transaction.type === TransactionType.ROUTINE_CONVERTED_TO_PRESET) {
+        return {
+          presetId: parsedDetails.presetRoutineId || "",
+          presetName: parsedDetails.presetRoutineName || "",
+        }
+      } else {
+        return {
+          presetId: parsedDetails.presetNutritionalPlanId || "",
+          presetName: parsedDetails.presetNutritionalPlanName || "",
+        }
       }
     } catch (e) {
       console.error("Error parsing transaction details:", e)
@@ -160,9 +186,16 @@ export function getConversionInfo(transaction: Transaction) {
     }
   }
 
-  return {
-    presetRoutineId: transaction.details.presetRoutineId || "",
-    presetRoutineName: transaction.details.presetRoutineName || "",
+  if (transaction.type === TransactionType.ROUTINE_CONVERTED_TO_PRESET) {
+    return {
+      presetId: transaction.details.presetRoutineId || "",
+      presetName: transaction.details.presetRoutineName || "",
+    }
+  } else {
+    return {
+      presetId: transaction.details.presetNutritionalPlanId || "",
+      presetName: transaction.details.presetNutritionalPlanName || "",
+    }
   }
 }
 

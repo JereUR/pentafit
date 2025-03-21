@@ -1,4 +1,4 @@
-import { Calendar, ClipboardList, Copy, Users, SquareActivity, UserCheck, UserX } from "lucide-react"
+import { Calendar, ClipboardList, Copy, Users, SquareActivity, UserCheck, UserX, Utensils } from "lucide-react"
 
 import { PlanIcon } from "@/config/icons"
 import { TransactionType } from "@/types/transactions"
@@ -15,19 +15,22 @@ export function TransactionIcon({ type, className = "h-4 w-4" }: TransactionIcon
   if (type.includes("STAFF") || type.includes("CLIENT")) {
     return <Users className={`${className} text-cyan-400`} />
   }
-  if (type.includes("PLAN")) {
+  if (type.startsWith("PLAN")) {
     return <PlanIcon className={`${className} text-amber-400`} />
   }
   if (type.includes("DIARY")) {
     return <Calendar className={`${className} text-emerald-400`} />
   }
-  if (type === TransactionType.ASSIGN_ROUTINE_USER) {
+  if (type === TransactionType.ASSIGN_ROUTINE_USER || type === TransactionType.ASSIGN_NUTRITIONAL_PLAN_USER) {
     return <UserCheck className={`${className} text-blue-400`} />
   }
-  if (type === TransactionType.UNASSIGN_ROUTINE_USER) {
+  if (type === TransactionType.UNASSIGN_ROUTINE_USER || type === TransactionType.UNASSIGN_NUTRITIONAL_PLAN_USER) {
     return <UserX className={`${className} text-red-400`} />
   }
-  if (type === TransactionType.ROUTINE_CONVERTED_TO_PRESET) {
+  if (
+    type === TransactionType.ROUTINE_CONVERTED_TO_PRESET ||
+    type === TransactionType.NUTRITIONAL_PLAN_CONVERTED_TO_PRESET
+  ) {
     return <Copy className={`${className} text-violet-400`} />
   }
   if (type.includes("ROUTINE") && !type.includes("PRESET")) {
@@ -35,6 +38,12 @@ export function TransactionIcon({ type, className = "h-4 w-4" }: TransactionIcon
   }
   if (type.includes("PRESET_ROUTINE")) {
     return <SquareActivity className={`${className} text-indigo-500`} />
+  }
+  if (type.includes("NUTRITIONAL_PLAN") && !type.includes("PRESET")) {
+    return <Utensils className={`${className} text-orange-500`} />
+  }
+  if (type.includes("PRESET_NUTRITIONAL_PLAN")) {
+    return <Utensils className={`${className} text-pink-500`} />
   }
   return null
 }
