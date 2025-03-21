@@ -20,10 +20,9 @@ interface PresetRoutineSelectorProps {
 export function PresetRoutineSelector({ onSelectPreset }: PresetRoutineSelectorProps) {
   const { workingFacility } = useWorkingFacility()
   const [open, setOpen] = useState(false)
-  const [search, setSearch] = useState("")
   const [selectedRoutine, setSelectedRoutine] = useState<RoutineData | null>(null)
 
-  const { data, isLoading } = useAllPresetRoutines(workingFacility?.id, 1, search)
+  const { data, isLoading } = useAllPresetRoutines(workingFacility?.id)
 
   const presetRoutines = data?.allPresetRoutines || []
 
@@ -85,7 +84,7 @@ export function PresetRoutineSelector({ onSelectPreset }: PresetRoutineSelectorP
         </PopoverTrigger>
         <PopoverContent className="p-0 w-[300px]">
           <Command>
-            <CommandInput placeholder="Buscar rutina..." onValueChange={(value) => setSearch(value)} />
+            <CommandInput placeholder="Buscar rutina..." />
             {isLoading ? (
               <div className="p-2">
                 <Skeleton className="h-8 w-full mb-2" />
