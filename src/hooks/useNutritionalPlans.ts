@@ -27,5 +27,6 @@ export const useNutritionalPlans = (
     queryFn: () =>
       fetchNutritionalPlans(facilityId as string, page, PAGE_SIZE, search),
     enabled: !!facilityId,
+    initialData: { nutritionalPlans: [], total: 0 },
   })
 }
