@@ -64,3 +64,21 @@ export interface UserClient {
   email?: string | null
   avatarUrl: string | null
 }
+
+export interface UserAssigned {
+  firstName: string
+  lastName: string
+  email?: string | null
+}
+
+export default function formatUsersAssignedToString(
+  users: UserAssigned[],
+): string {
+  if (!users || !users.length) return "Sin usuarios asignados"
+
+  return users
+    .map((user, index) => {
+      return `${index + 1}- ${user.firstName} ${user.lastName} ${user.email && `(${user.email})`}`
+    })
+    .join("\n\n")
+}
