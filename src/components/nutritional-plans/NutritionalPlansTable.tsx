@@ -103,7 +103,7 @@ export default function NutritionalPlansTable({
                 colSpan={visibleColumns.size + 2}
                 className="text-center text-foreground/70 italic font-medium py-4"
               >
-                No hay planes nutricionales para mostrar.
+                {isPreset ? "No hay planes nutricionales preestablecidos para mostrar." : "No hay planes nutricionales para mostrar."}
               </td>
             </TableRow>
           )}

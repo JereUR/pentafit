@@ -103,7 +103,7 @@ export default function RoutinesTable({
                 colSpan={visibleColumns.size + 2}
                 className="text-center text-foreground/70 italic font-medium py-4"
               >
-                No hay rutinas para mostrar.
+                {isPreset ? "No hay rutinas preestablecidas para mostrar." : "No hay rutinas para mostrar."}
               </td>
             </TableRow>
           )}
