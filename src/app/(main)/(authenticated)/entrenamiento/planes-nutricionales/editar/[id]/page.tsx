@@ -9,8 +9,8 @@ import { getNutritionalPlanById } from "../../actions"
 import NutritionalPlanForm from "@/components/nutritional-plans/NutritionalPlanForm"
 
 export const metadata: Metadata = {
-  title: "Editar rutina",
-  description: "Edita una rutina de tu establecimiento"
+  title: "Editar plan nutricional",
+  description: "Edita un plan nutricional de tu establecimiento"
 }
 
 export default async function EditNutritionalPlanPage({ params }: { params: Promise<{ id: string }> }) {
