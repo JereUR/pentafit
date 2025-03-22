@@ -1,14 +1,14 @@
 import { type NextRequest, NextResponse } from "next/server"
 
 import formatExercisesToString, {
-  type RoutineDataExport,
+  PresetRoutineDataExport,
 } from "@/types/routine"
 import prisma from "@/lib/prisma"
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ facilityId: string }> },
-): Promise<NextResponse<RoutineDataExport[] | { error: string }>> {
+): Promise<NextResponse<PresetRoutineDataExport[] | { error: string }>> {
   try {
     const id = (await params).facilityId
 
@@ -29,7 +29,7 @@ export async function GET(
       return NextResponse.json([])
     }
 
-    const formattedRoutines: RoutineDataExport[] = allRoutines.map(
+    const formattedRoutines: PresetRoutineDataExport[] = allRoutines.map(
       (routine) => ({
         name: routine.name,
         description: routine.description || "-",
