@@ -4,6 +4,7 @@ import formatExercisesToString, {
   type RoutineDataExport,
 } from "@/types/routine"
 import prisma from "@/lib/prisma"
+import formatUsersAssignedToString from "@/types/user"
 
 export async function GET(
   request: NextRequest,
@@ -22,6 +23,20 @@ export async function GET(
             exercises: true,
           },
         },
+        userRoutines: {
+          where: {
+            isActive: true,
+          },
+          include: {
+            user: {
+              select: {
+                firstName: true,
+                lastName: true,
+                email: true,
+              },
+            },
+          },
+        },
       },
     })
 
@@ -29,13 +44,22 @@ export async function GET(
       return NextResponse.json([])
     }
 
-    const formattedRoutines: RoutineDataExport[] = allRoutines.map(
-      (routine) => ({
+    const formattedRoutines = allRoutines.map((routine) => {
+      const userAssignedString = formatUsersAssignedToString(
+        routine.userRoutines.map((userRoutine) => ({
+          firstName: userRoutine.user.firstName,
+          lastName: userRoutine.user.lastName,
+          email: userRoutine.user.email,
+        })),
+      )
+
+      return {
         name: routine.name,
         description: routine.description || "-",
         exercises: formatExercisesToString(routine.dailyExercises),
-      }),
-    )
+        assignedUsersCount: userAssignedString,
+      }
+    })
 
     return NextResponse.json(formattedRoutines)
   } catch (error) {
