@@ -12,6 +12,15 @@ export const columnsRoutines: {
   { key: "assignedUsersCount", label: "Usuarios Asignados" },
 ]
 
+export const columnsPresetRoutines: {
+  key: keyof RoutineData | keyof PresetRoutineDataExport
+  label: string
+}[] = [
+  { key: "name", label: "Nombre" },
+  { key: "description", label: "Descripción" },
+  { key: "exercises", label: "Ejercicios asociados" },
+]
+
 export interface ExerciseData {
   id: string
   name: string
@@ -51,10 +60,14 @@ export interface RoutineData {
   updatedAt: Date
 }
 
-export interface RoutineDataExport {
+export interface PresetRoutineDataExport {
   name: string
   description: string
   exercises: string
+}
+
+export interface RoutineDataExport extends PresetRoutineDataExport {
+  assignedUsersCount: string
 }
 
 export default function formatExercisesToString(

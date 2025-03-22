@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { useDebounce } from "use-debounce"
 
 import { useWorkingFacility } from "@/contexts/WorkingFacilityContext"
-import { type RoutineData, columnsRoutines } from "@/types/routine"
+import { type RoutineData, columnsPresetRoutines } from "@/types/routine"
 import { Pagination } from "@/components/Pagination"
 import { useToast } from "@/hooks/use-toast"
 import { PAGE_SIZE } from "@/lib/prisma"
@@ -22,7 +22,7 @@ export default function PresetRoutinesDashboard({ userId }: { userId: string }) 
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState("")
   const [debouncedSearch] = useDebounce(search, 400)
-  const [visibleColumns, setVisibleColumns] = useState<Set<keyof RoutineData>>(new Set(columnsRoutines.map((col) => col.key)))
+  const [visibleColumns, setVisibleColumns] = useState<Set<keyof RoutineData>>(new Set(columnsPresetRoutines.map((col) => col.key)))
   const [selectedRows, setSelectedRows] = useState<string[]>([])
   const [selectedCount, setSelectedCount] = useState(0)
 
@@ -119,7 +119,7 @@ export default function PresetRoutinesDashboard({ userId }: { userId: string }) 
         onAdd={() => router.push("/entrenamiento/rutinas-preestablecidas/agregar")}
         onDeleteSelected={handleDeleteSelected}
         onReplicateToFacility={handleReplicateToFacility}
-        columns={columnsRoutines}
+        columns={columnsPresetRoutines}
         visibleColumns={visibleColumns}
         onToggleColumn={(column) => toggleColumn(column as keyof RoutineData)}
         isDeleting={isDeleting}
