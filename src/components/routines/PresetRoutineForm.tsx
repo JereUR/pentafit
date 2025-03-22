@@ -18,6 +18,7 @@ import NoWorkingFacilityMessage from "../NoWorkingFacilityMessage"
 import { GeneralInfoTabRoutineForm } from "./GeneralInfoTabRoutineForm"
 import { ExercisesTabRoutineForm } from "./ExercisesTabRoutineForm"
 import { useCreatePresetRoutineMutation, useUpdatePresetRoutineMutation } from "@/app/(main)/(authenticated)/entrenamiento/rutinas-preestablecidas/mutations"
+import { PresetRoutineSelector } from "./PresetRoutineSelector"
 
 interface RoutineFormProps {
   userId: string
@@ -78,6 +79,13 @@ function PresetRoutineForm({ userId, presetRoutineData }: RoutineFormProps) {
   useEffect(() => {
     form.setValue("dailyExercises", dailyExercises)
   }, [dailyExercises, form])
+
+  const handleSelectPreset = (presetRoutine: RoutineValues) => {
+    form.setValue("name", presetRoutine.name)
+    form.setValue("description", presetRoutine.description || "")
+
+    setDailyExercises(presetRoutine.dailyExercises)
+  }
 
   const onSubmit = async (values: RoutineValues) => {
     setError(undefined)
@@ -155,6 +163,7 @@ function PresetRoutineForm({ userId, presetRoutineData }: RoutineFormProps) {
           <CardDescription>{pageDescription}</CardDescription>
         </CardHeader>
         <CardContent>
+          <PresetRoutineSelector onSelectPreset={handleSelectPreset} />
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               {(mutationError || error) && (
