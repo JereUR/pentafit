@@ -12,6 +12,15 @@ export const columnsNutritionalPlans: {
   { key: "assignedUsersCount", label: "Usuarios Asignados" },
 ]
 
+export const columnsPresetNutritionalPlans: {
+  key: keyof NutritionalPlanData | keyof PresetNutritionalPlanDataExport
+  label: string
+}[] = [
+  { key: "name", label: "Nombre" },
+  { key: "description", label: "Descripción" },
+  { key: "meals", label: "Comidas asociadas" },
+]
+
 export const mealTypes = [
   { value: "BREAKFAST", label: "Desayuno" },
   { value: "PRE_WORKOUT", label: "Pre-Entrenamiento" },
@@ -70,10 +79,15 @@ export interface NutritionalPlanData {
   updatedAt: Date
 }
 
-export interface NutritionalPlanDataExport {
+export interface PresetNutritionalPlanDataExport {
   name: string
   description: string
   meals: string
+}
+
+export interface NutritionalPlanDataExport
+  extends PresetNutritionalPlanDataExport {
+  assignedUsersCount: string
 }
 
 export default function formatMealsToString(
