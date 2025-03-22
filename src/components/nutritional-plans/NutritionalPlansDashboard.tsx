@@ -39,9 +39,9 @@ export default function NutritionalPlansDashboard({ userId }: { userId: string }
     setPage(1)
   }, [debouncedSearch])
 
-  if (!workingFacility) return <NoWorkingFacilityMessage entityName="una rutina" />
+  if (!workingFacility) return <NoWorkingFacilityMessage entityName="un plan nutricional" />
   if (isLoading) return <TableSkeleton />
-  if (isError) return <p className="text-center p-4 text-red-500">Error al cargar rutinas: {error?.message}</p>
+  if (isError) return <p className="text-center p-4 text-red-500">Error al cargar planes nutricionales: {error?.message}</p>
 
   const toggleColumn = (column: keyof NutritionalPlanData) => {
     setVisibleColumns((prev) => {
@@ -83,7 +83,7 @@ export default function NutritionalPlansDashboard({ userId }: { userId: string }
         onError: (error) => {
           toast({
             variant: "destructive",
-            title: "Error al eliminar la rutina",
+            title: "Error al eliminar el plan nutricional",
             description: error.message,
           })
         },
@@ -101,7 +101,7 @@ export default function NutritionalPlansDashboard({ userId }: { userId: string }
         onError: (error) => {
           toast({
             variant: "destructive",
-            title: "Error al replicar las rutinas",
+            title: "Error al replicar los planes nutricionales",
             description: error.message,
           })
         },
@@ -128,7 +128,7 @@ export default function NutritionalPlansDashboard({ userId }: { userId: string }
         setSearch={setSearch}
         workingFacilityId={workingFacility?.id || ""}
         userId={userId}
-        addButtonLabel="Agregar Plan nutricional"
+        addButtonLabel="Agregar plan nutricional"
         searchPlaceholder="Buscar planes nutricionales..."
         exportApiRoute={`/api/nutritional-plans/${workingFacility?.id}/all`}
         exportFileName={`Planes_Nutricionales_${workingFacility?.name}`}
