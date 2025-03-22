@@ -7,7 +7,7 @@ const fetchAllPresetNutritionalPlans = async (
   facilityId: string,
 ): Promise<NutritionalPlanData[]> => {
   return kyInstance
-    .get(`/api/users/preset-nutritional-plans/${facilityId}/all`)
+    .get(`/api/preset-nutritional-plans/${facilityId}/all`)
     .json<NutritionalPlanData[]>()
 }
 
