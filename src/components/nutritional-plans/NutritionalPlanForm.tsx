@@ -11,7 +11,7 @@ import LoadingButton from "@/components/LoadingButton"
 import ErrorText from "@/components/ErrorText"
 import { useWorkingFacility } from "@/contexts/WorkingFacilityContext"
 import { withClientSideRendering } from "@/hooks/withClientSideRendering"
-import { nutritionalPlanSchema, type NutritionalPlanValues, type DailyMealsValues } from "@/lib/validation"
+import { nutritionalPlanSchema, nutritionalPlanSubmitSchema, type NutritionalPlanValues, type DailyMealsValues } from "@/lib/validation"
 import WorkingFacility from "../WorkingFacility"
 import NoWorkingFacilityMessage from "../NoWorkingFacilityMessage"
 import { GeneralInfoTabNutritionalPlanForm } from "./GeneralInfoTabNutritionalPlanForm"
@@ -96,13 +96,6 @@ function NutritionalPlanForm({ userId, nutritionalPlanData }: NutritionalPlanFor
   const onSubmit = async (values: NutritionalPlanValues) => {
     setError(undefined)
 
-    const totalMeals = Object.values(dailyMeals).reduce((total, meals) => total + meals.length, 0)
-
-    if (totalMeals === 0) {
-      setError("Debe agregar al menos una comida al plan nutricional")
-      return
-    }
-
     const sanitizedValues: NutritionalPlanValues = {
       name: values.name,
       description: values.description || "",
@@ -112,6 +105,24 @@ function NutritionalPlanForm({ userId, nutritionalPlanData }: NutritionalPlanFor
 
     if (!sanitizedValues.name || !sanitizedValues.facilityId) {
       setError("Faltan campos requeridos (nombre o instalación)")
+      return
+    }
+
+    try {
+      nutritionalPlanSubmitSchema.parse(sanitizedValues)
+    } catch (err) {
+      if (err && typeof err === "object" && "errors" in err) {
+        const zodError = err as { errors: Array<{ path: string[]; message: string }> }
+
+        if (zodError.errors?.some((e) => e.path.includes("dailyMeals"))) {
+          setError("Cada comida debe tener al menos un alimento")
+          return
+        }
+
+        setError("Error de validación: " + zodError.errors?.[0]?.message || "Verifique los datos ingresados")
+      } else {
+        setError("Error de validación: Verifique los datos ingresados")
+      }
       return
     }
 

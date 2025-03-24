@@ -12,15 +12,25 @@ import { mealTypes } from "@/types/nutritionalPlans"
 import { mealSchema, type MealValues } from "@/lib/validation"
 import type { MealType } from "@prisma/client"
 import { formatZodErrors } from "@/lib/utils"
+import type { DailyMealsValues } from "@/lib/validation"
 
 interface MealFormProps {
   onSubmit: (meal: MealValues) => void
   onCancel: () => void
   initialMeal?: MealValues
   isEditing?: boolean
+  dailyMeals: DailyMealsValues
+  currentDay: keyof DailyMealsValues
 }
 
-export function MealForm({ onSubmit, onCancel, initialMeal, isEditing = false }: MealFormProps) {
+export function MealForm({
+  onSubmit,
+  onCancel,
+  initialMeal,
+  isEditing = false,
+  dailyMeals,
+  currentDay,
+}: MealFormProps) {
   const [mealType, setMealType] = useState<MealType | "">("")
   const [mealTime, setMealTime] = useState<string>("")
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -29,6 +39,9 @@ export function MealForm({ onSubmit, onCancel, initialMeal, isEditing = false }:
     if (initialMeal) {
       setMealType(initialMeal.mealType)
       setMealTime(initialMeal.time || "")
+    } else {
+      setMealType("")
+      setMealTime("")
     }
   }, [initialMeal])
 
@@ -64,6 +77,24 @@ export function MealForm({ onSubmit, onCancel, initialMeal, isEditing = false }:
     setErrors({})
   }
 
+  // Filter available meal types to prevent duplicates
+  const getAvailableMealTypes = () => {
+    return mealTypes.map((type) => {
+      // If we're editing, the current meal type should be available
+      const isDisabled =
+        initialMeal?.mealType === type.value
+          ? false
+          : dailyMeals[currentDay]?.some((meal) => meal.mealType === type.value)
+
+      return {
+        ...type,
+        disabled: isDisabled,
+      }
+    })
+  }
+
+  const availableMealTypes = getAvailableMealTypes()
+
   return (
     <DialogContent>
       <DialogHeader>
@@ -77,9 +108,9 @@ export function MealForm({ onSubmit, onCancel, initialMeal, isEditing = false }:
               <SelectValue placeholder="Seleccione un tipo" />
             </SelectTrigger>
             <SelectContent>
-              {mealTypes.map((type) => (
-                <SelectItem key={type.value} value={type.value}>
-                  {type.label}
+              {availableMealTypes.map((type) => (
+                <SelectItem key={type.value} value={type.value} disabled={type.disabled}>
+                  {type.label} {type.disabled && "(Ya agregado)"}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -106,7 +137,9 @@ export function MealForm({ onSubmit, onCancel, initialMeal, isEditing = false }:
             Cancelar
           </Button>
         </DialogClose>
-        <Button onClick={handleSubmit}>{isEditing ? "Actualizar" : "Agregar"}</Button>
+        <Button type="button" onClick={handleSubmit}>
+          {isEditing ? "Actualizar" : "Agregar"}
+        </Button>
       </DialogFooter>
     </DialogContent>
   )

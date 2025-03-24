@@ -11,13 +11,13 @@ import LoadingButton from "@/components/LoadingButton"
 import ErrorText from "@/components/ErrorText"
 import { useWorkingFacility } from "@/contexts/WorkingFacilityContext"
 import { withClientSideRendering } from "@/hooks/withClientSideRendering"
-import { nutritionalPlanSchema, type NutritionalPlanValues, type DailyMealsValues } from "@/lib/validation"
+import { nutritionalPlanSchema, type NutritionalPlanValues, type DailyMealsValues, nutritionalPlanSubmitSchema } from "@/lib/validation"
 import WorkingFacility from "../WorkingFacility"
 import NoWorkingFacilityMessage from "../NoWorkingFacilityMessage"
 import { GeneralInfoTabNutritionalPlanForm } from "./GeneralInfoTabNutritionalPlanForm"
 import { MealsTabNutritionalPlanForm } from "./meals-tab/MealsTabNutritionalPlanForm"
 import { PresetNutritionalPlanSelector } from "./PresetNutritionalPlanSelector"
-import { useCreateNutritionalPlanMutation, useUpdateNutritionalPlanMutation } from "@/app/(main)/(authenticated)/entrenamiento/planes-nutricionales/mutations"
+import { useCreatePresetNutritionalPlanMutation, useUpdatePresetNutritionalPlanMutation } from "@/app/(main)/(authenticated)/entrenamiento/planes-nutricionales-preestablecidos/mutations"
 
 interface PresetNutritionalPlanFormProps {
   userId: string
@@ -41,15 +41,15 @@ function PresetNutritionalPlanForm({ userId, presetNutritionalPlanData }: Preset
   const isEditing = !!presetNutritionalPlanData
 
   const {
-    mutate: createNutritionalPlan,
+    mutate: createPresetNutritionalPlan,
     isPending: isCreating,
     error: createError,
-  } = useCreateNutritionalPlanMutation()
+  } = useCreatePresetNutritionalPlanMutation()
   const {
-    mutate: updateNutritionalPlan,
+    mutate: updatePresetNutritionalPlan,
     isPending: isUpdating,
     error: updateError,
-  } = useUpdateNutritionalPlanMutation()
+  } = useUpdatePresetNutritionalPlanMutation()
 
   const form = useForm<NutritionalPlanValues>({
     resolver: zodResolver(nutritionalPlanSchema),
@@ -96,13 +96,6 @@ function PresetNutritionalPlanForm({ userId, presetNutritionalPlanData }: Preset
   const onSubmit = async (values: NutritionalPlanValues) => {
     setError(undefined)
 
-    const totalMeals = Object.values(dailyMeals).reduce((total, meals) => total + meals.length, 0)
-
-    if (totalMeals === 0) {
-      setError("Debe agregar al menos una comida al plan nutricional")
-      return
-    }
-
     const sanitizedValues: NutritionalPlanValues = {
       name: values.name,
       description: values.description || "",
@@ -115,8 +108,26 @@ function PresetNutritionalPlanForm({ userId, presetNutritionalPlanData }: Preset
       return
     }
 
+    try {
+      nutritionalPlanSubmitSchema.parse(sanitizedValues)
+    } catch (err) {
+      if (err && typeof err === "object" && "errors" in err) {
+        const zodError = err as { errors: Array<{ path: string[]; message: string }> }
+
+        if (zodError.errors?.some((e) => e.path.includes("dailyMeals"))) {
+          setError("Cada comida debe tener al menos un alimento")
+          return
+        }
+
+        setError("Error de validación: " + zodError.errors?.[0]?.message || "Verifique los datos ingresados")
+      } else {
+        setError("Error de validación: Verifique los datos ingresados")
+      }
+      return
+    }
+
     if (isEditing && presetNutritionalPlanData) {
-      updateNutritionalPlan(
+      updatePresetNutritionalPlan(
         {
           id: presetNutritionalPlanData.id,
           values: sanitizedValues,
@@ -132,11 +143,11 @@ function PresetNutritionalPlanForm({ userId, presetNutritionalPlanData }: Preset
         },
       )
     } else {
-      createNutritionalPlan(sanitizedValues, {
+      createPresetNutritionalPlan(sanitizedValues, {
         onSuccess: () => {
           form.reset()
         },
-        onError: (error: unknown) => {
+        onError: (error) => {
           console.error("Error al crear el plan nutricional:", error)
           setError(error instanceof Error ? error.message : "Error desconocido al crear el plan nutricional")
         },
@@ -146,16 +157,16 @@ function PresetNutritionalPlanForm({ userId, presetNutritionalPlanData }: Preset
 
   const mutationError = isEditing ? updateError : createError
   const isPending = isEditing ? isUpdating : isCreating
-  const pageTitle = isEditing ? "Editar plan nutricional" : "Agregar plan nutricional"
+  const pageTitle = isEditing ? "Editar plan nutricional preestablecido" : "Agregar plan nutricional preestablecido"
   const pageDescription = isEditing
-    ? "Modifica los datos de tu plan nutricional"
-    : "Ingresa los datos de tu plan nutricional para comenzar"
+    ? "Modifica los datos de tu plan nutricional preestablecido"
+    : "Ingresa los datos de tu plan nutricional preestablecido para comenzar"
 
   if (!workingFacility) {
     return (
       <div className="flex flex-col items-center gap-5 p-5 md:p-10 rounded-md border">
         <WorkingFacility userId={userId} />
-        <NoWorkingFacilityMessage entityName="un plan nutricional" />
+        <NoWorkingFacilityMessage entityName="un plan nutricional preestablecido" />
       </div>
     )
   }
@@ -202,7 +213,7 @@ function PresetNutritionalPlanForm({ userId, presetNutritionalPlanData }: Preset
                 </TabsContent>
               </Tabs>
               <LoadingButton loading={isPending} type="submit" className="w-full">
-                {isEditing ? "Actualizar plan nutricional" : "Crear plan nutricional"}
+                {isEditing ? "Actualizar plan nutricional preestablecido" : "Crear plan nutricional preestablecido"}
               </LoadingButton>
             </form>
           </Form>

@@ -1,5 +1,7 @@
 "use client"
 
+import type React from "react"
+
 import { useState } from "react"
 import { Plus } from "lucide-react"
 
@@ -131,6 +133,8 @@ export function MealsTabNutritionalPlanForm({ dailyMeals, setDailyMeals }: Meals
                       onCancel={() => setIsAddMealOpen(false)}
                       initialMeal={editingMealIndex !== null ? dailyMeals[currentDay][editingMealIndex] : undefined}
                       isEditing={editingMealIndex !== null}
+                      dailyMeals={dailyMeals}
+                      currentDay={currentDay}
                     />
                   </Dialog>
                 </div>
