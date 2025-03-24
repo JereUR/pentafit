@@ -23,14 +23,14 @@ export function useCreatePresetNutritionalPlanMutation() {
       if (!result.success || result.error) {
         throw new Error(
           result.error ||
-            "Error desconocido al crear el plan nutricional predefinido",
+            "Error desconocido al crear el plan nutricional preestablecido",
         )
       }
       return result.presetNutritionalPlan
     },
     onSuccess: (newPresetNutritionalPlan) => {
       toast({
-        title: "Plan nutricional predefinido creado correctamente",
+        title: "Plan nutricional preestablecido creado correctamente",
       })
       queryClient.invalidateQueries({
         queryKey: [
@@ -44,12 +44,12 @@ export function useCreatePresetNutritionalPlanMutation() {
       queryClient.invalidateQueries({
         queryKey: ["metrics", newPresetNutritionalPlan?.facilityId],
       })
-      router.push("/entrenamiento/planes-nutricionales-predefinidos")
+      router.push("/entrenamiento/planes-nutricionales-preestablecidos")
     },
     onError: (error: Error) => {
       toast({
         variant: "destructive",
-        title: "Error al crear el plan nutricional predefinido",
+        title: "Error al crear el plan nutricional preestablecido",
         description: error.message,
       })
     },
@@ -73,14 +73,14 @@ export function useUpdatePresetNutritionalPlanMutation() {
       if (!result.success || result.error) {
         throw new Error(
           result.error ||
-            "Error desconocido al editar el plan nutricional predefinido",
+            "Error desconocido al editar el plan nutricional preestablecido",
         )
       }
       return result.presetNutritionalPlan
     },
     onSuccess: (updatedPresetNutritionalPlan) => {
       toast({
-        title: "Plan nutricional predefinido actualizado correctamente",
+        title: "Plan nutricional preestablecido actualizado correctamente",
       })
       queryClient.invalidateQueries({
         queryKey: [
@@ -97,12 +97,12 @@ export function useUpdatePresetNutritionalPlanMutation() {
       queryClient.invalidateQueries({
         queryKey: ["metrics", updatedPresetNutritionalPlan?.facilityId],
       })
-      router.push("/entrenamiento/planes-nutricionales-predefinidos")
+      router.push("/entrenamiento/planes-nutricionales-preestablecidos")
     },
     onError: (error: Error) => {
       toast({
         variant: "destructive",
-        title: "Error al actualizar el plan nutricional predefinido",
+        title: "Error al actualizar el plan nutricional preestablecido",
         description: error.message,
       })
     },
@@ -141,10 +141,10 @@ export function useDeletePresetNutritionalPlanMutation() {
 
       const title =
         deletedCount === undefined
-          ? "Error al eliminar planes nutricionales predefinidos"
+          ? "Error al eliminar planes nutricionales preestablecidos"
           : deletedCount === 1
-            ? "Plan nutricional predefinido eliminado correctamente"
-            : "Planes nutricionales predefinidos eliminados correctamente"
+            ? "Plan nutricional preestablecido eliminado correctamente"
+            : "Planes nutricionales preestablecidos eliminados correctamente"
 
       toast({
         title,
@@ -163,7 +163,7 @@ export function useDeletePresetNutritionalPlanMutation() {
     onError: (error: Error) => {
       toast({
         variant: "destructive",
-        title: "Error al eliminar el plan nutricional predefinido",
+        title: "Error al eliminar el plan nutricional preestablecido",
         description: error.message,
       })
     },
@@ -196,7 +196,7 @@ export function useReplicatePresetNutritionalPlanMutation() {
     },
     onSuccess: (result) => {
       toast({
-        title: "Planes nutricionales predefinidos replicados correctamente",
+        title: "Planes nutricionales preestablecidos replicados correctamente",
         description: result.message,
       })
 
@@ -219,7 +219,7 @@ export function useReplicatePresetNutritionalPlanMutation() {
     onError: (error: Error) => {
       toast({
         variant: "destructive",
-        title: "Error al replicar los planes nutricionales predefinidos",
+        title: "Error al replicar los planes nutricionales preestablecidos",
         description: error.message,
       })
     },
