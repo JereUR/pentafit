@@ -2,7 +2,7 @@ import { Copy } from "lucide-react"
 
 import { useToast } from "@/hooks/use-toast"
 import LoadingButton from "../LoadingButton"
-import { useConvertToPresetRoutineMutation } from "@/app/(main)/(authenticated)/entrenamiento/rutinas/mutations"
+import { useConvertToPresetRoutineMutation } from "@/app/(main)/(authenticated)/(admin)/entrenamiento/rutinas/mutations"
 
 interface ConvertToPresetButtonProps {
   routineId: string

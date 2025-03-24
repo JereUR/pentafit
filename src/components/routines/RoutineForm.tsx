@@ -20,7 +20,7 @@ import { ExercisesTabRoutineForm } from "./ExercisesTabRoutineForm"
 import {
   useCreateRoutineMutation,
   useUpdateRoutineMutation,
-} from "@/app/(main)/(authenticated)/entrenamiento/rutinas/mutations"
+} from "@/app/(main)/(authenticated)/(admin)/entrenamiento/rutinas/mutations"
 import { PresetRoutineSelector } from "./PresetRoutineSelector"
 
 interface RoutineFormProps {

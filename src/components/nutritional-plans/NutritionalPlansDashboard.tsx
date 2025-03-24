@@ -13,7 +13,7 @@ import { TableSkeleton } from "../skeletons/TableSkeleton"
 import NoWorkingFacilityMessage from "../NoWorkingFacilityMessage"
 import GenericDataHeader from "../GenericDataHeader"
 import { columnsNutritionalPlans, NutritionalPlanData } from "@/types/nutritionalPlans"
-import { useDeleteNutritionalPlanMutation, useReplicateNutritionalPlanMutation } from "@/app/(main)/(authenticated)/entrenamiento/planes-nutricionales/mutations"
+import { useDeleteNutritionalPlanMutation, useReplicateNutritionalPlanMutation } from "@/app/(main)/(authenticated)/(admin)/entrenamiento/planes-nutricionales/mutations"
 import NutritionalPlansTable from "./NutritionalPlansTable"
 
 export default function NutritionalPlansDashboard({ userId }: { userId: string }) {

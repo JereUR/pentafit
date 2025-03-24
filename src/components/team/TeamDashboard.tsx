@@ -12,7 +12,7 @@ import { TableSkeleton } from "../skeletons/TableSkeleton"
 import { PAGE_SIZE } from "@/lib/prisma"
 import { Pagination } from "../Pagination"
 import TeamTable from "./TeamTable"
-import { useDeleteMemberMutation } from "@/app/(main)/(authenticated)/equipo/mutations"
+import { useDeleteMemberMutation } from "@/app/(main)/(authenticated)/(admin)/equipo/mutations"
 import NoWorkingFacilityMessage from "../NoWorkingFacilityMessage"
 import GenericDataHeader from "../GenericDataHeader"
 

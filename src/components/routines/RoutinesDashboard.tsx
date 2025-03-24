@@ -13,7 +13,7 @@ import { PAGE_SIZE } from "@/lib/prisma"
 import { TableSkeleton } from "../skeletons/TableSkeleton"
 import NoWorkingFacilityMessage from "../NoWorkingFacilityMessage"
 import GenericDataHeader from "../GenericDataHeader"
-import { useDeleteRoutineMutation, useReplicateRoutineMutation } from "@/app/(main)/(authenticated)/entrenamiento/rutinas/mutations"
+import { useDeleteRoutineMutation, useReplicateRoutineMutation } from "@/app/(main)/(authenticated)/(admin)/entrenamiento/rutinas/mutations"
 import RoutinesTable from "./RoutinesTable"
 
 export default function RoutinesDashboard({ userId }: { userId: string }) {

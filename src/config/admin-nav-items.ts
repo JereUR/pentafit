@@ -14,7 +14,7 @@ import type { NavItem } from "@/types/sidebar"
 import { Role } from "@prisma/client"
 import { PlanIcon } from "./icons"
 
-export const navItems: NavItem[] = [
+export const adminNavItems: NavItem[] = [
   { title: "Inicio", icon: Home, href: "/panel-de-control" },
   {
     title: "Establecimientos",

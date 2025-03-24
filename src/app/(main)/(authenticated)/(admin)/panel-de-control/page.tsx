@@ -1,18 +1,17 @@
-import type { Metadata } from "next"
-
-import Dashboard from "@/components/dashboard/Dashboard"
-import { validateRequest } from "@/auth"
+import { validateRequest, validateRole } from "@/auth"
 import { redirect } from "next/navigation"
-
-export const metadata: Metadata = {
-  title: "Panel de control",
-}
+import Dashboard from "@/components/dashboard/Dashboard"
 
 export default async function DashboardPage() {
   const { user } = await validateRequest()
+  const roleData = await validateRole()
 
   if (!user) {
     redirect("/iniciar-sesion")
+  }
+
+  if (roleData?.role === "CLIENT") {
+    redirect("/inicio")
   }
 
   return (

@@ -15,7 +15,7 @@ import { useAssignedUsers } from "@/hooks/useAssignedUsers"
 import {
   useAssignRoutineToUsersMutation,
   useUnassignRoutineFromUsersMutation
-} from "@/app/(main)/(authenticated)/entrenamiento/rutinas/mutations"
+} from "@/app/(main)/(authenticated)/(admin)/entrenamiento/rutinas/mutations"
 import { SelectUsers } from "../ui/select-users"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 

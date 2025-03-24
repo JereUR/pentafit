@@ -13,7 +13,7 @@ import { PAGE_SIZE } from "@/lib/prisma"
 import { TableSkeleton } from "../skeletons/TableSkeleton"
 import NoWorkingFacilityMessage from "../NoWorkingFacilityMessage"
 import GenericDataHeader from "../GenericDataHeader"
-import { useDeleteDiaryMutation, useReplicateDiaryMutation } from "@/app/(main)/(authenticated)/agenda/mutations"
+import { useDeleteDiaryMutation, useReplicateDiaryMutation } from "@/app/(main)/(authenticated)/(admin)/agenda/mutations"
 import WeeklyScheduleDashboard from "./WeeklyScheduleDashboard"
 import DiariesTable from "./DiariesTable"
 

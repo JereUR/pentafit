@@ -13,7 +13,7 @@ import LoadingButton from "../LoadingButton"
 import GeneralInfoTabMemberForm from "./GeneralInfoTabMemberForm"
 import { DetailsTabMemberForm } from "./DetailsTabMemberForm"
 import { memberSchema, updateMemberSchema, type UpdateMemberValues, type MemberValues } from "@/lib/validation"
-import { useCreateMemberMutation, useUpdateMemberMutation } from "@/app/(main)/(authenticated)/equipo/mutations"
+import { useCreateMemberMutation, useUpdateMemberMutation } from "@/app/(main)/(authenticated)/(admin)/equipo/mutations"
 import { withClientSideRendering } from "@/hooks/withClientSideRendering"
 
 interface MemberFormProps {

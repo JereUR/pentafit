@@ -17,7 +17,7 @@ import WorkingFacility from "../WorkingFacility"
 import NoWorkingFacilityMessage from "../NoWorkingFacilityMessage"
 import { GeneralInfoTabRoutineForm } from "./GeneralInfoTabRoutineForm"
 import { ExercisesTabRoutineForm } from "./ExercisesTabRoutineForm"
-import { useCreatePresetRoutineMutation, useUpdatePresetRoutineMutation } from "@/app/(main)/(authenticated)/entrenamiento/rutinas-preestablecidas/mutations"
+import { useCreatePresetRoutineMutation, useUpdatePresetRoutineMutation } from "@/app/(main)/(authenticated)/(admin)/entrenamiento/rutinas-preestablecidas/mutations"
 import { PresetRoutineSelector } from "./PresetRoutineSelector"
 
 interface RoutineFormProps {

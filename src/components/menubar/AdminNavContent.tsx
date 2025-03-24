@@ -4,20 +4,20 @@ import { useState } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import { adminNavItems } from "@/config/admin-nav-items"
 import { Logo } from "./Logo"
 import { ThemeToggle } from "../ThemeToggle"
 import type { Role } from "@prisma/client"
 import NavItemComponente from "./NavItemComponent"
+import { adminNavItems } from "@/config/admin-nav-items"
 
-interface NavContentProps {
+interface AdminNavContentProps {
   isExpanded: boolean
   onExpandedChange: (expanded: boolean) => void
   onClose: () => void
   userRole: Role
 }
 
-export function NavContent({ isExpanded, onExpandedChange, onClose, userRole }: NavContentProps) {
+export function AdminNavContent({ isExpanded, onExpandedChange, onClose, userRole }: AdminNavContentProps) {
   const [openItems, setOpenItems] = useState<Record<string, boolean>>({})
 
   const toggleSubmenu = (title: string) => {

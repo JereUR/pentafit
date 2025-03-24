@@ -18,7 +18,7 @@ import WorkingFacility from "../WorkingFacility"
 import {
   useCreateActivityMutation,
   useUpdateActivityMutation,
-} from "@/app/(main)/(authenticated)/actividades/mutations"
+} from "@/app/(main)/(authenticated)/(admin)/actividades/mutations"
 import { GeneralInfoTabActivityForm } from "./GeneralInfoTabActivityForm"
 import { DetailsTabActivityForm } from "./DetailsTabActivityForm"
 import { withClientSideRendering } from "@/hooks/withClientSideRendering"

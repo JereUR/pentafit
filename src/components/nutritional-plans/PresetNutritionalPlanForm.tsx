@@ -17,7 +17,7 @@ import NoWorkingFacilityMessage from "../NoWorkingFacilityMessage"
 import { GeneralInfoTabNutritionalPlanForm } from "./GeneralInfoTabNutritionalPlanForm"
 import { MealsTabNutritionalPlanForm } from "./meals-tab/MealsTabNutritionalPlanForm"
 import { PresetNutritionalPlanSelector } from "./PresetNutritionalPlanSelector"
-import { useCreatePresetNutritionalPlanMutation, useUpdatePresetNutritionalPlanMutation } from "@/app/(main)/(authenticated)/entrenamiento/planes-nutricionales-preestablecidos/mutations"
+import { useCreatePresetNutritionalPlanMutation, useUpdatePresetNutritionalPlanMutation } from "@/app/(main)/(authenticated)/(admin)/entrenamiento/planes-nutricionales-preestablecidos/mutations"
 
 interface PresetNutritionalPlanFormProps {
   userId: string

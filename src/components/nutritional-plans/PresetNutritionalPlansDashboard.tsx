@@ -12,7 +12,7 @@ import { TableSkeleton } from "../skeletons/TableSkeleton"
 import NoWorkingFacilityMessage from "../NoWorkingFacilityMessage"
 import GenericDataHeader from "../GenericDataHeader"
 import { columnsPresetNutritionalPlans, NutritionalPlanData } from "@/types/nutritionalPlans"
-import { useDeletePresetNutritionalPlanMutation, useReplicatePresetNutritionalPlanMutation } from "@/app/(main)/(authenticated)/entrenamiento/planes-nutricionales-preestablecidos/mutations"
+import { useDeletePresetNutritionalPlanMutation, useReplicatePresetNutritionalPlanMutation } from "@/app/(main)/(authenticated)/(admin)/entrenamiento/planes-nutricionales-preestablecidos/mutations"
 import { usePresetNutritionalPlans } from "@/hooks/usePresetNutritionalPlans"
 import NutritionalPlansTable from "./NutritionalPlansTable"
 

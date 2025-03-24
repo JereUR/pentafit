@@ -1,16 +1,17 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useEffect } from "react"
 import { usePathname } from "next/navigation"
 import type { Role } from "@prisma/client"
 
 import { cn } from "@/lib/utils"
-import { Sidebar } from "@/components/menubar/Sidebar"
+import { AdminSidebar } from "@/components/menubar/AdminSidebar"
+import { ClientSidebar } from "@/components/menubar/ClientSidebar"
 import TopBar from "@/components/menubar/TopBar"
 import { Sheet, SheetContent, SheetTitle, SheetDescription } from "@/components/ui/sheet"
-import { NavContent } from "@/components/menubar/NavContent"
+import { AdminNavContent } from "@/components/menubar/AdminNavContent"
+import { ClientNavContent } from "@/components/menubar/ClientNavContent"
 import UserTitleWrapper from "@/components/menubar/UserTitleWrapper"
 import { WorkingFacilityProvider } from "@/contexts/WorkingFacilityContext"
 
@@ -33,6 +34,8 @@ export default function AuthenticatedLayout({ children, userRole }: Authenticate
   const isMembershipPage = pathParts[1] === "actualizar-membresia"
   const userId = isUserPage || isMembershipPage ? pathParts[2] : ""
 
+  const isClient = userRole === "CLIENT"
+
   useEffect(() => {
     async function fetchInitialNotificationCount() {
       try {
@@ -52,7 +55,12 @@ export default function AuthenticatedLayout({ children, userRole }: Authenticate
   return (
     <WorkingFacilityProvider>
       <div className="relative h-screen bg-background overflow-hidden">
-        <Sidebar isExpanded={isExpanded} onExpandedChange={setIsExpanded} userRole={userRole} />
+        {isClient ? (
+          <ClientSidebar isExpanded={isExpanded} onExpandedChange={setIsExpanded} />
+        ) : (
+          <AdminSidebar isExpanded={isExpanded} onExpandedChange={setIsExpanded} userRole={userRole} />
+        )}
+
         <div className={cn("flex flex-col h-full transition-all duration-300", isExpanded ? "lg:ml-64" : "lg:ml-20")}>
           {isUserPage || isMembershipPage ? (
             <UserTitleWrapper
@@ -69,16 +77,25 @@ export default function AuthenticatedLayout({ children, userRole }: Authenticate
           )}
           <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 max-w-full scrollbar-thin">{children}</main>
         </div>
+
         <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
           <SheetContent side="left" className="w-80 p-0 lg:hidden">
             <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
             <SheetDescription className="sr-only">Access navigation links and options</SheetDescription>
-            <NavContent
-              isExpanded={true}
-              onExpandedChange={setIsExpanded}
-              onClose={closeMobileMenu}
-              userRole={userRole}
-            />
+            {isClient ? (
+              <ClientNavContent
+                isExpanded={true}
+                onExpandedChange={setIsExpanded}
+                onClose={closeMobileMenu}
+              />
+            ) : (
+              <AdminNavContent
+                isExpanded={true}
+                onExpandedChange={setIsExpanded}
+                onClose={closeMobileMenu}
+                userRole={userRole}
+              />
+            )}
           </SheetContent>
         </Sheet>
       </div>

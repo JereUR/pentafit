@@ -12,7 +12,7 @@ import noLogoImage from "@/assets/no-image.png"
 import {
   useDeleteFacilityMutation,
   useToggleFacilityActivationMutation,
-} from "@/app/(main)/(authenticated)/establecimientos/mutations"
+} from "@/app/(main)/(authenticated)/(admin)/establecimientos/mutations"
 import { useToast } from "@/hooks/use-toast"
 import LoadingButton from "../LoadingButton"
 import { useFacilityDetails } from "@/hooks/useFacilities"

@@ -16,7 +16,7 @@ import { useAllClients } from "@/hooks/useAllClients"
 import { useAssignedNutritionalPlanUsers } from "@/hooks/useAssignedNutritionalPlanUsers"
 import { SelectUsers } from "../ui/select-users"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { useAssignNutritionalPlanToUsersMutation, useUnassignNutritionalPlanFromUsersMutation } from "@/app/(main)/(authenticated)/entrenamiento/planes-nutricionales/mutations"
+import { useAssignNutritionalPlanToUsersMutation, useUnassignNutritionalPlanFromUsersMutation } from "@/app/(main)/(authenticated)/(admin)/entrenamiento/planes-nutricionales/mutations"
 
 interface UserAssignmentDialogProps {
   open: boolean

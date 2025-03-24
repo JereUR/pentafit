@@ -22,7 +22,7 @@ import {
 import LoadingButton from "@/components/LoadingButton"
 import ErrorText from "@/components/ErrorText"
 import { facilitySchema, type FacilityValues } from "@/lib/validation"
-import { useFacilityMutation, useUpdateFacilityMutation } from "@/app/(main)/(authenticated)/establecimientos/mutations"
+import { useFacilityMutation, useUpdateFacilityMutation } from "@/app/(main)/(authenticated)/(admin)/establecimientos/mutations"
 import noLogoImage from '@/assets/no-image.png'
 import { GeneralInfoTabForm } from "./GeneralInfoTabForm"
 import { CustomizationTabForm } from "./CustomizationTabForm"

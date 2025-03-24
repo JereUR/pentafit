@@ -14,7 +14,7 @@ import NoWorkingFacilityMessage from "../NoWorkingFacilityMessage"
 import GenericDataHeader from "../GenericDataHeader"
 import RoutinesTable from "./RoutinesTable"
 import { usePresetRoutines } from "@/hooks/usePresetRoutines"
-import { useDeletePresetRoutineMutation, useReplicatePresetRoutineMutation } from "@/app/(main)/(authenticated)/entrenamiento/rutinas-preestablecidas/mutations"
+import { useDeletePresetRoutineMutation, useReplicatePresetRoutineMutation } from "@/app/(main)/(authenticated)/(admin)/entrenamiento/rutinas-preestablecidas/mutations"
 
 export default function PresetRoutinesDashboard({ userId }: { userId: string }) {
   const router = useRouter()

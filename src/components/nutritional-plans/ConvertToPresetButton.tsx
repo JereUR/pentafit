@@ -6,7 +6,7 @@ import { Copy } from "lucide-react"
 
 import { useToast } from "@/hooks/use-toast"
 import LoadingButton from "../LoadingButton"
-import { useConvertToPresetNutritionalPlanMutation } from "@/app/(main)/(authenticated)/entrenamiento/planes-nutricionales/mutations"
+import { useConvertToPresetNutritionalPlanMutation } from "@/app/(main)/(authenticated)/(admin)/entrenamiento/planes-nutricionales/mutations"
 
 interface ConvertToPresetButtonProps {
   nutritionalPlanId: string
