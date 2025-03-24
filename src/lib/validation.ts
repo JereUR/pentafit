@@ -458,6 +458,40 @@ export const nutritionalPlanSchema = z.object({
   }),
 })
 
+export const nutritionalPlanSubmitSchema = z.object({
+  name: z.string().min(1, "El nombre es requerido"),
+  description: z.string().optional(),
+  facilityId: z.string().min(1, "La instalación es requerida"),
+  dailyMeals: z
+    .object({
+      MONDAY: z.array(mealSchema),
+      TUESDAY: z.array(mealSchema),
+      WEDNESDAY: z.array(mealSchema),
+      THURSDAY: z.array(mealSchema),
+      FRIDAY: z.array(mealSchema),
+      SATURDAY: z.array(mealSchema),
+      SUNDAY: z.array(mealSchema),
+    })
+    .refine(
+      (dailyMeals) => {
+        const hasMeals = Object.values(dailyMeals).some(
+          (meals) => meals.length > 0,
+        )
+        if (!hasMeals) return false
+
+        return Object.values(dailyMeals).every(
+          (meals) =>
+            meals.length === 0 ||
+            meals.every((meal) => meal.foodItems.length > 0),
+        )
+      },
+      {
+        message: "Cada comida debe tener al menos un alimento",
+        path: ["dailyMeals"],
+      },
+    ),
+})
+
 export type FoodItemValues = z.infer<typeof foodItemSchema>
 export type MealValues = z.infer<typeof mealSchema>
 export type DailyMealsValues = z.infer<typeof dailyMealsSchema>
