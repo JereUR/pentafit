@@ -5,6 +5,7 @@ import type { SidebarProps } from "@/types/sidebar"
 import { ClientNavContent } from "./ClientNavContent"
 
 export function ClientSidebar({ isExpanded, onExpandedChange }: SidebarProps) {
+
   return (
     <aside
       className={cn(
