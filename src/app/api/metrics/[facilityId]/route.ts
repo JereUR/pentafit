@@ -2,12 +2,11 @@ import { NextRequest, NextResponse } from "next/server"
 import { Role } from "@prisma/client"
 import prisma from "@/lib/prisma"
 import { validateRequest } from "@/auth"
-import { FacilityMetrics } from "@/hooks/useMetrics"
 
 export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ facilityId: string }> },
-): Promise<FacilityMetrics | NextResponse> {
+): Promise<NextResponse> {
   try {
     const { user } = await validateRequest()
 
