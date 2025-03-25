@@ -1,4 +1,3 @@
-import type React from "react"
 import { validateRequest, validateRole } from "@/auth"
 import { redirect } from "next/navigation"
 
