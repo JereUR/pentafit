@@ -5,6 +5,7 @@ import {
   genreExclusiveOptions,
   typeScheduleOptions,
 } from "@/types/diary"
+import { validateRequest } from "@/auth"
 
 export async function GET(
   request: NextRequest,
@@ -13,6 +14,12 @@ export async function GET(
   NextResponse<{ diaries: DiaryData[]; total: number } | { error: string }>
 > {
   try {
+    const { user } = await validateRequest()
+
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
     const id = (await params).facilityId
     const { searchParams } = request.nextUrl
     const page = parseInt(searchParams.get("page") || "1", 10)

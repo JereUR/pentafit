@@ -2,12 +2,19 @@ import { NextRequest, NextResponse } from "next/server"
 
 import prisma from "@/lib/prisma"
 import { AllDIaryData } from "@/types/diary"
+import { validateRequest } from "@/auth"
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ facilityId: string }> },
 ): Promise<NextResponse<{ diaries: AllDIaryData[] } | { error: string }>> {
   try {
+    const { user } = await validateRequest()
+
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
     const id = (await params).facilityId
 
     const diaries = await prisma.diary.findMany({

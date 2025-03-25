@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
 import { ActivityData } from "@/types/activity"
+import { validateRequest } from "@/auth"
 
 export async function GET(
   request: NextRequest,
@@ -11,6 +12,12 @@ export async function GET(
   >
 > {
   try {
+    const { user } = await validateRequest()
+
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
     const id = (await params).facilityId
     const { searchParams } = request.nextUrl
     const page = parseInt(searchParams.get("page") || "1", 10)

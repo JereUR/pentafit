@@ -9,6 +9,7 @@ export async function GET(
 ) {
   try {
     const { user } = await validateRequest()
+
     if (!user) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 })
     }

@@ -5,12 +5,19 @@ import {
   formatDaysAvailable,
   formatOfferDays,
 } from "@/types/diary"
+import { validateRequest } from "@/auth"
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ facilityId: string }> },
 ): Promise<NextResponse<DiaryExportData[] | { error: string }>> {
   try {
+    const { user } = await validateRequest()
+
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
     const id = (await params).facilityId
 
     const allDiaries = await prisma.diary.findMany({

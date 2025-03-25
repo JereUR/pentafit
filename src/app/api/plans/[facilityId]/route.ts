@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
 import { PlanData } from "@/types/plan"
+import { validateRequest } from "@/auth"
 
 export async function GET(
   request: NextRequest,
@@ -9,6 +10,12 @@ export async function GET(
   NextResponse<{ plans: PlanData[]; total: number } | { error: string }>
 > {
   try {
+    const { user } = await validateRequest()
+
+    if (!user) {
+      return NextResponse.json({ error: "No autorizado." }, { status: 401 })
+    }
+
     const id = (await params).facilityId
     const { searchParams } = request.nextUrl
     const page = Number.parseInt(searchParams.get("page") || "1", 10)

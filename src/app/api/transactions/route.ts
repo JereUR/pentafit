@@ -7,6 +7,12 @@ const ITEMS_PER_PAGE = 10
 
 export async function GET(req: NextRequest) {
   try {
+    const { user } = await validateRequest()
+
+    if (!user) {
+      return Response.json({ error: "No autorizado." }, { status: 401 })
+    }
+
     const facilityId = req.nextUrl.searchParams.get("facilityId")
     const cursor = req.nextUrl.searchParams.get("cursor") || undefined
 
@@ -15,12 +21,6 @@ export async function GET(req: NextRequest) {
         { error: "Facility ID is required" },
         { status: 400 },
       )
-    }
-
-    const { user } = await validateRequest()
-
-    if (!user) {
-      return Response.json({ error: "No autorizado." }, { status: 401 })
     }
 
     const transactions = await prisma.transaction.findMany({

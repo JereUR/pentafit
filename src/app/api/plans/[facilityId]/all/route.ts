@@ -8,12 +8,19 @@ import {
   planTypeOptions,
 } from "@/types/plan"
 import { mapEnumToValue } from "@/lib/utils"
+import { validateRequest } from "@/auth"
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ facilityId: string }> },
 ): Promise<NextResponse<PlanDataExport[] | { error: string }>> {
   try {
+    const { user } = await validateRequest()
+
+    if (!user) {
+      return NextResponse.json({ error: "No autorizado." }, { status: 401 })
+    }
+
     const id = (await params).facilityId
 
     const allPlans = await prisma.plan.findMany({

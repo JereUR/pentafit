@@ -1,3 +1,4 @@
+import { validateRequest } from "@/auth"
 import prisma from "@/lib/prisma"
 import formatExercisesToString, { RoutineData } from "@/types/routine"
 import { type NextRequest, NextResponse } from "next/server"
@@ -9,6 +10,12 @@ export async function GET(
   NextResponse<{ routines: RoutineData[]; total: number } | { error: string }>
 > {
   try {
+    const { user } = await validateRequest()
+
+    if (!user) {
+      return NextResponse.json({ error: "No autorizado." }, { status: 401 })
+    }
+
     const id = (await params).facilityId
     const { searchParams } = request.nextUrl
     const page = Number.parseInt(searchParams.get("page") || "1", 10)

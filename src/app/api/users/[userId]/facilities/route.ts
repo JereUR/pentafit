@@ -2,12 +2,19 @@ import { NextRequest, NextResponse } from "next/server"
 
 import prisma from "@/lib/prisma"
 import { FacilityReduceData } from "@/types/facility"
+import { validateRequest } from "@/auth"
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ userId: string }> },
 ): Promise<NextResponse<FacilityReduceData[] | { error: string }>> {
   try {
+    const { user } = await validateRequest()
+
+    if (!user) {
+      return NextResponse.json({ error: "No autorizado." }, { status: 401 })
+    }
+
     const id = (await params).userId
 
     const facilities = await prisma.user.findUnique({

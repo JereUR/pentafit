@@ -4,12 +4,19 @@ import prisma from "@/lib/prisma"
 import formatMealsToString, {
   NutritionalPlanData,
 } from "@/types/nutritionalPlans"
+import { validateRequest } from "@/auth"
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ facilityId: string }> },
 ): Promise<NextResponse<NutritionalPlanData[] | { error: string }>> {
   try {
+    const { user } = await validateRequest()
+
+    if (!user) {
+      return NextResponse.json({ error: "No autorizado." }, { status: 401 })
+    }
+
     const id = (await params).facilityId
 
     const presetNutritionalPlans = await prisma.presetNutritionalPlan.findMany({

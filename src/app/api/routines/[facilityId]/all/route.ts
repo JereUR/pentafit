@@ -5,12 +5,19 @@ import formatExercisesToString, {
 } from "@/types/routine"
 import prisma from "@/lib/prisma"
 import formatUsersAssignedToString from "@/types/user"
+import { validateRequest } from "@/auth"
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ facilityId: string }> },
 ): Promise<NextResponse<RoutineDataExport[] | { error: string }>> {
   try {
+    const { user } = await validateRequest()
+
+    if (!user) {
+      return NextResponse.json({ error: "No autorizado." }, { status: 401 })
+    }
+
     const id = (await params).facilityId
 
     const allRoutines = await prisma.routine.findMany({

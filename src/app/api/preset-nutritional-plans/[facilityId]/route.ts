@@ -1,3 +1,4 @@
+import { validateRequest } from "@/auth"
 import prisma from "@/lib/prisma"
 import formatMealsToString, {
   NutritionalPlanData,
@@ -14,6 +15,12 @@ export async function GET(
   >
 > {
   try {
+    const { user } = await validateRequest()
+
+    if (!user) {
+      return NextResponse.json({ error: "No autorizado." }, { status: 401 })
+    }
+
     const id = (await params).facilityId
     const { searchParams } = request.nextUrl
     const page = Number.parseInt(searchParams.get("page") || "1", 10)
