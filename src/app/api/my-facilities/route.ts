@@ -1,21 +1,22 @@
-import { NextRequest, NextResponse } from "next/server"
+import { NextResponse } from "next/server"
 
 import prisma from "@/lib/prisma"
 import { UserFacilityData } from "@/types/facility"
+import { validateRequest } from "@/auth"
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ userId: string }> },
-): Promise<NextResponse<UserFacilityData[] | { error: string }>> {
+export async function GET(): Promise<
+  NextResponse<UserFacilityData[] | { error: string }>
+> {
   try {
-    const userId = (await params).userId
-    if (!userId) {
+    const { user } = await validateRequest()
+
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
     const userFacilities = await prisma.userFacility.findMany({
       where: {
-        userId,
+        userId: user.id,
       },
       include: {
         facility: {
