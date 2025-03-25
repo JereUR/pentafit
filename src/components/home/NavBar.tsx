@@ -75,7 +75,7 @@ const AuthenticatedNav = ({ name, isMobile, onItemClick, role }: { name: string,
       <p className="italic font-semibold text-foreground"> Hola, <span className="text-primary">{name}</span>! </p>
       <div className={`flex ${isMobile ? 'flex-col w-full' : 'flex-row'} items-center gap-3`}>
         <Link
-          href={role !== "CLIENT" ? "/panel-de-control" : "/inicio"}
+          href={role !== "CLIENT" ? "/panel-de-control" : "/mis-establecimientos"}
           onClick={onItemClick}
           className={`
           inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors 
@@ -86,7 +86,7 @@ const AuthenticatedNav = ({ name, isMobile, onItemClick, role }: { name: string,
         `}
         >
           <FileChartColumn className="mr-2 h-4 w-4" />
-          {role !== "CLIENT" ? "Panel de control" : "Inicio"}
+          {role !== "CLIENT" ? "Panel de control" : "Mis establecimientos"}
         </Link>
         <form action={logout} className={isMobile ? 'w-full' : ''}>
           <button
