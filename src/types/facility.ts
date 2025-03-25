@@ -59,3 +59,9 @@ export interface FacilityAllInfo {
   logoUrl?: string | null
   metadata?: FacilityMetadata | null
 }
+
+export interface UserFacilityData {
+  id: string
+  name: string
+  logoUrl?: string | null
+}
