@@ -1,11 +1,12 @@
 import { useQuery } from "@tanstack/react-query"
 import kyInstance from "@/lib/ky"
 
-interface FacilityMetrics {
+export interface FacilityMetrics {
   activeActivities: number
   currentPlans: number
   activeDiaries: number
   activeRoutines: number
+  activeNutritionalPlans: number
   teamMembers: number
   clientMembers: number
 }

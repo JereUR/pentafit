@@ -1,12 +1,20 @@
 import { NextRequest, NextResponse } from "next/server"
 import { Role } from "@prisma/client"
 import prisma from "@/lib/prisma"
+import { validateRequest } from "@/auth"
+import { FacilityMetrics } from "@/hooks/useMetrics"
 
 export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ facilityId: string }> },
-): Promise<NextResponse> {
+): Promise<FacilityMetrics | NextResponse> {
   try {
+    const { user } = await validateRequest()
+
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
     const facilityId = (await params).facilityId
 
     const [
@@ -14,6 +22,7 @@ export async function GET(
       currentPlans,
       activeDiaries,
       activeRoutines,
+      activeNutritionalPlans,
       teamMembers,
       clientMembers,
     ] = await Promise.all([
@@ -33,6 +42,11 @@ export async function GET(
         },
       }),
       prisma.routine.count({
+        where: {
+          facilityId,
+        },
+      }),
+      prisma.nutritionalPlan.count({
         where: {
           facilityId,
         },
@@ -66,6 +80,7 @@ export async function GET(
       currentPlans,
       activeDiaries,
       activeRoutines,
+      activeNutritionalPlans,
       teamMembers,
       clientMembers,
     })
