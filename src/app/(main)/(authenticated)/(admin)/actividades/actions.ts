@@ -185,8 +185,6 @@ export async function updateActivity(
   const { user } = await validateRequest()
   if (!user) throw new Error("Usuario no autenticado")
 
-  console.log("Server action updateActivity received values:", values)
-
   return await prisma
     .$transaction(async (tx) => {
       const activity = await tx.activity.update({

@@ -801,6 +801,7 @@ export async function assignNutritionalPlanToUsers(
             facilityId,
             type: NotificationType.UNASSIGN_NUTRITIONAL_PLAN_USER,
             relatedId: planIdToUnassign,
+            assignedUsers: userIds,
           })
         }
       }
@@ -983,6 +984,7 @@ export async function unassignNutritionalPlanFromUsers(
         facilityId,
         type: NotificationType.UNASSIGN_NUTRITIONAL_PLAN_USER,
         relatedId: nutritionalPlanId,
+        assignedUsers: userIds,
       })
 
       revalidatePath("/entrenamiento/planes-nutricionales")

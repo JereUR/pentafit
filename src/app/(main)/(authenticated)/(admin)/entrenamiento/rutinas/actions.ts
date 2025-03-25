@@ -711,6 +711,7 @@ export async function assignRoutineToUsers(
             facilityId,
             type: NotificationType.UNASSIGN_ROUTINE_USER,
             relatedId: routineIdToUnassign,
+            assignedUsers: userIds,
           })
         }
       }
@@ -774,6 +775,7 @@ export async function assignRoutineToUsers(
         facilityId,
         type: NotificationType.ASSIGN_ROUTINE_USER,
         relatedId: routineId,
+        assignedUsers: userIds,
       })
 
       revalidatePath("/entrenamiento/rutinas")
@@ -892,6 +894,7 @@ export async function unassignRoutineFromUsers(
         facilityId,
         type: NotificationType.UNASSIGN_ROUTINE_USER,
         relatedId: routineId,
+        assignedUsers: userIds,
       })
 
       revalidatePath("/entrenamiento/rutinas")

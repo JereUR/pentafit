@@ -6,12 +6,14 @@ export async function createNotification({
   facilityId,
   type,
   relatedId,
+  assignedUsers,
 }: {
   tx: Prisma.TransactionClient
   issuerId: string
   facilityId: string
   type: NotificationType
   relatedId?: string
+  assignedUsers?: string[]
 }) {
   const facility = await tx.facility.findUnique({
     where: { id: facilityId },
@@ -50,6 +52,19 @@ export async function createNotification({
     )
   }
 
+  if (assignedUsers && assignedUsers.length > 0) {
+    const assignedFacilityUsers = facility.users.filter(
+      (userFacility) =>
+        assignedUsers.includes(userFacility.userId) &&
+        userFacility.userId !== issuerId &&
+        !recipientUsers.some(
+          (recipient) => recipient.userId === userFacility.userId,
+        ),
+    )
+
+    recipientUsers = [...recipientUsers, ...assignedFacilityUsers]
+  }
+
   const notifications = recipientUsers.map((userFacility) => ({
     recipientId: userFacility.userId,
     issuerId,
@@ -79,11 +94,7 @@ export async function createNotification({
     }),
   }))
 
-  /* console.log("notifications", notifications) */
-
   if (notifications.length > 0) {
     await tx.notification.createMany({ data: notifications })
   }
-
-  /* console.log("Notifications created") */
 }
