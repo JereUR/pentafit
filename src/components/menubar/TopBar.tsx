@@ -13,10 +13,19 @@ interface TopBarProps {
   userName?: string
   isLoading?: boolean
   initialNotificationCount: number
+  facilityName?: string
 }
 
-export default function TopBar({ onMenuClick, userName, isLoading = false, initialNotificationCount }: TopBarProps) {
-  const { title, isLoading: isTitleLoading } = usePageTitle(userName)
+export default function TopBar({
+  onMenuClick,
+  userName,
+  isLoading = false,
+  initialNotificationCount,
+  facilityName,
+}: TopBarProps) {
+  const { title: pageTitle, isLoading: isTitleLoading } = usePageTitle(userName)
+
+  const displayTitle = facilityName || pageTitle
 
   if (isLoading || isTitleLoading) {
     return <TopBarSkeleton />
@@ -29,7 +38,7 @@ export default function TopBar({ onMenuClick, userName, isLoading = false, initi
           <Menu className="h-6 w-6" />
           <span className="sr-only">Open menu</span>
         </Button>
-        <div className="text-foreground font-bold capitalize text-lg md:text-2xl">{title}</div>
+        <div className="text-foreground font-bold capitalize text-lg md:text-2xl">{displayTitle}</div>
       </div>
       <div className="flex items-center gap-5 md:mr-10">
         <UserButton />

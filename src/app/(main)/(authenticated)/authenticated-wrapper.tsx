@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { useState, useEffect } from "react"
-import { usePathname } from "next/navigation"
+import { usePathname, useSearchParams } from "next/navigation"
 import type { Role } from "@prisma/client"
 
 import { cn } from "@/lib/utils"
@@ -29,10 +29,15 @@ export default function AuthenticatedLayout({ children, userRole }: Authenticate
   const closeMobileMenu = () => setIsMobileMenuOpen(false)
 
   const pathname = usePathname()
+  const searchParams = useSearchParams()
   const pathParts = pathname.split("/")
+
   const isUserPage = pathParts[1] === "usuarios" && pathParts[2]
   const isMembershipPage = pathParts[1] === "actualizar-membresia"
   const userId = isUserPage || isMembershipPage ? pathParts[2] : ""
+  const isMyFacilitiesPage = pathParts[1] === "mis-establecimientos"
+
+  const facilityName = searchParams.get("facilityName") || undefined
 
   const isClient = userRole === "CLIENT"
 
@@ -55,13 +60,19 @@ export default function AuthenticatedLayout({ children, userRole }: Authenticate
   return (
     <WorkingFacilityProvider>
       <div className="relative h-screen bg-background overflow-hidden">
-        {isClient ? (
-          <ClientSidebar isExpanded={isExpanded} onExpandedChange={setIsExpanded} />
-        ) : (
-          <AdminSidebar isExpanded={isExpanded} onExpandedChange={setIsExpanded} userRole={userRole} />
-        )}
+        {(!isMyFacilitiesPage || !isClient) &&
+          (isClient ? (
+            <ClientSidebar isExpanded={isExpanded} onExpandedChange={setIsExpanded} />
+          ) : (
+            <AdminSidebar isExpanded={isExpanded} onExpandedChange={setIsExpanded} userRole={userRole} />
+          ))}
 
-        <div className={cn("flex flex-col h-full transition-all duration-300", isExpanded ? "lg:ml-64" : "lg:ml-20")}>
+        <div
+          className={cn(
+            "flex flex-col h-full transition-all duration-300",
+            isMyFacilitiesPage && isClient ? "" : isExpanded ? "lg:ml-64" : "lg:ml-20",
+          )}
+        >
           {isUserPage || isMembershipPage ? (
             <UserTitleWrapper
               userId={userId}
@@ -73,6 +84,7 @@ export default function AuthenticatedLayout({ children, userRole }: Authenticate
               onMenuClick={toggleMobileMenu}
               isLoading={false}
               initialNotificationCount={initialNotificationCount}
+              facilityName={facilityName}
             />
           )}
           <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 max-w-full scrollbar-thin">{children}</main>
@@ -83,11 +95,7 @@ export default function AuthenticatedLayout({ children, userRole }: Authenticate
             <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
             <SheetDescription className="sr-only">Access navigation links and options</SheetDescription>
             {isClient ? (
-              <ClientNavContent
-                isExpanded={true}
-                onExpandedChange={setIsExpanded}
-                onClose={closeMobileMenu}
-              />
+              <ClientNavContent isExpanded={true} onExpandedChange={setIsExpanded} onClose={closeMobileMenu} />
             ) : (
               <AdminNavContent
                 isExpanded={true}
