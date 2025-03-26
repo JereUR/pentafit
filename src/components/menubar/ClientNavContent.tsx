@@ -2,12 +2,13 @@
 
 import { useState } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
+import { useClientFacility } from "@/contexts/ClientFacilityContext"
 
 import { Button } from "@/components/ui/button"
 import { clientNavItems } from "@/config/client-nav-items"
-import { Logo } from "./Logo"
 import { ThemeToggle } from "../ThemeToggle"
 import NavItemComponente from "./NavItemComponent"
+import { LogoClient } from "./LogoClient"
 
 interface ClientNavContentProps {
   isExpanded: boolean
@@ -17,6 +18,7 @@ interface ClientNavContentProps {
 
 export function ClientNavContent({ isExpanded, onExpandedChange, onClose }: ClientNavContentProps) {
   const [openItems, setOpenItems] = useState<Record<string, boolean>>({})
+  const { primaryColor } = useClientFacility()
 
   const toggleSubmenu = (title: string) => {
     setOpenItems((prev) => ({ ...prev, [title]: !prev[title] }))
@@ -24,13 +26,17 @@ export function ClientNavContent({ isExpanded, onExpandedChange, onClose }: Clie
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex h-20 items-center border-b md:px-4">
-        <Logo isExpanded={isExpanded} />
+      <div
+        className="flex h-20 items-center border-b md:px-4"
+        style={{ borderBottomColor: `${primaryColor}40` }}
+      >
+        <LogoClient isExpanded={isExpanded} />
         <Button
           variant="ghost"
           size="icon"
           className="ml-auto hidden lg:flex"
           onClick={() => onExpandedChange(!isExpanded)}
+          style={{ color: primaryColor }}
         >
           {isExpanded ? <ChevronLeft /> : <ChevronRight />}
         </Button>
@@ -47,7 +53,10 @@ export function ClientNavContent({ isExpanded, onExpandedChange, onClose }: Clie
           />
         ))}
       </nav>
-      <div className="flex justify-center border-t p-4 mt-auto">
+      <div
+        className="flex justify-center border-t p-4 mt-auto"
+        style={{ borderTopColor: `${primaryColor}40` }}
+      >
         <ThemeToggle isExpanded={isExpanded} />
       </div>
     </div>
