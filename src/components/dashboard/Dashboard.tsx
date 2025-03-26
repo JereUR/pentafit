@@ -1,6 +1,6 @@
 "use client"
 
-import { Building2, Calendar, Users, ClipboardList, UserCircle2, SquareActivity } from "lucide-react"
+import { Building2, Calendar, Users, ClipboardList, UserCircle2, SquareActivity, Utensils } from "lucide-react"
 import { useState } from "react"
 
 import { useFacilities } from "@/hooks/useFacilities"
@@ -35,11 +35,11 @@ export default function Dashboard({ userId }: { userId: string }) {
           </TabsList>
 
           <TabsContent value="metrics" className="flex-1 overflow-auto scrollbar-thin">
-            <div className="flex flex-col gap-4 w-full">
-              <div className='flex justify-center'>
+            <div className="flex flex-col gap-6 w-full">
+              <div className="flex justify-center">
                 <WorkingFacility userId={userId} />
               </div>
-              <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 items-center">
+              <div className="grid gap-3 grid-cols-2 items-center">
                 <DashboardCard
                   id={0}
                   title="Establecimientos activos"
@@ -96,10 +96,17 @@ export default function Dashboard({ userId }: { userId: string }) {
                   loading={isLoadingMetrics}
                   error={metricsError}
                 />
+                <DashboardCard
+                  id={7}
+                  title="Planes nutricionales activas"
+                  icon={<Utensils />}
+                  value={metrics?.activeNutritionalPlans}
+                  loading={isLoadingMetrics}
+                  error={metricsError}
+                />
               </div>
             </div>
           </TabsContent>
-
           <TabsContent value="transactions" className="flex-1 min-h-0 overflow-hidden">
             {workingFacility && <LatestTransactions facilityId={workingFacility.id} />}
           </TabsContent>
@@ -165,6 +172,14 @@ export default function Dashboard({ userId }: { userId: string }) {
             title="Rutinas activas"
             icon={<SquareActivity />}
             value={metrics?.activeRoutines}
+            loading={isLoadingMetrics}
+            error={metricsError}
+          />
+          <DashboardCard
+            id={7}
+            title="Planes nutricionales activos"
+            icon={<Utensils />}
+            value={metrics?.activeNutritionalPlans}
             loading={isLoadingMetrics}
             error={metricsError}
           />
