@@ -40,10 +40,11 @@ export function TransactionIcon({ type, className = "h-4 w-4" }: TransactionIcon
     return <SquareActivity className={`${className} text-indigo-500`} />
   }
   if (type.includes("NUTRITIONAL_PLAN") && !type.includes("PRESET")) {
-    return <Utensils className={`${className} text-orange-500`} />
+    return <Utensils className={`${className} text-yellow-400`} />
   }
+
   if (type.includes("PRESET_NUTRITIONAL_PLAN")) {
-    return <Utensils className={`${className} text-pink-500`} />
+    return <Utensils className={`${className} text-green-500`} />
   }
   return null
 }
