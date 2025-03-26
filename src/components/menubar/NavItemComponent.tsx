@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { ChevronRight } from "lucide-react"
+import { useClientFacility } from "@/contexts/ClientFacilityContext"
 
 import { Button } from "@/components/ui/button"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
@@ -20,6 +21,12 @@ interface NavItemProps {
 
 function NavItemComponent({ item, isExpanded, isOpen, onToggle, onClose }: NavItemProps) {
   const pathname = usePathname()
+  const { primaryColor } = useClientFacility()
+
+  const activeItemStyle = pathname === item.href ? { backgroundColor: primaryColor, color: "white" } : {}
+
+  const activeSubItemStyle = (subItemHref: string) =>
+    pathname === subItemHref ? { backgroundColor: primaryColor, color: "white" } : {}
 
   if (item.items) {
     return (
@@ -54,6 +61,7 @@ function NavItemComponent({ item, isExpanded, isOpen, onToggle, onClose }: NavIt
                 pathname === subItem.href && "bg-primary",
                 !isExpanded && "lg:hidden",
               )}
+              style={activeSubItemStyle(subItem.href || "")}
             >
               {subItem.href && (
                 <Link
@@ -83,6 +91,7 @@ function NavItemComponent({ item, isExpanded, isOpen, onToggle, onClose }: NavIt
         pathname === item.href && "bg-primary",
         !isExpanded && "lg:justify-center",
       )}
+      style={activeItemStyle}
     >
       <Link
         href={item.href!}
