@@ -12,6 +12,5 @@ export const useUserFacilities = (userId: string) => {
     queryKey: ["facilities", userId],
     queryFn: () => fetchUserFacilities(),
     enabled: !!userId,
-    initialData: [],
   })
 }
