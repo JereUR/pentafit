@@ -14,7 +14,7 @@ export default async function AdminLayout({
   }
 
   if (roleData?.role === "CLIENT") {
-    redirect("/inicio")
+    redirect("/mis-establecimientos")
   }
 
   return <>{children}</>

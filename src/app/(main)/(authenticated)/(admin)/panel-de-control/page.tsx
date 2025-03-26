@@ -11,7 +11,7 @@ export default async function DashboardPage() {
   }
 
   if (roleData?.role === "CLIENT") {
-    redirect("/inicio")
+    redirect("/mis-establecimientos")
   }
 
   return (
