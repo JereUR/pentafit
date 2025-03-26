@@ -17,7 +17,7 @@ export default async function RootLayout({
 
   if (user && !children) {
     if (role?.role === "CLIENT") {
-      redirect("/inicio")
+      redirect("/mis-establecimientos")
     } else {
       redirect("/panel-de-control")
     }

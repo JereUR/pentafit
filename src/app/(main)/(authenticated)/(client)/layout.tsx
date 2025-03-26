@@ -1,6 +1,7 @@
 import type React from "react"
 import { validateRequest, validateRole } from "@/auth"
 import { redirect } from "next/navigation"
+import { ClientFacilityProvider } from "@/contexts/ClientFacilityContext"
 
 export default async function ClientLayout({
   children,
@@ -18,6 +19,6 @@ export default async function ClientLayout({
     redirect("/panel-de-control")
   }
 
-  return <>{children}</>
+  return <ClientFacilityProvider>{children}</ClientFacilityProvider>
 }
 
