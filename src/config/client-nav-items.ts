@@ -1,6 +1,5 @@
 import {
   Home,
-  User,
   Calendar,
   Dumbbell,
   LineChart,
@@ -12,7 +11,6 @@ import type { NavItem } from "@/types/sidebar"
 
 export const clientNavItems: NavItem[] = [
   { title: "Inicio", icon: Home, href: "/inicio" },
-  { title: "Mi Perfil", icon: User, href: "/perfil" },
   { title: "Mi Agenda", icon: Calendar, href: "/mi-agenda" },
   {
     title: "Mis Entrenamientos",
