@@ -3,13 +3,8 @@
 import { cn } from "@/lib/utils"
 import type { SidebarProps } from "@/types/sidebar"
 import { AdminNavContent } from "./AdminNavContent"
-import type { Role } from "@prisma/client"
 
-interface AdminSidebarProps extends SidebarProps {
-  userRole: Role
-}
-
-export function AdminSidebar({ isExpanded, onExpandedChange, userRole }: AdminSidebarProps) {
+export function AdminSidebar({ isExpanded, onExpandedChange, userRole }: SidebarProps) {
   return (
     <aside
       className={cn(

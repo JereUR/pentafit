@@ -1,14 +1,14 @@
 "use client"
 
 import { useState } from "react"
-import { ChevronLeft, ChevronRight } from "lucide-react"
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useClientFacility } from "@/contexts/ClientFacilityContext"
 
 import { Button } from "@/components/ui/button"
 import { clientNavItems } from "@/config/client-nav-items"
 import { ThemeToggle } from "../ThemeToggle"
-import NavItemComponente from "./NavItemComponent"
 import { LogoClient } from "./LogoClient"
+import ClientNavItemComponent from "./ClientNavItemComponent"
 
 interface ClientNavContentProps {
   isExpanded: boolean
@@ -28,7 +28,6 @@ export function ClientNavContent({ isExpanded, onExpandedChange, onClose }: Clie
     <div className="flex flex-col h-full">
       <div
         className="flex h-20 items-center border-b md:px-4"
-        style={{ borderBottomColor: `${primaryColor}40` }}
       >
         <LogoClient isExpanded={isExpanded} />
         <Button
@@ -43,7 +42,7 @@ export function ClientNavContent({ isExpanded, onExpandedChange, onClose }: Clie
       </div>
       <nav className="flex-1 overflow-y-auto space-y-2 p-2 scrollbar-thin">
         {clientNavItems.map((item) => (
-          <NavItemComponente
+          <ClientNavItemComponent
             key={item.title}
             item={item}
             isExpanded={isExpanded}
@@ -55,11 +54,9 @@ export function ClientNavContent({ isExpanded, onExpandedChange, onClose }: Clie
       </nav>
       <div
         className="flex justify-center border-t p-4 mt-auto"
-        style={{ borderTopColor: `${primaryColor}40` }}
       >
         <ThemeToggle isExpanded={isExpanded} />
       </div>
     </div>
   )
 }
-

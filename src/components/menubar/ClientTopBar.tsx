@@ -1,41 +1,41 @@
 "use client"
 
-import { Menu } from "lucide-react"
+import { Menu } from 'lucide-react'
+import { useClientFacility } from "@/contexts/ClientFacilityContext"
 
 import { Button } from "@/components/ui/button"
 import UserButton from "../UserButton"
 import TopBarSkeleton from "../skeletons/TopBarSkeleton"
 import { usePageTitle } from "@/hooks/usePageTitle"
 import NotificationsButton from "../home/NotificationsButton"
-import { Role } from "@prisma/client"
+import { Role } from '@prisma/client'
 
-interface TopBarProps {
+interface ClientTopBarProps {
   onMenuClick: () => void
   userName?: string
-  isLoading?: boolean
   initialNotificationCount: number
-  facilityName?: string
   userRole: Role
 }
 
-export default function TopBar({
+export default function ClientTopBar({
   onMenuClick,
   userName,
-  isLoading = false,
   initialNotificationCount,
-  facilityName,
   userRole
-}: TopBarProps) {
+}: ClientTopBarProps) {
+  const { facility, isLoading: isFacilityLoading } = useClientFacility()
   const { title: pageTitle, isLoading: isTitleLoading } = usePageTitle(userName)
 
-  const displayTitle = facilityName || pageTitle
+  const displayTitle = `${facility?.name} - ${pageTitle}`
 
-  if (isLoading || isTitleLoading) {
+  if (isFacilityLoading || isTitleLoading) {
     return <TopBarSkeleton />
   }
 
   return (
-    <div className="sticky top-0 z-30 flex justify-between items-center shadow-md p-5 w-full transition-all duration-300 ease-in-out bg-background">
+    <div
+      className="sticky top-0 z-30 flex justify-between items-center shadow-md p-5 w-full transition-all duration-300 ease-in-out bg-background"
+    >
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" className="lg:hidden" onClick={onMenuClick}>
           <Menu className="h-6 w-6" />
@@ -44,10 +44,9 @@ export default function TopBar({
         <div className="text-foreground font-bold capitalize text-lg md:text-2xl">{displayTitle}</div>
       </div>
       <div className="flex items-center gap-5 md:mr-10">
-        <UserButton userRole={userRole} />
+        <UserButton userRole={userRole} facilityId={facility?.id} />
         <NotificationsButton initialState={{ unreadCount: initialNotificationCount }} />
       </div>
     </div>
   )
 }
-
