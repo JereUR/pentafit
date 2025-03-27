@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button"
-import Link from "next/link"
 
 export default function GoogleSignInButton() {
   return (
@@ -8,13 +7,13 @@ export default function GoogleSignInButton() {
       className="bg-white text-black hover:bg-gray-100 hover:text-black"
       asChild
     >
-      <Link
+      <a
         href="/iniciar-sesion/google"
         className="flex w-full items-center gap-2"
       >
         <GoogleIcon />
         Iniciar sesión con Google
-      </Link>
+      </a>
     </Button>
   )
 }
