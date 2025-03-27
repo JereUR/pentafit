@@ -1,8 +1,9 @@
 import { redirect } from "next/navigation"
 
 import { validateRequest, validateRole } from "@/auth"
+import ClientLayout from "./ClientLayout"
 
-export default async function ClientLayout({
+export default async function ClientRootLayout({
   children,
 }: {
   children: React.ReactNode
@@ -10,14 +11,13 @@ export default async function ClientLayout({
   const { user } = await validateRequest()
   const roleData = await validateRole()
 
-  if (!user) {
+  if (!user || !roleData) {
     redirect("/iniciar-sesion")
   }
 
-  if (roleData?.role !== "CLIENT") {
+  if (roleData.role !== "CLIENT") {
     redirect("/panel-de-control")
   }
 
-  return <>{children}</>
+  return <ClientLayout userRole={roleData.role}>{children}</ClientLayout>
 }
-
