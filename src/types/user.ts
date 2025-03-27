@@ -33,6 +33,7 @@ export function getUserDataSelect() {
     email: true,
     gender: true,
     birthday: true,
+    role: true,
     avatarUrl: true,
     membershipLevel: true,
     facilities: {

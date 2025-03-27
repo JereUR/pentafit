@@ -16,12 +16,15 @@ import {
 import { cn } from "@/lib/utils"
 import { logout } from "@/app/(auth)/action"
 import UserAvatar from "./UserAvatar"
+import { Role } from "@prisma/client"
 
 interface UserButtonProps {
   className?: string
+  userRole: Role
+  facilityId?: string
 }
 
-export default function UserButton({ className }: UserButtonProps) {
+export default function UserButton({ className, userRole, facilityId }: UserButtonProps) {
   const { user } = useSession()
 
   const queryClient = useQueryClient()
@@ -40,7 +43,7 @@ export default function UserButton({ className }: UserButtonProps) {
           Sesión iniciada como {user.firstName} {user.lastName}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <Link href={`/usuarios/${user.id}`}>
+        <Link href={userRole === Role.CLIENT ? facilityId ? `/${facilityId}/mi-perfil/${user.id}` : `/mis-estableciminetos` : `/usuario/${user.id}`}>
           <DropdownMenuItem className="cursor-pointer hover:bg-[hsl(var(--button-hover))] focus:bg-[hsl(var(--button-hover))]">
             <UserIcon className="mr-2 size-4" />
             Mi perfil

@@ -12,4 +12,5 @@ export interface NavItem {
 export interface SidebarProps {
   isExpanded: boolean
   onExpandedChange: (expanded: boolean) => void
+  userRole: Role
 }
