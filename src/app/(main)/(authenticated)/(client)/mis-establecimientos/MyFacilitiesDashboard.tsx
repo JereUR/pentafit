@@ -41,7 +41,7 @@ export default function MyFacilitiesDashboard({ user }: MyFacilitiesDashboardPro
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {facilities.map((facility) => (
           <Link
-            href={`/${facility.id}/inicio?facilityName=${facility.name}`}
+            href={`/${facility.id}/inicio`}
             key={facility.id}
             className="transition-transform hover:scale-[1.02] focus:scale-[1.02] focus:outline-none"
           >
