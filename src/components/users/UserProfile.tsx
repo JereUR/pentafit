@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { EditUserForm } from './EditUserForm'
 import { UserData } from '@/types/user'
 import avatarPlaceholder from "@/assets/avatar-placeholder.png"
+import { Role } from '@prisma/client'
 
 interface UserProfileProps {
   user: UserData
@@ -62,9 +63,9 @@ export function UserProfile({ user, loggedUserId }: UserProfileProps) {
               <Button onClick={() => setIsEditing(true)}>
                 Editar Perfil
               </Button>
-              <Button variant="outline" onClick={() => router.push(`/actualizar-membresia/${user.id}`)}>
+              {user.role === Role.SUPER_ADMIN && <Button variant="outline" onClick={() => router.push(`/actualizar-membresia/${user.id}`)}>
                 Actualizar Membresía
-              </Button>
+              </Button>}
             </div>
           )}
         </CardContent>

@@ -5,8 +5,8 @@ import { cache } from "react"
 
 import { validateRequest } from "@/auth"
 import prisma from "@/lib/prisma"
-import { UserProfile } from "./UserProfile"
 import { UserProfileSkeleton } from "@/components/skeletons/UserProfileSkeleton"
+import { UserProfile } from '@/components/users/UserProfile'
 
 interface UserPageProps {
   params: Promise<{ id: string }>
@@ -25,6 +25,7 @@ const getUser = cache(async (id: string) => {
       lastName: true,
       membershipLevel: true,
       email: true,
+      role: true,
       birthday: true,
       avatarUrl: true,
       gender: true,
