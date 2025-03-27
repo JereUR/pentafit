@@ -63,6 +63,7 @@ export default function AdminLayout({ children, userRole }: AdminLayoutProps) {
               userId={userId}
               onMenuClick={toggleMobileMenu}
               initialNotificationCount={initialNotificationCount}
+              userRole={userRole}
             />
           ) : (
             <TopBar

@@ -65,6 +65,7 @@ export default function ClientLayout({ children, userRole }: ClientLayoutProps) 
               userId={userId}
               onMenuClick={toggleMobileMenu}
               initialNotificationCount={initialNotificationCount}
+              userRole={userRole}
             />
           ) : (
             <ClientTopBar

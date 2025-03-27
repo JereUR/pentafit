@@ -2,14 +2,16 @@
 
 import { useEffect, useState } from "react"
 import TopBar from "@/components/menubar/TopBar"
+import { Role } from "@prisma/client"
 
 interface UserTitleWrapperProps {
   userId: string
   onMenuClick: () => void
   initialNotificationCount: number
+  userRole: Role
 }
 
-export default function UserTitleWrapper({ userId, onMenuClick, initialNotificationCount }: UserTitleWrapperProps) {
+export default function UserTitleWrapper({ userId, onMenuClick, initialNotificationCount, userRole }: UserTitleWrapperProps) {
   const [userName, setUserName] = useState("")
   const [isLoading, setIsLoading] = useState(true)
 
@@ -38,6 +40,7 @@ export default function UserTitleWrapper({ userId, onMenuClick, initialNotificat
       onMenuClick={onMenuClick}
       isLoading={isLoading}
       initialNotificationCount={initialNotificationCount}
+      userRole={userRole}
     />
   )
 }
