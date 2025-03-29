@@ -223,28 +223,28 @@ export function useAssignPlanToUsersMutation() {
         )
       }
 
-      return result
+      return { result, facilityId }
     },
     onSuccess: (data) => {
       toast({
         title: "Plan asignado correctamente",
-        description: data.message,
+        description: data.result.message,
       })
 
       queryClient.invalidateQueries({
-        queryKey: ["plans"],
+        queryKey: ["plans", data.facilityId],
       })
 
       queryClient.invalidateQueries({
-        queryKey: ["assignedPlanUsers"],
+        queryKey: ["assignedPlanUsers", data.facilityId],
       })
 
       queryClient.invalidateQueries({
-        queryKey: ["latestTransactions"],
+        queryKey: ["latestTransactions", data.facilityId],
       })
 
       queryClient.invalidateQueries({
-        queryKey: ["metrics"],
+        queryKey: ["metrics", data.facilityId],
       })
     },
     onError: (error: Error) => {
@@ -279,28 +279,28 @@ export function useUnassignPlanFromUsersMutation() {
         )
       }
 
-      return result
+      return { result, facilityId }
     },
     onSuccess: (data) => {
       toast({
         title: "Plan desasignado correctamente",
-        description: data.message,
+        description: data.result.message,
       })
 
       queryClient.invalidateQueries({
-        queryKey: ["plans"],
+        queryKey: ["plans", data.facilityId],
       })
 
       queryClient.invalidateQueries({
-        queryKey: ["assignedPlanUsers"],
+        queryKey: ["assignedPlanUsers", data.facilityId],
       })
 
       queryClient.invalidateQueries({
-        queryKey: ["latestTransactions"],
+        queryKey: ["latestTransactions", data.facilityId],
       })
 
       queryClient.invalidateQueries({
-        queryKey: ["metrics"],
+        queryKey: ["metrics", data.facilityId],
       })
     },
     onError: (error: Error) => {
