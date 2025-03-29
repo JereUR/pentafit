@@ -43,7 +43,7 @@ export default function UserButton({ className, userRole, facilityId }: UserButt
           Sesión iniciada como {user.firstName} {user.lastName}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <Link href={userRole === Role.CLIENT ? facilityId ? `/${facilityId}/mi-perfil/${user.id}` : `/mis-estableciminetos` : `/usuario/${user.id}`}>
+        <Link href={userRole === Role.CLIENT ? facilityId ? `/${facilityId}/mi-perfil/${user.id}` : `/mis-establecimientos` : `/usuario/${user.id}`}>
           <DropdownMenuItem className="cursor-pointer hover:bg-[hsl(var(--button-hover))] focus:bg-[hsl(var(--button-hover))]">
             <UserIcon className="mr-2 size-4" />
             Mi perfil
