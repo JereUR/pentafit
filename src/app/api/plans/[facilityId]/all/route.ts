@@ -4,11 +4,12 @@ import prisma from "@/lib/prisma"
 import {
   formatDiaryPlans,
   paymentTypeOptions,
-  PlanDataExport,
+  type PlanDataExport,
   planTypeOptions,
 } from "@/types/plan"
 import { mapEnumToValue } from "@/lib/utils"
 import { validateRequest } from "@/auth"
+import formatUsersAssignedToString from "@/types/user"
 
 export async function GET(
   request: NextRequest,
@@ -41,6 +42,21 @@ export async function GET(
         freeTest: true,
         current: true,
         diaryPlans: true,
+        userPlans: {
+          where: {
+            isActive: true,
+          },
+          include: {
+            user: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+              },
+            },
+          },
+        },
       },
     })
 
@@ -65,6 +81,14 @@ export async function GET(
       current: plan.current ? "Si" : "No",
       facilityId: id,
       diaryPlans: formatDiaryPlans(plan.diaryPlans),
+      assignedUsersCount: formatUsersAssignedToString(
+        plan.userPlans.map((up) => ({
+          id: up.user.id,
+          firstName: up.user.firstName,
+          lastName: up.user.lastName,
+          email: up.user.email || "",
+        })),
+      ),
     }))
 
     return NextResponse.json(formattedAllPlans)

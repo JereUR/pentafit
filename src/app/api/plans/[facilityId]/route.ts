@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
-import prisma from "@/lib/prisma"
+import prisma, { PAGE_SIZE } from "@/lib/prisma"
 import { PlanData } from "@/types/plan"
 import { validateRequest } from "@/auth"
 
@@ -16,20 +16,27 @@ export async function GET(
       return NextResponse.json({ error: "No autorizado." }, { status: 401 })
     }
 
-    const id = (await params).facilityId
+    const facilityId = (await params).facilityId
     const { searchParams } = request.nextUrl
     const page = Number.parseInt(searchParams.get("page") || "1", 10)
-    const pageSize = Number.parseInt(searchParams.get("pageSize") || "10", 10)
+    const pageSize = Number.parseInt(
+      searchParams.get("pageSize") || PAGE_SIZE.toString(),
+      10,
+    )
     const search = searchParams.get("search") || ""
     const skip = (page - 1) * pageSize
 
+    const where = {
+      facilityId,
+      name: {
+        contains: search,
+        mode: "insensitive" as const,
+      },
+    }
+
     const [plans, total] = await Promise.all([
       prisma.plan.findMany({
-        where: {
-          facilityId: id,
-
-          OR: [{ name: { contains: search, mode: "insensitive" } }],
-        },
+        where,
         include: {
           diaryPlans: {
             include: {
@@ -41,24 +48,35 @@ export async function GET(
               },
             },
           },
+          userPlans: {
+            where: {
+              isActive: true,
+            },
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  firstName: true,
+                  lastName: true,
+                  email: true,
+                  avatarUrl: true,
+                },
+              },
+            },
+          },
         },
-        skip,
-        take: pageSize,
         orderBy: {
           createdAt: "desc",
         },
+        skip,
+        take: PAGE_SIZE,
       }),
-      prisma.plan.count({
-        where: {
-          facilityId: id,
-
-          OR: [{ name: { contains: search, mode: "insensitive" } }],
-        },
-      }),
+      prisma.plan.count({ where }),
     ])
 
-    const formattedPlans: PlanData[] = plans.map((plan) => ({
+    const formattedPlans = plans.map((plan) => ({
       id: plan.id,
+      facilityId: plan.facilityId,
       name: plan.name,
       description: plan.description,
       price: plan.price,
@@ -70,15 +88,15 @@ export async function GET(
       planType: plan.planType,
       freeTest: plan.freeTest,
       current: plan.current,
-      facilityId: id,
       diaryPlans: plan.diaryPlans.map((dp) => ({
         id: dp.id,
-        name: dp.name,
+        name: dp.activity.name,
         daysOfWeek: dp.daysOfWeek,
         sessionsPerWeek: dp.sessionsPerWeek,
         activityId: dp.activity.id,
-        activityName: dp.activity.name,
       })),
+      assignedUsersCount: plan.userPlans.length,
+      assignedUsers: plan.userPlans.map((up) => up.user),
     }))
 
     return NextResponse.json({ plans: formattedPlans, total })
