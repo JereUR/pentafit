@@ -5,7 +5,14 @@ import { useRouter } from "next/navigation"
 
 import { useToast } from "@/hooks/use-toast"
 import type { PlanValues } from "@/lib/validation"
-import { createPlan, deletePlans, replicatePlans, updatePlan } from "./actions"
+import {
+  assignPlanToUsers,
+  createPlan,
+  deletePlans,
+  replicatePlans,
+  unassignPlanFromUsers,
+  updatePlan,
+} from "./actions"
 
 export function useCreatePlanMutation() {
   const { toast } = useToast()
@@ -188,6 +195,118 @@ export function useReplicatePlanMutation() {
       toast({
         variant: "destructive",
         title: "Error al replicar los planes",
+        description: error.message,
+      })
+    },
+  })
+}
+
+export function useAssignPlanToUsersMutation() {
+  const { toast } = useToast()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({
+      planId,
+      userIds,
+      facilityId,
+    }: {
+      planId: string
+      userIds: string[]
+      facilityId: string
+    }) => {
+      const result = await assignPlanToUsers(planId, userIds, facilityId)
+
+      if (!result.success) {
+        throw new Error(
+          result.message || "Error al asignar el plan a los usuarios",
+        )
+      }
+
+      return result
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Plan asignado correctamente",
+        description: data.message,
+      })
+
+      queryClient.invalidateQueries({
+        queryKey: ["plans"],
+      })
+
+      queryClient.invalidateQueries({
+        queryKey: ["assignedPlanUsers"],
+      })
+
+      queryClient.invalidateQueries({
+        queryKey: ["latestTransactions"],
+      })
+
+      queryClient.invalidateQueries({
+        queryKey: ["metrics"],
+      })
+    },
+    onError: (error: Error) => {
+      toast({
+        variant: "destructive",
+        title: "Error al asignar el plan",
+        description: error.message,
+      })
+    },
+  })
+}
+
+export function useUnassignPlanFromUsersMutation() {
+  const { toast } = useToast()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({
+      planId,
+      userIds,
+      facilityId,
+    }: {
+      planId: string
+      userIds: string[]
+      facilityId: string
+    }) => {
+      const result = await unassignPlanFromUsers(planId, userIds, facilityId)
+
+      if (!result.success) {
+        throw new Error(
+          result.message || "Error al desasignar el plan de los usuarios",
+        )
+      }
+
+      return result
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Plan desasignado correctamente",
+        description: data.message,
+      })
+
+      queryClient.invalidateQueries({
+        queryKey: ["plans"],
+      })
+
+      queryClient.invalidateQueries({
+        queryKey: ["assignedPlanUsers"],
+      })
+
+      queryClient.invalidateQueries({
+        queryKey: ["latestTransactions"],
+      })
+
+      queryClient.invalidateQueries({
+        queryKey: ["metrics"],
+      })
+    },
+    onError: (error: Error) => {
+      toast({
+        variant: "destructive",
+        title: "Error al desasignar el plan",
         description: error.message,
       })
     },

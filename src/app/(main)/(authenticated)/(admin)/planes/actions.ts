@@ -440,3 +440,333 @@ export async function replicatePlans(
       }
     })
 }
+
+export async function assignPlanToUsers(
+  planId: string,
+  userIds: string[],
+  facilityId: string,
+) {
+  const { user } = await validateRequest()
+  if (!user) throw new Error("Usuario no autenticado")
+
+  return await prisma.$transaction(async (tx) => {
+    try {
+      const plan = await tx.plan.findUnique({
+        where: { id: planId },
+        select: { id: true, name: true },
+      })
+
+      if (!plan) {
+        return {
+          success: false,
+          message: "No se encontró el plan especificado",
+        }
+      }
+
+      const existingUserPlans = await tx.userPlan.findMany({
+        where: {
+          userId: { in: userIds },
+          isActive: true,
+        },
+        include: {
+          plan: {
+            select: { name: true },
+          },
+        },
+      })
+
+      const userPlansMap = existingUserPlans.reduce(
+        (acc, up) => {
+          if (!acc[up.userId]) {
+            acc[up.userId] = []
+          }
+          acc[up.userId].push(up)
+          return acc
+        },
+        {} as Record<string, typeof existingUserPlans>,
+      )
+
+      const usersWithOtherPlans = existingUserPlans
+        .filter((up) => up.planId !== planId)
+        .map((up) => ({
+          userId: up.userId,
+          planId: up.planId,
+          planName: up.plan.name,
+        }))
+
+      if (usersWithOtherPlans.length > 0) {
+        const planIdsToUnassign = [
+          ...new Set(usersWithOtherPlans.map((u) => u.planId)),
+        ]
+        const userIdsToUnassign = [
+          ...new Set(usersWithOtherPlans.map((u) => u.userId)),
+        ]
+
+        await tx.userPlan.updateMany({
+          where: {
+            userId: { in: userIdsToUnassign },
+            planId: { in: planIdsToUnassign },
+            isActive: true,
+          },
+          data: {
+            isActive: false,
+            endDate: new Date(),
+          },
+        })
+
+        const unassignedUsers = await tx.user.findMany({
+          where: { id: { in: userIdsToUnassign } },
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            avatarUrl: true,
+            email: true,
+          },
+        })
+
+        for (const planIdToUnassign of planIdsToUnassign) {
+          const planName =
+            usersWithOtherPlans.find((u) => u.planId === planIdToUnassign)
+              ?.planName || "Desconocido"
+          const usersForThisPlan = usersWithOtherPlans.filter(
+            (u) => u.planId === planIdToUnassign,
+          )
+
+          await createPlanTransaction({
+            tx,
+            type: TransactionType.UNASSIGN_PLAN_USER,
+            planId: planIdToUnassign,
+            performedById: user.id,
+            facilityId,
+            details: {
+              action: "Plan desasignado de usuarios (reemplazo automático)",
+              attachmentId: planIdToUnassign,
+              attachmentName: planName,
+              unassignedUsers: unassignedUsers.filter((u) =>
+                usersForThisPlan.some((usr) => usr.userId === u.id),
+              ),
+              unassignedCount: usersForThisPlan.length,
+              replacedByPlanId: planId,
+              replacedByPlanName: plan.name,
+            },
+          })
+
+          await createNotification({
+            tx,
+            issuerId: user.id,
+            facilityId,
+            type: NotificationType.UNASSIGN_PLAN_USER,
+            relatedId: planIdToUnassign,
+            assignedUsers: userIds,
+          })
+        }
+      }
+
+      const existingAssignments = existingUserPlans
+        .filter((up) => up.planId === planId)
+        .map((up) => up.userId)
+
+      const newUserIds = userIds.filter(
+        (id) => !existingAssignments.includes(id),
+      )
+
+      if (newUserIds.length > 0) {
+        await tx.userPlan.createMany({
+          data: newUserIds.map((userId) => ({
+            userId,
+            planId,
+            isActive: true,
+            startDate: new Date(),
+          })),
+          skipDuplicates: true,
+        })
+      }
+
+      const users = await tx.user.findMany({
+        where: { id: { in: newUserIds } },
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          avatarUrl: true,
+          email: true,
+        },
+      })
+
+      await createPlanTransaction({
+        tx,
+        type: TransactionType.ASSIGN_PLAN_USER,
+        planId,
+        performedById: user.id,
+        facilityId,
+        details: {
+          action: "Plan asignado a usuarios",
+          attachmentId: planId,
+          attachmentName: plan.name,
+          assignedUsers: users.map((u) => ({
+            id: u.id,
+            firstName: u.firstName,
+            lastName: u.lastName,
+            avatarUrl: u.avatarUrl,
+            email: u.email,
+          })),
+          assignedCount: newUserIds.length,
+          alreadyAssignedCount: existingAssignments.length,
+          replacedPlansCount: usersWithOtherPlans.length,
+        },
+      })
+
+      await createNotification({
+        tx,
+        issuerId: user.id,
+        facilityId,
+        type: NotificationType.ASSIGN_PLAN_USER,
+        relatedId: planId,
+        assignedUsers: userIds,
+      })
+
+      revalidatePath("/planes")
+
+      let message = `Plan asignado a ${newUserIds.length} usuarios correctamente`
+
+      if (existingAssignments.length > 0) {
+        message += ` (${existingAssignments.length} ya estaban asignados)`
+      }
+
+      if (usersWithOtherPlans.length > 0) {
+        message += `. Se reemplazaron ${usersWithOtherPlans.length} asignaciones previas`
+      }
+
+      return {
+        success: true,
+        message,
+        assignedCount: newUserIds.length,
+        alreadyAssignedCount: existingAssignments.length,
+        replacedPlansCount: usersWithOtherPlans.length,
+      }
+    } catch (error) {
+      console.error("Error assigning plan to users:", error)
+      return {
+        success: false,
+        message:
+          error instanceof Error
+            ? error.message
+            : "Error al asignar el plan a los usuarios",
+      }
+    }
+  })
+}
+
+export async function unassignPlanFromUsers(
+  planId: string,
+  userIds: string[],
+  facilityId: string,
+) {
+  const { user } = await validateRequest()
+  if (!user) throw new Error("Usuario no autenticado")
+
+  return await prisma.$transaction(async (tx) => {
+    try {
+      const plan = await tx.plan.findUnique({
+        where: { id: planId },
+        select: { id: true, name: true },
+      })
+
+      if (!plan) {
+        return {
+          success: false,
+          message: "No se encontró el plan especificado",
+        }
+      }
+
+      const existingAssignments = await tx.userPlan.findMany({
+        where: {
+          planId,
+          userId: { in: userIds },
+          isActive: true,
+        },
+        select: { id: true, userId: true },
+      })
+
+      const existingUserIds = existingAssignments.map((a) => a.userId)
+
+      if (existingUserIds.length === 0) {
+        return {
+          success: false,
+          message: "No hay usuarios asignados a este plan para desasignar",
+        }
+      }
+
+      const { count } = await tx.userPlan.updateMany({
+        where: {
+          planId,
+          userId: { in: existingUserIds },
+          isActive: true,
+        },
+        data: {
+          isActive: false,
+          endDate: new Date(),
+        },
+      })
+
+      const users = await tx.user.findMany({
+        where: { id: { in: existingUserIds } },
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          avatarUrl: true,
+          email: true,
+        },
+      })
+
+      await createPlanTransaction({
+        tx,
+        type: TransactionType.UNASSIGN_PLAN_USER,
+        planId,
+        performedById: user.id,
+        facilityId,
+        details: {
+          action: "Plan desasignado de usuarios",
+          attachmentId: planId,
+          attachmentName: plan.name,
+          unassignedUsers: users.map((u) => ({
+            id: u.id,
+            firstName: u.firstName,
+            lastName: u.lastName,
+            avatarUrl: u.avatarUrl,
+            email: u.email,
+          })),
+          unassignedCount: count,
+        },
+      })
+
+      await createNotification({
+        tx,
+        issuerId: user.id,
+        facilityId,
+        type: NotificationType.UNASSIGN_PLAN_USER,
+        relatedId: planId,
+        assignedUsers: userIds,
+      })
+
+      revalidatePath("/planes")
+
+      return {
+        success: true,
+        message: `Plan desasignado de ${count} ${count === 1 ? "usuario" : "usuarios"} correctamente`,
+        unassignedCount: count,
+      }
+    } catch (error) {
+      console.error("Error unassigning plan from users:", error)
+      return {
+        success: false,
+        message:
+          error instanceof Error
+            ? error.message
+            : "Error al desasignar el plan de los usuarios",
+      }
+    }
+  })
+}
