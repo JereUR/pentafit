@@ -11,6 +11,7 @@ import { Sheet, SheetContent, SheetTitle, SheetDescription } from "@/components/
 import { AdminNavContent } from "@/components/menubar/AdminNavContent"
 import UserTitleWrapper from "@/components/menubar/UserTitleWrapper"
 import { WorkingFacilityProvider } from "@/contexts/WorkingFacilityContext"
+import { ClientFacilityProvider } from "@/contexts/ClientFacilityContext"
 
 interface AdminLayoutProps {
   children: React.ReactNode
@@ -50,44 +51,46 @@ export default function AdminLayout({ children, userRole }: AdminLayoutProps) {
 
   return (
     <WorkingFacilityProvider>
-      <div className="relative h-screen bg-background overflow-hidden">
-        <AdminSidebar isExpanded={isExpanded} onExpandedChange={setIsExpanded} userRole={userRole} />
-        <div
-          className={cn(
-            "flex flex-col h-full transition-all duration-300",
-            isExpanded ? "lg:ml-64" : "lg:ml-20",
-          )}
-        >
-          {isUserPage || isMembershipPage ? (
-            <UserTitleWrapper
-              userId={userId}
-              onMenuClick={toggleMobileMenu}
-              initialNotificationCount={initialNotificationCount}
-              userRole={userRole}
-            />
-          ) : (
-            <TopBar
-              onMenuClick={toggleMobileMenu}
-              isLoading={false}
-              initialNotificationCount={initialNotificationCount}
-              userRole={userRole}
-            />
-          )}
-          <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 max-w-full scrollbar-thin">{children}</main>
+      <ClientFacilityProvider>
+        <div className="relative h-screen bg-background overflow-hidden">
+          <AdminSidebar isExpanded={isExpanded} onExpandedChange={setIsExpanded} userRole={userRole} />
+          <div
+            className={cn(
+              "flex flex-col h-full transition-all duration-300",
+              isExpanded ? "lg:ml-64" : "lg:ml-20",
+            )}
+          >
+            {isUserPage || isMembershipPage ? (
+              <UserTitleWrapper
+                userId={userId}
+                onMenuClick={toggleMobileMenu}
+                initialNotificationCount={initialNotificationCount}
+                userRole={userRole}
+              />
+            ) : (
+              <TopBar
+                onMenuClick={toggleMobileMenu}
+                isLoading={false}
+                initialNotificationCount={initialNotificationCount}
+                userRole={userRole}
+              />
+            )}
+            <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 max-w-full scrollbar-thin">{children}</main>
+          </div>
+          <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+            <SheetContent side="left" className="w-80 p-0 lg:hidden">
+              <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
+              <SheetDescription className="sr-only">Access navigation links and options</SheetDescription>
+              <AdminNavContent
+                isExpanded={true}
+                onExpandedChange={setIsExpanded}
+                onClose={closeMobileMenu}
+                userRole={userRole}
+              />
+            </SheetContent>
+          </Sheet>
         </div>
-        <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
-          <SheetContent side="left" className="w-80 p-0 lg:hidden">
-            <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
-            <SheetDescription className="sr-only">Access navigation links and options</SheetDescription>
-            <AdminNavContent
-              isExpanded={true}
-              onExpandedChange={setIsExpanded}
-              onClose={closeMobileMenu}
-              userRole={userRole}
-            />
-          </SheetContent>
-        </Sheet>
-      </div>
+      </ClientFacilityProvider>
     </WorkingFacilityProvider>
   )
 }
