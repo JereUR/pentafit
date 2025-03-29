@@ -160,7 +160,13 @@ export async function createPlanTransaction({
   details,
 }: {
   tx: Prisma.TransactionClient
-  type: "PLAN_CREATED" | "PLAN_UPDATED" | "PLAN_DELETED" | "PLAN_REPLICATED"
+  type:
+    | "PLAN_CREATED"
+    | "PLAN_UPDATED"
+    | "PLAN_DELETED"
+    | "PLAN_REPLICATED"
+    | "ASSIGN_PLAN_USER"
+    | "UNASSIGN_PLAN_USER"
   planId: string
   performedById: string
   facilityId: string

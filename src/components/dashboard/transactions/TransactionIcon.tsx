@@ -21,10 +21,18 @@ export function TransactionIcon({ type, className = "h-4 w-4" }: TransactionIcon
   if (type.includes("DIARY")) {
     return <Calendar className={`${className} text-emerald-400`} />
   }
-  if (type === TransactionType.ASSIGN_ROUTINE_USER || type === TransactionType.ASSIGN_NUTRITIONAL_PLAN_USER) {
+  if (
+    type === TransactionType.ASSIGN_ROUTINE_USER ||
+    type === TransactionType.ASSIGN_NUTRITIONAL_PLAN_USER ||
+    type === TransactionType.ASSIGN_PLAN_USER
+  ) {
     return <UserCheck className={`${className} text-blue-400`} />
   }
-  if (type === TransactionType.UNASSIGN_ROUTINE_USER || type === TransactionType.UNASSIGN_NUTRITIONAL_PLAN_USER) {
+  if (
+    type === TransactionType.UNASSIGN_ROUTINE_USER ||
+    type === TransactionType.UNASSIGN_NUTRITIONAL_PLAN_USER ||
+    type === TransactionType.UNASSIGN_PLAN_USER
+  ) {
     return <UserX className={`${className} text-red-400`} />
   }
   if (

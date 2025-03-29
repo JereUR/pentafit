@@ -261,6 +261,18 @@ export default function Notification({ notification }: NotificationProps) {
       href: `/entrenamiento/planes-nutricionales`,
       color: "text-red-500",
     },
+    ASSIGN_PLAN_USER: {
+      message: "asignó un plan a un/os usuario/s",
+      icon: <UserCheck className="h-4 w-4" />,
+      href: `/planes`,
+      color: "text-blue-500",
+    },
+    UNASSIGN_PLAN_USER: {
+      message: "desasignó un plan de un/os usuario/s",
+      icon: <UserRoundX className="h-4 w-4" />,
+      href: `/planes`,
+      color: "text-red-500",
+    },
   }
 
   const { message, icon, href, color } = notificationTypeMap[notification.type]
