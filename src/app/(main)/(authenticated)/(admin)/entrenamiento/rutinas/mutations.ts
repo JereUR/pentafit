@@ -245,7 +245,7 @@ export function useAssignRoutineToUsersMutation() {
         queryKey: ["metrics"],
       })
       queryClient.invalidateQueries({
-        queryKey: ["assignedUsers"],
+        queryKey: ["assignedRoutineUsers"],
       })
     },
     onError: (error: Error) => {
@@ -298,7 +298,7 @@ export function useUnassignRoutineFromUsersMutation() {
         queryKey: ["metrics"],
       })
       queryClient.invalidateQueries({
-        queryKey: ["assignedUsers"],
+        queryKey: ["assignedRoutineUsers"],
       })
     },
     onError: (error: Error) => {

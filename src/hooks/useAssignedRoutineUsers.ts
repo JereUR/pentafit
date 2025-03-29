@@ -2,16 +2,16 @@ import kyInstance from "@/lib/ky"
 import { UserClient } from "@/types/user"
 import { useQuery } from "@tanstack/react-query"
 
-async function fetchAssignedUsers(routineId: string) {
+async function fetchAssignedRoutineUsers(routineId: string) {
   return kyInstance
     .get(`/api/routines/assigned-users/${routineId}`)
     .json<UserClient[]>()
 }
 
-export function useAssignedUsers(routineId: string) {
+export function useAssignedRoutineUsers(routineId: string) {
   return useQuery({
-    queryKey: ["assignedUsers", routineId],
-    queryFn: () => fetchAssignedUsers(routineId),
+    queryKey: ["assignedRoutineUsers", routineId],
+    queryFn: () => fetchAssignedRoutineUsers(routineId),
     enabled: !!routineId,
   })
 }
