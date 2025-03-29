@@ -1,5 +1,6 @@
-import { daysOfWeek, SelectOption } from "@/lib/utils"
+import { daysOfWeek, type SelectOption } from "@/lib/utils"
 import { PaymentType, PlanType } from "@prisma/client"
+import type { UserClient } from "@/types/user"
 
 export const columnsPlans: { key: keyof PlanData; label: string }[] = [
   { key: "name", label: "Nombre" },
@@ -14,6 +15,7 @@ export const columnsPlans: { key: keyof PlanData; label: string }[] = [
   { key: "freeTest", label: "Ofrece clase de prueba" },
   { key: "current", label: "Vigente" },
   { key: "diaryPlans", label: "Actividades asociadas" },
+  { key: "assignedUsersCount", label: "Usuarios asignados" },
 ]
 
 export interface DiaryPlanData {
@@ -39,6 +41,8 @@ export interface PlanData {
   freeTest: boolean
   current: boolean
   diaryPlans: DiaryPlanData[]
+  assignedUsersCount?: number
+  assignedUsers?: UserClient[]
 }
 
 export interface DiaryPlansValues {
@@ -62,6 +66,7 @@ export interface PlanDataExport {
   freeTest: string
   current: string
   diaryPlans: string
+  assignedUsersCount: string
 }
 
 export const planTypeOptions: SelectOption[] = [
