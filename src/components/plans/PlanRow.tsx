@@ -168,7 +168,6 @@ export default function PlanRow({
           </div>
         </TableCell>
       </TableRow>
-
       <PlanUserAssignmentDialog
         open={showUserAssignmentDialog}
         onOpenChange={setShowUserAssignmentDialog}
@@ -176,7 +175,6 @@ export default function PlanRow({
         planName={plan.name}
         facilityId={plan.facilityId}
       />
-
       <PlanAssignedUsersDialog
         open={showAssignedUsersDialog}
         onOpenChange={setShowAssignedUsersDialog}
