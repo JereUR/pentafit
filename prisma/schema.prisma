@@ -49,10 +49,11 @@ model User {
   issuedNotifications    Notification[]        @relation("IssuerNotifications")
   performedTransactions  Transaction[]         @relation("PerformedTransactions")
   targetUserTransactions Transaction[]         @relation("TargetUserTransactions")
-  routines               UserRoutine[]
+  routine                UserRoutine[]
   notifications          Notification[]
   staffActivities        ActivityStaff[]
-  nutritionalPlans       UserNutritionalPlan[]
+  nutritionalPlan        UserNutritionalPlan[]
+  plan                   UserPlan[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -146,6 +147,8 @@ enum NotificationType {
   PLAN_UPDATED
   PLAN_DELETED
   PLAN_REPLICATED
+  ASSIGN_PLAN_USER
+  UNASSIGN_PLAN_USER
   DIARY_CREATED
   DIARY_UPDATED
   DIARY_DELETED
@@ -239,6 +242,8 @@ enum TransactionType {
   PLAN_UPDATED
   PLAN_DELETED
   PLAN_REPLICATED
+  ASSIGN_PLAN_USER
+  UNASSIGN_PLAN_USER
   DIARY_CREATED
   DIARY_UPDATED
   DIARY_DELETED
@@ -382,6 +387,7 @@ model Plan {
   diaryPlans       DiaryPlan[]
   notifications    Notification[]
   transactions     Transaction[]
+  userPlans        UserPlan[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -400,6 +406,23 @@ model DiaryPlan {
   activityId      String
 
   @@map("diary_plans")
+}
+
+model UserPlan {
+  id        String    @id @default(uuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  planId    String
+  plan      Plan      @relation(fields: [planId], references: [id], onDelete: Cascade)
+  isActive  Boolean   @default(true)
+  startDate DateTime  @default(now())
+  endDate   DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, planId])
+  @@map("user_plans")
 }
 
 // Diary
