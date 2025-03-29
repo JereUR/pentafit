@@ -13,9 +13,9 @@ import { cn } from "@/lib/utils"
 import { DeleteConfirmationDialog } from "../DeleteConfirmationDialog"
 import { useToast } from "@/hooks/use-toast"
 import { ExercisesDialog } from "./ExercisesDialog"
-import { UserAssignmentDialog } from "./UserAssignmentDialog"
 import { ConvertToPresetButton } from "./ConvertToPresetButton"
-import { AssignedUsersDialog } from "./AssignedUsersDialog"
+import { RoutineUserAssignmentDialog } from "./RoutineUserAssignmentDialog"
+import { RoutineAssignedUsersDialog } from "./RoutineAssignedUsersDialog"
 
 interface RoutineRowProps {
   routine: RoutineData
@@ -179,14 +179,14 @@ export default function RoutineRow({
         dailyExercises={routine.dailyExercises}
         routineName={routine.name}
       />
-      <UserAssignmentDialog
+      <RoutineUserAssignmentDialog
         open={showUserAssignmentDialog}
         onOpenChange={setShowUserAssignmentDialog}
         routineId={routine.id}
         routineName={routine.name}
         facilityId={routine.facilityId}
       />
-      <AssignedUsersDialog
+      <RoutineAssignedUsersDialog
         open={showAssignedUsersDialog}
         onOpenChange={setShowAssignedUsersDialog}
         users={routine.assignedUsers || []}

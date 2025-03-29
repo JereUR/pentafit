@@ -6,14 +6,14 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import type { UserClient } from "@/types/user"
 import noImage from "@/assets/avatar-placeholder.png"
 
-interface AssignedUsersDialogProps {
+interface RoutineAssignedUsersDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   users: UserClient[]
   routineName: string
 }
 
-export function AssignedUsersDialog({ open, onOpenChange, users, routineName }: AssignedUsersDialogProps) {
+export function RoutineAssignedUsersDialog({ open, onOpenChange, users, routineName }: RoutineAssignedUsersDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">

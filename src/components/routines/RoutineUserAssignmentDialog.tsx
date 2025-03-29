@@ -11,15 +11,15 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { useAllClients } from "@/hooks/useAllClients"
-import { useAssignedUsers } from "@/hooks/useAssignedUsers"
 import {
   useAssignRoutineToUsersMutation,
   useUnassignRoutineFromUsersMutation
 } from "@/app/(main)/(authenticated)/(admin)/entrenamiento/rutinas/mutations"
 import { SelectUsers } from "../ui/select-users"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import { useAssignedRoutineUsers } from "@/hooks/useAssignedRoutineUsers"
 
-interface UserAssignmentDialogProps {
+interface RoutineUserAssignmentDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   routineId: string
@@ -27,18 +27,18 @@ interface UserAssignmentDialogProps {
   facilityId: string
 }
 
-export function UserAssignmentDialog({
+export function RoutineUserAssignmentDialog({
   open,
   onOpenChange,
   routineId,
   routineName,
   facilityId,
-}: UserAssignmentDialogProps) {
+}: RoutineUserAssignmentDialogProps) {
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([])
   const [activeTab, setActiveTab] = useState<"assign" | "unassign">("assign")
 
   const { data: clients = [], isLoading: isLoadingClients } = useAllClients(facilityId)
-  const { data: assignedUsers = [], isLoading: isLoadingAssigned } = useAssignedUsers(routineId)
+  const { data: assignedUsers = [], isLoading: isLoadingAssigned } = useAssignedRoutineUsers(routineId)
 
   const { mutate: assignRoutineToUsers, isPending: isAssigning } = useAssignRoutineToUsersMutation()
   const { mutate: unassignRoutineFromUsers, isPending: isUnassigning } = useUnassignRoutineFromUsersMutation()
