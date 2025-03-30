@@ -2,6 +2,7 @@ import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 import { format, differenceInYears } from "date-fns"
 import { ZodError } from "zod"
+import { DayOfWeek, MealType } from "@prisma/client"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -67,4 +68,48 @@ export function formatZodErrors(error: unknown): Record<string, string> {
   })
 
   return formattedErrors
+}
+
+export function getCurrentDayOfWeek(): DayOfWeek {
+  const days = [
+    DayOfWeek.SUNDAY,
+    DayOfWeek.MONDAY,
+    DayOfWeek.TUESDAY,
+    DayOfWeek.WEDNESDAY,
+    DayOfWeek.THURSDAY,
+    DayOfWeek.FRIDAY,
+    DayOfWeek.SATURDAY,
+  ]
+
+  const dayIndex = new Date().getDay()
+  return days[dayIndex]
+}
+
+export const DAY_DISPLAY_NAMES = {
+  [DayOfWeek.MONDAY]: "Lunes",
+  [DayOfWeek.TUESDAY]: "Martes",
+  [DayOfWeek.WEDNESDAY]: "Miércoles",
+  [DayOfWeek.THURSDAY]: "Jueves",
+  [DayOfWeek.FRIDAY]: "Viernes",
+  [DayOfWeek.SATURDAY]: "Sábado",
+  [DayOfWeek.SUNDAY]: "Domingo",
+}
+
+export const MEAL_TYPE_DISPLAY_NAMES = {
+  [MealType.BREAKFAST]: "Desayuno",
+  [MealType.PRE_WORKOUT]: "Pre-Entrenamiento",
+  [MealType.LUNCH]: "Almuerzo",
+  [MealType.SNACK]: "Merienda",
+  [MealType.DINNER]: "Cena",
+  [MealType.POST_WORKOUT]: "Post-Entrenamiento",
+  [MealType.OTHER]: "Otro",
+}
+
+export function formatDate(date: Date): string {
+  return new Intl.DateTimeFormat("es-ES", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  }).format(date)
 }
