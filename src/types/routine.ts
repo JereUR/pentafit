@@ -70,6 +70,13 @@ export interface RoutineDataExport extends PresetRoutineDataExport {
   assignedUsersCount: string
 }
 
+export interface TodayRoutineData {
+  id: string
+  name: string
+  description?: string | null
+  exercises: ExerciseData[]
+}
+
 export default function formatExercisesToString(
   dailyExercises: DailyExerciseData[],
 ): string {

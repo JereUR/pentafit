@@ -90,6 +90,13 @@ export interface NutritionalPlanDataExport
   assignedUsersCount: string
 }
 
+export interface TodayNutritionalPlanData {
+  id: string
+  name: string
+  description?: string | null
+  meals: MealData[]
+}
+
 export default function formatMealsToString(
   dailyMeals: DailyMealData[],
 ): string {
