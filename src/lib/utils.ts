@@ -106,10 +106,12 @@ export const MEAL_TYPE_DISPLAY_NAMES = {
 }
 
 export function formatDate(date: Date): string {
-  return new Intl.DateTimeFormat("es-ES", {
+  const formattedDate = new Intl.DateTimeFormat("es-ES", {
     weekday: "long",
     year: "numeric",
     month: "long",
     day: "numeric",
   }).format(date)
+
+  return formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1)
 }
