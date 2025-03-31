@@ -1,22 +1,26 @@
 import { Dumbbell } from "lucide-react"
+import Image from "next/image"
+
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { ExerciseData } from "@/types/routine"
-import Image from "next/image"
+import noImage from '@/assets/no-image.png'
 
 interface ExerciseListProps {
   exercises: ExerciseData[]
+  primaryColor: string
+  secondaryColor: string
 }
 
-export function ExerciseList({ exercises }: ExerciseListProps) {
+export function ExerciseList({ exercises, primaryColor, secondaryColor }: ExerciseListProps) {
   return (
     <div className="space-y-3">
       {exercises.map((exercise) => (
         <Card key={exercise.id} className="overflow-hidden">
           <CardContent className="p-0">
             <div className="flex items-start gap-3 p-4">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-primary/10">
-                <Dumbbell className="h-5 w-5 text-primary" />
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md" style={{ backgroundColor: `${primaryColor}20` }}>
+                <Dumbbell className="h-5 w-5" style={{ color: primaryColor }} />
               </div>
               <div className="flex-1 space-y-1">
                 <div className="flex items-center justify-between">
@@ -40,13 +44,13 @@ export function ExerciseList({ exercises }: ExerciseListProps) {
               </div>
             </div>
             {exercise.photoUrl && (
-              <div className="h-40 w-full bg-muted">
+              <div className="h-40 w-full mb-2" style={{ backgroundColor: secondaryColor }}>
                 <Image
-                  src={exercise.photoUrl || "/placeholder.svg"}
+                  src={exercise.photoUrl || noImage}
                   alt={exercise.name}
                   height={80}
                   width={80}
-                  className="h-full w-full object-cover"
+                  className="h-full w-full object-contain"
                 />
               </div>
             )}
