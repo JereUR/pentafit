@@ -5,16 +5,18 @@ interface EmptyStateProps {
   title: string
   description: string
   icon: "workout" | "food"
+  primaryColor: string
+  secondaryColor: string
 }
 
-export function EmptyState({ title, description, icon }: EmptyStateProps) {
+export function EmptyState({ title, description, icon, primaryColor, secondaryColor }: EmptyStateProps) {
   return (
     <div className="flex flex-col items-center justify-center py-10 text-center">
-      <div className="flex h-20 w-20 items-center justify-center rounded-full bg-muted">
+      <div className="flex h-20 w-20 items-center justify-center rounded-full" style={{ backgroundColor: secondaryColor }}>
         {icon === "workout" ? (
-          <CalendarX className="h-10 w-10 text-muted-foreground" />
+          <CalendarX className="h-10 w-10" style={{ color: primaryColor }} />
         ) : (
-          <Utensils className="h-10 w-10 text-muted-foreground" />
+          <Utensils className="h-10 w-10" style={{ color: primaryColor }} />
         )}
       </div>
       <h3 className="mt-4 text-lg font-medium">{title}</h3>

@@ -6,7 +6,13 @@ import { Skeleton } from "../../ui/skeleton"
 import { EmptyState } from "./EmptyState"
 import { ExerciseList } from "./ExerciseList"
 
-export function TodayRoutine({ facilityId }: { facilityId: string }) {
+interface TodayRoutineProps {
+  facilityId: string
+  primaryColor: string
+  secondaryColor: string
+}
+
+export function TodayRoutine({ facilityId, primaryColor, secondaryColor }: TodayRoutineProps) {
   const { routineData, isLoading, error } = useTodayClientData(facilityId)
   const today = getCurrentDayOfWeek()
   const dayName = DAY_DISPLAY_NAMES[today]
@@ -32,6 +38,8 @@ export function TodayRoutine({ facilityId }: { facilityId: string }) {
         title={`No hay rutina para ${dayName}`}
         description="No tienes ejercicios programados para hoy."
         icon="workout"
+        primaryColor={primaryColor}
+        secondaryColor={secondaryColor}
       />
     )
   }
@@ -46,7 +54,7 @@ export function TodayRoutine({ facilityId }: { facilityId: string }) {
         {routineData.description && <p className="text-sm text-muted-foreground">{routineData.description}</p>}
       </div>
 
-      <ExerciseList exercises={routineData.exercises} />
+      <ExerciseList exercises={routineData.exercises} primaryColor={primaryColor} secondaryColor={secondaryColor} />
     </div>
   )
 }

@@ -5,7 +5,13 @@ import { useTodayClientData } from "@/hooks/useTodayClientData"
 import { EmptyState } from "./EmptyState"
 import { MealList } from "./MealList"
 
-export function TodayNutritionalPlan({ facilityId }: { facilityId: string }) {
+interface TodayNutritionalPlanProps {
+  facilityId: string
+  primaryColor: string
+  secondaryColor: string
+}
+
+export function TodayNutritionalPlan({ facilityId, primaryColor, secondaryColor }: TodayNutritionalPlanProps) {
   const { isLoading, nutritionData, dayName, error } = useTodayClientData(facilityId)
 
   if (isLoading) {
@@ -28,6 +34,8 @@ export function TodayNutritionalPlan({ facilityId }: { facilityId: string }) {
         title={`No hay plan de comidas para ${dayName}`}
         description="No tienes comidas programadas para hoy."
         icon="food"
+        primaryColor={primaryColor}
+        secondaryColor={secondaryColor}
       />
     )
   }
