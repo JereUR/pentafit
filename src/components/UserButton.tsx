@@ -22,9 +22,10 @@ interface UserButtonProps {
   className?: string
   userRole: Role
   facilityId?: string
+  primaryColor?: string
 }
 
-export default function UserButton({ className, userRole, facilityId }: UserButtonProps) {
+export default function UserButton({ className, userRole, facilityId, primaryColor }: UserButtonProps) {
   const { user } = useSession()
 
   const queryClient = useQueryClient()
@@ -35,7 +36,7 @@ export default function UserButton({ className, userRole, facilityId }: UserButt
     <DropdownMenu >
       <DropdownMenuTrigger asChild>
         <button className={cn("flex-none rounded-full", className)}>
-          <UserAvatar avatarUrl={user.avatarUrl} size={40} />
+          <UserAvatar avatarUrl={user.avatarUrl} size={40} primaryColor={primaryColor}/>
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="z-[100]">

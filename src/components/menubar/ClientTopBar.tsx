@@ -9,6 +9,7 @@ import TopBarSkeleton from "../skeletons/TopBarSkeleton"
 import { usePageTitle } from "@/hooks/usePageTitle"
 import NotificationsButton from "../home/NotificationsButton"
 import { Role } from '@prisma/client'
+import { usePathname } from 'next/navigation'
 
 interface ClientTopBarProps {
   onMenuClick: () => void
@@ -23,10 +24,14 @@ export default function ClientTopBar({
   initialNotificationCount,
   userRole
 }: ClientTopBarProps) {
-  const { facility, isLoading: isFacilityLoading } = useClientFacility()
+  const { facility, primaryColor, isLoading: isFacilityLoading } = useClientFacility()
   const { title: pageTitle, isLoading: isTitleLoading } = usePageTitle(userName)
+  const pathname = usePathname()
+  const pathParts = pathname.split("/")
 
-  const displayTitle = `${facility?.name} - ${pageTitle}`
+  const isMyFacilitiesPage = pathParts[1] === "mis-establecimientos"
+
+  const displayTitle = !isMyFacilitiesPage ? `${facility?.name} - ${pageTitle}` : `${pageTitle}`
 
   if (isFacilityLoading || isTitleLoading) {
     return <TopBarSkeleton />
@@ -44,7 +49,7 @@ export default function ClientTopBar({
         <div className="text-foreground font-bold capitalize text-lg md:text-2xl">{displayTitle}</div>
       </div>
       <div className="flex items-center gap-5 md:mr-10">
-        <UserButton userRole={userRole} facilityId={facility?.id} />
+        <UserButton userRole={userRole} facilityId={facility?.id} primaryColor={primaryColor} />
         <NotificationsButton initialState={{ unreadCount: initialNotificationCount }} />
       </div>
     </div>
