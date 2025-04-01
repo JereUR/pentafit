@@ -55,7 +55,7 @@ export function ClientNavContent({ isExpanded, onExpandedChange, onClose }: Clie
       <div
         className="flex justify-center border-t p-4 mt-auto"
       >
-        <ThemeToggle isExpanded={isExpanded} />
+        <ThemeToggle isExpanded={isExpanded} primaryColor={primaryColor} />
       </div>
     </div>
   )

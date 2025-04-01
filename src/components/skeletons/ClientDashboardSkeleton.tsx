@@ -4,9 +4,11 @@ import { Skeleton } from "@/components/ui/skeleton"
 
 interface DashboardSkeletonProps {
   type: "routine" | "nutrition"
+  primaryColor: string
 }
 
-export function DashboardSkeleton({ type }: DashboardSkeletonProps) {
+export function ClientDashboardSkeleton({ type, primaryColor }: DashboardSkeletonProps) {
+  const skeletonStyle = primaryColor ? { backgroundColor: `${primaryColor}/20` } : undefined
   return (
     <Card>
       <CardHeader className="flex flex-row items-center gap-2">
@@ -24,9 +26,9 @@ export function DashboardSkeleton({ type }: DashboardSkeletonProps) {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          <Skeleton className="h-4 w-3/4" />
-          <Skeleton className="h-20 w-full" />
-          <Skeleton className="h-4 w-1/2" />
+          <Skeleton className="h-4 w-3/4" style={skeletonStyle} />
+          <Skeleton className="h-20 w-full" style={skeletonStyle} />
+          <Skeleton className="h-4 w-1/2" style={skeletonStyle} />
         </div>
       </CardContent>
     </Card>

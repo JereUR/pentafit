@@ -10,13 +10,7 @@ interface UserAvatarProps {
   primaryColor?: string
 }
 
-export default function UserAvatar({
-  avatarUrl,
-  size,
-  className,
-  primaryColor
-}: UserAvatarProps) {
-  console.log(primaryColor)
+export default function UserAvatar({ avatarUrl, size, className, primaryColor }: UserAvatarProps) {
   return (
     <div className="flex items-center justify-center w-full h-full">
       <Image
@@ -26,10 +20,19 @@ export default function UserAvatar({
         height={size ?? 32}
         className={cn(
           "aspect-square flex-none rounded-full bg-secondary object-cover",
-          primaryColor ? `ring-[${primaryColor}] ring-2` : "ring-primary ring-1",
-          className
+          !primaryColor && "ring-primary ring-2",
+          className,
         )}
+        style={
+          primaryColor
+            ? {
+              boxShadow: `0 0 0 1px ${primaryColor}`,
+              border: `1px solid ${primaryColor}`,
+            }
+            : undefined
+        }
       />
     </div>
   )
 }
+

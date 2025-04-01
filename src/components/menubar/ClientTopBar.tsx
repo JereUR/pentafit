@@ -34,7 +34,7 @@ export default function ClientTopBar({
   const displayTitle = !isMyFacilitiesPage ? `${facility?.name} - ${pageTitle}` : `${pageTitle}`
 
   if (isFacilityLoading || isTitleLoading) {
-    return <TopBarSkeleton />
+    return <TopBarSkeleton primaryColor={primaryColor} />
   }
 
   return (
