@@ -47,14 +47,10 @@ export function TodayRoutine({ facilityId, primaryColor, secondaryColor }: Today
   return (
     <div className="space-y-4">
       <div>
-        <div className="flex items-center justify-between">
-          <h3 className="font-medium text-lg">{routineData.name}</h3>
-          <span className="text-sm font-medium text-muted-foreground">{dayName}</span>
-        </div>
         {routineData.description && <p className="text-sm text-muted-foreground">{routineData.description}</p>}
       </div>
 
-      <ExerciseList exercises={routineData.exercises} primaryColor={primaryColor} secondaryColor={secondaryColor} />
+      <ExerciseList exercises={routineData.exercises} primaryColor={primaryColor} />
     </div>
   )
 }
