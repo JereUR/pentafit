@@ -18,6 +18,8 @@ interface MyFacilitiesDashboardProps {
 export default function MyFacilitiesDashboard({ user }: MyFacilitiesDashboardProps) {
   const { data: facilities, isLoading: isLoadingFacilities } = useUserFacilities(user.id)
 
+  console.log({ facilities })
+
   if (isLoadingFacilities) return <MyFacilitiesDashboardSkeleton />
 
   if (!facilities) {
@@ -66,7 +68,7 @@ export default function MyFacilitiesDashboard({ user }: MyFacilitiesDashboardPro
                 </div>
               </CardContent>
               <CardFooter>
-                <Button className="w-full group">
+                <Button className="w-full group" style={{ backgroundColor: facility.primaryColor }}>
                   Ir a establecimiento
                   <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </Button>

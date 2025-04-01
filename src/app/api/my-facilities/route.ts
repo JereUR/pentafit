@@ -24,6 +24,11 @@ export async function GET(): Promise<
             id: true,
             name: true,
             logoUrl: true,
+            metadata: {
+              select: {
+                primaryColor: true,
+              },
+            },
           },
         },
       },
@@ -37,6 +42,7 @@ export async function GET(): Promise<
       id: facility.facility.id,
       name: facility.facility.name,
       logoUrl: facility.facility.logoUrl,
+      primaryColor: facility.facility.metadata?.primaryColor || "#F97015",
     }))
 
     return NextResponse.json(formattedUserFacilities)
