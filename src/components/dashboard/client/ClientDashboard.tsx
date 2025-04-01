@@ -3,7 +3,7 @@
 import { CalendarCheck, Utensils } from 'lucide-react'
 import React, { Suspense } from 'react'
 
-import { DashboardSkeleton } from '@/components/skeletons/DashboardSkeleton'
+import { ClientDashboardSkeleton } from '@/components/skeletons/ClientDashboardSkeleton'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { TodayRoutine } from './TodayRoutine'
 import { TodayNutritionalPlan } from './TodayNutritionalPlan'
@@ -14,7 +14,7 @@ export default function ClientDashboard({ facilityId }: { facilityId: string }) 
 
   return (
     <div className="grid gap-6 md:grid-cols-2">
-      <Suspense fallback={<DashboardSkeleton type="routine" />}>
+      <Suspense fallback={<ClientDashboardSkeleton type="routine" primaryColor={primaryColor}/>}>
         <Card>
           <CardHeader className="flex flex-row items-center gap-2">
             <CalendarCheck className="h-6 w-6" style={{ color: primaryColor }} />
@@ -29,7 +29,7 @@ export default function ClientDashboard({ facilityId }: { facilityId: string }) 
         </Card>
       </Suspense>
 
-      <Suspense fallback={<DashboardSkeleton type="nutrition" />}>
+      <Suspense fallback={<ClientDashboardSkeleton type="nutrition" primaryColor={primaryColor}/>}>
         <Card>
           <CardHeader className="flex flex-row items-center gap-2">
             <Utensils className="h-6 w-6" style={{ color: primaryColor }} />
