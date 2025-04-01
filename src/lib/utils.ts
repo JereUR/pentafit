@@ -81,8 +81,13 @@ export function getCurrentDayOfWeek(): DayOfWeek {
     DayOfWeek.SATURDAY,
   ]
 
-  const dayIndex = new Date().getDay()
-  return days[dayIndex]
+  const dateInArgentina = new Date(
+    new Date().toLocaleString("en-US", {
+      timeZone: "America/Argentina/Buenos_Aires",
+    }),
+  )
+
+  return days[dateInArgentina.getDay()]
 }
 
 export const DAY_DISPLAY_NAMES = {
@@ -106,7 +111,8 @@ export const MEAL_TYPE_DISPLAY_NAMES = {
 }
 
 export function formatDate(date: Date): string {
-  const formattedDate = new Intl.DateTimeFormat("es-ES", {
+  const formattedDate = new Intl.DateTimeFormat("es-AR", {
+    timeZone: "America/Argentina/Buenos_Aires",
     weekday: "long",
     year: "numeric",
     month: "long",
