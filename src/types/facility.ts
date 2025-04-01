@@ -64,4 +64,5 @@ export interface UserFacilityData {
   id: string
   name: string
   logoUrl?: string | null
+  primaryColor: string
 }
