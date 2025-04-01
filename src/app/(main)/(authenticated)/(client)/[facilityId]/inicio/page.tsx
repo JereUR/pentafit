@@ -27,9 +27,9 @@ export default async function UserFacilityPage({ params }: Props) {
   }
 
   return (
-    <div className="container py-10">
+    <div className="h-full">
       <div className="mb-6">
-        <p className="text-muted-foreground">{formattedDate}</p>
+        <h1 className="text-2xl text-muted-foreground">{formattedDate}</h1>
       </div>
       <ClientDashboard facilityId={facilityId} />
     </div>
