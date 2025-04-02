@@ -34,6 +34,7 @@ export interface ScheduleWithActivity {
 }
 
 export interface Schedule {
+  id?: string
   available: boolean
   timeStart: string
   timeEnd: string

@@ -1,4 +1,4 @@
-import { MembershipLevel, Prisma } from "@prisma/client"
+import { MembershipLevel, type Prisma } from "@prisma/client"
 
 export const GENDER_OPTIONS = [
   { value: "Masculino", label: "Masculino" },
@@ -70,6 +70,65 @@ export interface UserAssigned {
   firstName: string
   lastName: string
   email?: string | null
+}
+
+export interface SimpleDiaryData {
+  id: string
+  name: string
+  typeSchedule: string
+  dateFrom: string | Date
+  dateUntil: string | Date
+  termDuration: number
+  amountOfPeople: number
+  isActive: boolean
+  genreExclusive: string
+  worksHolidays: boolean
+  observations: string | null
+  daysAvailable: {
+    id?: string
+    available: boolean
+    timeStart: string
+    timeEnd: string
+  }[]
+  repeatFor?: number | null
+  facilityId?: string
+  offerDays?: {
+    isOffer: boolean
+    discountPercentage: number | null
+  }[]
+}
+
+export interface DiaryPlanData {
+  id: string
+  name: string
+  daysOfWeek: boolean[]
+  sessionsPerWeek: number
+  planId: string
+  activityId: string
+  activity: {
+    id: string
+    name: string
+    description: string | null
+    activityType: string
+  }
+  diaries: SimpleDiaryData[]
+}
+
+export interface UserDiaryData {
+  id: string
+  userId: string
+  diaryId: string
+  isActive: boolean
+  startDate: string | Date
+  endDate: string | Date | null
+  diary: SimpleDiaryData & {
+    activity: {
+      id: string
+      name: string
+      description: string | null
+      activityType: string
+    }
+  }
 }
 
 export default function formatUsersAssignedToString(
