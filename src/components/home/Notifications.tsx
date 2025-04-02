@@ -14,7 +14,7 @@ import { NotificationsPage } from "@/types/notification"
 import Notification from "./Notification"
 import NotificationsSkeleton from "../skeletons/NotificationsSkeleton"
 
-export default function Notifications() {
+export default function Notifications({ primaryColor }: { primaryColor?: string }) {
   const {
     data,
     fetchNextPage,
@@ -59,7 +59,7 @@ export default function Notifications() {
   const notifications = data?.pages.flatMap((page) => page.notifications) || []
 
   if (status === "pending") {
-    return <NotificationsSkeleton />
+    return <NotificationsSkeleton primaryColor={primaryColor} />
   }
 
   if (status === "success" && !notifications.length && !hasNextPage) {

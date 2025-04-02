@@ -14,7 +14,7 @@ export default function ClientDashboard({ facilityId }: { facilityId: string }) 
 
   return (
     <div className="grid gap-6 md:grid-cols-2">
-      <Suspense fallback={<ClientDashboardSkeleton type="routine" primaryColor={primaryColor}/>}>
+      <Suspense fallback={<ClientDashboardSkeleton type="routine" />}>
         <Card>
           <CardHeader className="flex flex-row items-center gap-2">
             <CalendarCheck className="h-6 w-6" style={{ color: primaryColor }} />
@@ -29,7 +29,7 @@ export default function ClientDashboard({ facilityId }: { facilityId: string }) 
         </Card>
       </Suspense>
 
-      <Suspense fallback={<ClientDashboardSkeleton type="nutrition" primaryColor={primaryColor}/>}>
+      <Suspense fallback={<ClientDashboardSkeleton type="nutrition" />}>
         <Card>
           <CardHeader className="flex flex-row items-center gap-2">
             <Utensils className="h-6 w-6" style={{ color: primaryColor }} />

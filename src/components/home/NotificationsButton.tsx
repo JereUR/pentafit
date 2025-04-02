@@ -11,9 +11,10 @@ import NotificationsDropdown from "./NotificationsDropdown"
 
 interface NotificationsButtonProps {
   initialState: NotificationCountInfo
+  primaryColor?: string
 }
 
-export default function NotificationsButton({ initialState }: NotificationsButtonProps) {
+export default function NotificationsButton({ initialState, primaryColor }: NotificationsButtonProps) {
   const [isOpen, setIsOpen] = useState(false)
   const { data } = useQuery({
     queryKey: ["unread-notification-count"],
@@ -34,6 +35,7 @@ export default function NotificationsButton({ initialState }: NotificationsButto
     <NotificationsDropdown
       isOpen={isOpen}
       onOpenChange={setIsOpen}
+      primaryColor={primaryColor}
       trigger={
         <Button
           variant="ghost"

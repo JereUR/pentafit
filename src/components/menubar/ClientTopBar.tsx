@@ -50,7 +50,7 @@ export default function ClientTopBar({
       </div>
       <div className="flex items-center gap-5 md:mr-10">
         <UserButton userRole={userRole} facilityId={facility?.id} primaryColor={primaryColor} />
-        <NotificationsButton initialState={{ unreadCount: initialNotificationCount }} />
+        <NotificationsButton initialState={{ unreadCount: initialNotificationCount }} primaryColor={primaryColor} />
       </div>
     </div>
   )
