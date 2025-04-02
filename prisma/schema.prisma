@@ -54,6 +54,7 @@ model User {
   staffActivities        ActivityStaff[]
   nutritionalPlan        UserNutritionalPlan[]
   plan                   UserPlan[]
+  diaries                UserDiary[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -483,8 +484,26 @@ model Diary {
   offerDays     OfferDay[]
   notifications Notification[]
   transactions  Transaction[]
+  userDiaries   UserDiary[]
 
   @@map("diaries")
+}
+
+model UserDiary {
+  id        String    @id @default(uuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  diaryId   String
+  diary     Diary     @relation(fields: [diaryId], references: [id], onDelete: Cascade)
+  isActive  Boolean   @default(true)
+  startDate DateTime  @default(now())
+  endDate   DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, diaryId])
+  @@map("user_diaries")
 }
 
 // Routine
