@@ -13,13 +13,14 @@ interface TodayNutritionalPlanProps {
 
 export function TodayNutritionalPlan({ facilityId, primaryColor, secondaryColor }: TodayNutritionalPlanProps) {
   const { isLoading, nutritionData, dayName, error } = useTodayClientData(facilityId)
+  const colorStyle = primaryColor ? { backgroundColor: `${primaryColor}20` } : {}
 
   if (isLoading) {
     return (
       <div className="space-y-4">
-        <Skeleton className="h-4 w-3/4" />
-        <Skeleton className="h-20 w-full" />
-        <Skeleton className="h-4 w-1/2" />
+        <Skeleton className="h-4 w-3/4" style={colorStyle} />
+        <Skeleton className="h-20 w-full" style={colorStyle} />
+        <Skeleton className="h-4 w-1/2" style={colorStyle} />
       </div>
     )
   }
