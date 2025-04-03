@@ -10,7 +10,7 @@ import { TodayNutritionalPlan } from './TodayNutritionalPlan'
 import { useClientFacility } from '@/contexts/ClientFacilityContext'
 
 export default function ClientDashboard({ facilityId }: { facilityId: string }) {
-  const { primaryColor, secondaryColor } = useClientFacility()
+  const { primaryColor } = useClientFacility()
 
   return (
     <div className="grid gap-6 md:grid-cols-2">
@@ -24,7 +24,7 @@ export default function ClientDashboard({ facilityId }: { facilityId: string }) 
             </div>
           </CardHeader>
           <CardContent>
-            <TodayRoutine facilityId={facilityId} primaryColor={primaryColor} secondaryColor={secondaryColor} />
+            <TodayRoutine facilityId={facilityId} primaryColor={primaryColor} />
           </CardContent>
         </Card>
       </Suspense>
@@ -39,7 +39,7 @@ export default function ClientDashboard({ facilityId }: { facilityId: string }) 
             </div>
           </CardHeader>
           <CardContent>
-            <TodayNutritionalPlan facilityId={facilityId} primaryColor={primaryColor} secondaryColor={secondaryColor} />
+            <TodayNutritionalPlan facilityId={facilityId} primaryColor={primaryColor} />
           </CardContent>
         </Card>
       </Suspense>

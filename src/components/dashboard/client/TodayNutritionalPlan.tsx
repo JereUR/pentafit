@@ -2,16 +2,15 @@
 
 import { Skeleton } from "@/components/ui/skeleton"
 import { useTodayClientData } from "@/hooks/useTodayClientData"
-import { EmptyState } from "./EmptyState"
+import { EmptyState } from "../../EmptyState"
 import { MealList } from "./MealList"
 
 interface TodayNutritionalPlanProps {
   facilityId: string
   primaryColor: string
-  secondaryColor: string
 }
 
-export function TodayNutritionalPlan({ facilityId, primaryColor, secondaryColor }: TodayNutritionalPlanProps) {
+export function TodayNutritionalPlan({ facilityId, primaryColor }: TodayNutritionalPlanProps) {
   const { isLoading, nutritionData, dayName, error } = useTodayClientData(facilityId)
   const colorStyle = primaryColor ? { backgroundColor: `${primaryColor}20` } : {}
 
@@ -36,7 +35,6 @@ export function TodayNutritionalPlan({ facilityId, primaryColor, secondaryColor 
         description="No tienes comidas programadas para hoy."
         icon="food"
         primaryColor={primaryColor}
-        secondaryColor={secondaryColor}
       />
     )
   }

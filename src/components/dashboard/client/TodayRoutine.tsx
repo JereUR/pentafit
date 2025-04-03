@@ -3,16 +3,15 @@
 import { getCurrentDayOfWeek, DAY_DISPLAY_NAMES } from "@/lib/utils"
 import { useTodayClientData } from "@/hooks/useTodayClientData"
 import { Skeleton } from "../../ui/skeleton"
-import { EmptyState } from "./EmptyState"
+import { EmptyState } from "../../EmptyState"
 import { ExerciseList } from "./ExerciseList"
 
 interface TodayRoutineProps {
   facilityId: string
   primaryColor: string
-  secondaryColor: string
 }
 
-export function TodayRoutine({ facilityId, primaryColor, secondaryColor }: TodayRoutineProps) {
+export function TodayRoutine({ facilityId, primaryColor }: TodayRoutineProps) {
   const { routineData, isLoading, error } = useTodayClientData(facilityId)
   const today = getCurrentDayOfWeek()
   const dayName = DAY_DISPLAY_NAMES[today]
@@ -40,7 +39,6 @@ export function TodayRoutine({ facilityId, primaryColor, secondaryColor }: Today
         description="No tienes ejercicios programados para hoy."
         icon="workout"
         primaryColor={primaryColor}
-        secondaryColor={secondaryColor}
       />
     )
   }
