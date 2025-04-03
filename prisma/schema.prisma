@@ -401,10 +401,12 @@ model DiaryPlan {
   name            String
   daysOfWeek      Boolean[]
   sessionsPerWeek Int
+  vacancies       Int       @default(0)
   plan            Plan      @relation(fields: [planId], references: [id])
   planId          String
   activity        Activity  @relation(fields: [activityId], references: [id])
   activityId      String
+  userDiaries   UserDiary[]
 
   @@map("diary_plans")
 }
@@ -484,7 +486,6 @@ model Diary {
   offerDays     OfferDay[]
   notifications Notification[]
   transactions  Transaction[]
-  userDiaries   UserDiary[]
 
   @@map("diaries")
 }
@@ -507,8 +508,8 @@ model UserDiary {
   id          String                @id @default(uuid())
   userId      String
   user        User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  diaryId     String
-  diary       Diary                 @relation(fields: [diaryId], references: [id], onDelete: Cascade)
+  diaryPlanId     String
+  diaryPlan       DiaryPlan                 @relation(fields: [diaryPlanId], references: [id], onDelete: Cascade)
   isActive    Boolean               @default(true)
   startDate   DateTime              @default(now())
   endDate     DateTime?
@@ -517,7 +518,7 @@ model UserDiary {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([userId, diaryId])
+  @@unique([userId, diaryPlanId])
   @@map("user_diaries")
 }
 
