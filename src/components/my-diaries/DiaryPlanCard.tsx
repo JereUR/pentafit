@@ -111,9 +111,17 @@ export function DiaryPlanCard({ diaryPlan, facilityId, primaryColor }: DiaryPlan
                 <p className="text-xs sm:text-sm text-muted-foreground truncate">{diaryPlan.activity.name}</p>
               </div>
             </div>
-            <Badge variant="outline" className="ml-2 text-[10px] sm:text-xs flex-shrink-0">
-              {diaryPlan.sessionsPerWeek} sesiones/semana
-            </Badge>
+            <div className="flex items-center gap-1 sm:gap-2">
+              <Badge variant="outline" className="text-[10px] sm:text-xs flex-shrink-0">
+                {diaryPlan.sessionsPerWeek} sesiones/semana
+              </Badge>
+              <Badge
+                variant={diaryPlan.vacancies < 5 ? "destructive" : "secondary"}
+                className="text-[10px] sm:text-xs flex-shrink-0"
+              >
+                {diaryPlan.vacancies} {diaryPlan.vacancies === 1 ? "cupo" : "cupos"}
+              </Badge>
+            </div>
           </div>
         </CardHeader>
         <CardContent className="pb-2 px-3 sm:px-6">

@@ -43,6 +43,7 @@ export function DiaryPlansList({ facilityId, primaryColor }: DiaryPlansListProps
         description="No tienes actividades disponibles en tu plan actual."
         icon="workout"
         primaryColor={primaryColor}
+        showRedirectButton={false}
       />
     )
   }
