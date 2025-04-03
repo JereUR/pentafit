@@ -50,6 +50,7 @@ export interface DiaryPlansValues {
   name: string
   daysOfWeek: boolean[]
   sessionsPerWeek: number
+  vacancies: number
   activityId: string
 }
 

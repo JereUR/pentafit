@@ -260,6 +260,7 @@ export const planSchema = z.object({
         name: requiredString,
         daysOfWeek: z.array(z.boolean()).length(7),
         sessionsPerWeek: z.number().int().min(1),
+        vacancies: z.number().int().min(1),
         activityId: z.string().uuid("ID de actividad inválido"),
       })
       .refine(

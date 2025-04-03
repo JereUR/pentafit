@@ -63,6 +63,7 @@ export const getPlanById = cache(
           name: diaryPlan.activity.name,
           daysOfWeek: diaryPlan.daysOfWeek,
           sessionsPerWeek: diaryPlan.sessionsPerWeek,
+          vacancies: diaryPlan.vacancies,
           activityId: diaryPlan.activity.id,
         })),
       }
@@ -99,6 +100,7 @@ export async function createPlan(values: PlanValues): Promise<PlanResult> {
                 name: dp.name,
                 daysOfWeek: dp.daysOfWeek,
                 sessionsPerWeek: dp.sessionsPerWeek,
+                vacancies: dp.vacancies,
                 activityId: dp.activityId,
               })) || [],
           },
@@ -166,6 +168,7 @@ export async function updatePlan(
                 name: dp.name,
                 daysOfWeek: dp.daysOfWeek,
                 sessionsPerWeek: dp.sessionsPerWeek,
+                vacancies: dp.vacancies,
                 activityId: dp.activityId,
               })) || [],
           },
@@ -325,6 +328,7 @@ export async function replicatePlans(
               name: true,
               daysOfWeek: true,
               sessionsPerWeek: true,
+              vacancies: true,
               activityId: true,
             },
           },
@@ -338,7 +342,6 @@ export async function replicatePlans(
         }
       }
 
-      // Get target facilities information
       const targetFacilities = await tx.facility.findMany({
         where: { id: { in: targetFacilityIds } },
         select: {

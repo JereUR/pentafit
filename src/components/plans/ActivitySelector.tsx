@@ -50,6 +50,7 @@ export function ActivitySelector({ diaries, onChange, initialDiaryPlans }: Activ
           daysOfWeek: diary.daysAvailable,
           sessionsPerWeek: 1,
           activityId: diary.activityId,
+          vacancies: diary.amountOfPeople,
           originalDaysAvailable: diary.daysAvailable,
           diaryId: diary.id,
         }

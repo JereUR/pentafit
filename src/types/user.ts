@@ -103,6 +103,7 @@ export interface DiaryPlanData {
   name: string
   daysOfWeek: boolean[]
   sessionsPerWeek: number
+  vacancies: number
   planId: string
   activityId: string
   activity: {
@@ -134,6 +135,12 @@ export interface UserDiaryData {
     timeStart: string
     timeEnd: string
   }[]
+  diaryPlan?: {
+    id: string
+    name: string
+    sessionsPerWeek: number
+    daysOfWeek: boolean[]
+  }
 }
 
 export default function formatUsersAssignedToString(
