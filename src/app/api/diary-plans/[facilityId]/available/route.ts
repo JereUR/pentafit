@@ -77,31 +77,41 @@ export async function GET(
           description: diaryPlan.activity.description,
           activityType: diaryPlan.activity.activityType,
         },
-        diaries: diaryPlan.activity.diaries.map((diary) => ({
-          id: diary.id,
-          name: diary.name,
-          typeSchedule: diary.typeSchedule,
-          dateFrom: diary.dateFrom,
-          dateUntil: diary.dateUntil,
-          repeatFor: diary.repeatFor,
-          termDuration: diary.termDuration,
-          amountOfPeople: diary.amountOfPeople,
-          isActive: diary.isActive,
-          genreExclusive: diary.genreExclusive,
-          worksHolidays: diary.worksHolidays,
-          observations: diary.observations,
-          facilityId: diary.facilityId,
-          offerDays: diary.offerDays.map((offerDay) => ({
-            isOffer: offerDay.isOffer,
-            discountPercentage: offerDay.discountPercentage,
-          })),
-          daysAvailable: diary.daysAvailable.map((day) => ({
-            id: day.id,
-            available: day.available,
-            timeStart: day.timeStart,
-            timeEnd: day.timeEnd,
-          })),
-        })),
+        diaries: diaryPlan.activity.diaries.map((diary) => {
+          const filteredDaysAvailable = diary.daysAvailable.map(
+            (day, index) => ({
+              id: day.id,
+              available:
+                day.available &&
+                (index < diaryPlan.daysOfWeek.length
+                  ? diaryPlan.daysOfWeek[index]
+                  : false),
+              timeStart: day.timeStart,
+              timeEnd: day.timeEnd,
+            }),
+          )
+
+          return {
+            id: diary.id,
+            name: diary.name,
+            typeSchedule: diary.typeSchedule,
+            dateFrom: diary.dateFrom,
+            dateUntil: diary.dateUntil,
+            repeatFor: diary.repeatFor,
+            termDuration: diary.termDuration,
+            amountOfPeople: diary.amountOfPeople,
+            isActive: diary.isActive,
+            genreExclusive: diary.genreExclusive,
+            worksHolidays: diary.worksHolidays,
+            observations: diary.observations,
+            facilityId: diary.facilityId,
+            offerDays: diary.offerDays.map((offerDay) => ({
+              isOffer: offerDay.isOffer,
+              discountPercentage: offerDay.discountPercentage,
+            })),
+            daysAvailable: filteredDaysAvailable,
+          }
+        }),
       }),
     )
 
