@@ -8,9 +8,11 @@ import prisma from "@/lib/prisma"
 export async function subscribeToDiary({
   diaryId,
   facilityId,
+  selectedDayIds,
 }: {
   diaryId: string
   facilityId: string
+  selectedDayIds?: string[]
 }) {
   try {
     const { user } = await validateRequest()
@@ -25,10 +27,27 @@ export async function subscribeToDiary({
         facilityId: facilityId,
         isActive: true,
       },
+      include: {
+        daysAvailable: true,
+      },
     })
 
     if (!diary) {
       throw new Error("Agenda no encontrada o inactiva")
+    }
+
+    if (selectedDayIds && selectedDayIds.length > 0) {
+      const validDayIds = diary.daysAvailable
+        .filter((day) => day.available)
+        .map((day) => day.id)
+
+      const allDaysValid = selectedDayIds.every((dayId) =>
+        validDayIds.includes(dayId),
+      )
+
+      if (!allDaysValid) {
+        throw new Error("Algunos días seleccionados no son válidos")
+      }
     }
 
     const existingUserDiary = await prisma.userDiary.findUnique({
@@ -52,7 +71,26 @@ export async function subscribeToDiary({
           },
         })
 
-        revalidatePath(`/${facilityId}/diary-plans`)
+        if (selectedDayIds && selectedDayIds.length > 0) {
+          await prisma.userDiaryAttachment.deleteMany({
+            where: {
+              userDiaryId: updatedUserDiary.id,
+            },
+          })
+
+          await Promise.all(
+            selectedDayIds.map((dayId) =>
+              prisma.userDiaryAttachment.create({
+                data: {
+                  userDiaryId: updatedUserDiary.id,
+                  dayAvailableId: dayId,
+                },
+              }),
+            ),
+          )
+        }
+
+        revalidatePath(`/${facilityId}/mi-agenda`)
         return { success: true, userDiary: updatedUserDiary }
       }
 
@@ -68,7 +106,20 @@ export async function subscribeToDiary({
       },
     })
 
-    revalidatePath(`/${facilityId}/diary-plans`)
+    if (selectedDayIds && selectedDayIds.length > 0) {
+      await Promise.all(
+        selectedDayIds.map((dayId) =>
+          prisma.userDiaryAttachment.create({
+            data: {
+              userDiaryId: userDiary.id,
+              dayAvailableId: dayId,
+            },
+          }),
+        ),
+      )
+    }
+
+    revalidatePath(`/${facilityId}/mi-agenda`)
     return { success: true, userDiary }
   } catch (error) {
     console.error("Error subscribing to diary:", error)
@@ -118,7 +169,7 @@ export async function unsubscribeFromDiary({
       },
     })
 
-    revalidatePath(`/${facilityId}/diary-plans`)
+    revalidatePath(`/${facilityId}/mi-agenda`)
     return { success: true, userDiary: updatedUserDiary }
   } catch (error) {
     console.error("Error unsubscribing from diary:", error)
@@ -161,6 +212,11 @@ export async function getUserDiaries(
             },
           },
         },
+        attachments: {
+          include: {
+            dayAvailable: true,
+          },
+        },
       },
     })
 
@@ -169,34 +225,53 @@ export async function getUserDiaries(
     }
 
     const formattedUserDiaries: UserDiaryData[] = userDiaries.map(
-      (userDiary) => ({
-        id: userDiary.id,
-        userId: userDiary.userId,
-        diaryId: userDiary.diaryId,
-        isActive: userDiary.isActive,
-        startDate: userDiary.startDate,
-        endDate: userDiary.endDate,
-        diary: {
-          id: userDiary.diary.id,
-          name: userDiary.diary.name,
-          typeSchedule: userDiary.diary.typeSchedule,
-          dateFrom: userDiary.diary.dateFrom,
-          dateUntil: userDiary.diary.dateUntil,
-          termDuration: userDiary.diary.termDuration,
-          amountOfPeople: userDiary.diary.amountOfPeople,
-          isActive: userDiary.diary.isActive,
-          genreExclusive: userDiary.diary.genreExclusive,
-          worksHolidays: userDiary.diary.worksHolidays,
-          observations: userDiary.diary.observations,
-          activity: userDiary.diary.activity,
-          daysAvailable: userDiary.diary.daysAvailable.map((day) => ({
+      (userDiary) => {
+        const subscribedDayIds = userDiary.attachments.map(
+          (attachment) => attachment.dayAvailableId,
+        )
+
+        const filteredDaysAvailable = userDiary.diary.daysAvailable
+          .filter(
+            (day) =>
+              subscribedDayIds.length === 0 ||
+              subscribedDayIds.includes(day.id),
+          )
+          .map((day) => ({
             id: day.id,
             available: day.available,
             timeStart: day.timeStart,
             timeEnd: day.timeEnd,
+          }))
+
+        return {
+          id: userDiary.id,
+          userId: userDiary.userId,
+          diaryId: userDiary.diaryId,
+          isActive: userDiary.isActive,
+          startDate: userDiary.startDate,
+          endDate: userDiary.endDate,
+          diary: {
+            id: userDiary.diary.id,
+            name: userDiary.diary.name,
+            typeSchedule: userDiary.diary.typeSchedule,
+            dateFrom: userDiary.diary.dateFrom,
+            dateUntil: userDiary.diary.dateUntil,
+            termDuration: userDiary.diary.termDuration,
+            amountOfPeople: userDiary.diary.amountOfPeople,
+            isActive: userDiary.diary.isActive,
+            genreExclusive: userDiary.diary.genreExclusive,
+            worksHolidays: userDiary.diary.worksHolidays,
+            observations: userDiary.diary.observations,
+            activity: userDiary.diary.activity,
+            daysAvailable: filteredDaysAvailable,
+          },
+          selectedDays: userDiary.attachments.map((attachment) => ({
+            id: attachment.dayAvailableId,
+            timeStart: attachment.dayAvailable.timeStart,
+            timeEnd: attachment.dayAvailable.timeEnd,
           })),
-        },
-      }),
+        }
+      },
     )
 
     return { userDiaries: formattedUserDiaries }

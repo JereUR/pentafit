@@ -14,11 +14,17 @@ export function useSubscribeToDiaryMutation() {
     mutationFn: async ({
       diaryId,
       facilityId,
+      selectedDayIds,
     }: {
       diaryId: string
       facilityId: string
+      selectedDayIds?: string[]
     }) => {
-      const result = await subscribeToDiary({ diaryId, facilityId })
+      const result = await subscribeToDiary({
+        diaryId,
+        facilityId,
+        selectedDayIds,
+      })
       return result
     },
     onSuccess: () => {

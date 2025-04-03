@@ -429,13 +429,13 @@ model UserPlan {
 // Diary
 
 model DayAvailable {
-  id        String  @id @default(uuid())
-  diaryId   String
-  available Boolean
-  timeStart String
-  timeEnd   String
-
-  diary Diary @relation(fields: [diaryId], references: [id], onDelete: Cascade)
+  id                   String                @id @default(uuid())
+  diaryId              String
+  available            Boolean
+  timeStart            String
+  timeEnd              String
+  diary                Diary                 @relation(fields: [diaryId], references: [id], onDelete: Cascade)
+  userDiaryAttachments UserDiaryAttachment[]
 
   @@map("days_available")
 }
@@ -489,15 +489,30 @@ model Diary {
   @@map("diaries")
 }
 
+model UserDiaryAttachment {
+  id             String       @id @default(uuid())
+  userDiaryId    String
+  userDiary      UserDiary    @relation(fields: [userDiaryId], references: [id], onDelete: Cascade)
+  dayAvailableId String
+  dayAvailable   DayAvailable @relation(fields: [dayAvailableId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userDiaryId, dayAvailableId])
+  @@map("user_diary_attachments")
+}
+
 model UserDiary {
-  id        String    @id @default(uuid())
-  userId    String
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  diaryId   String
-  diary     Diary     @relation(fields: [diaryId], references: [id], onDelete: Cascade)
-  isActive  Boolean   @default(true)
-  startDate DateTime  @default(now())
-  endDate   DateTime?
+  id          String                @id @default(uuid())
+  userId      String
+  user        User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  diaryId     String
+  diary       Diary                 @relation(fields: [diaryId], references: [id], onDelete: Cascade)
+  isActive    Boolean               @default(true)
+  startDate   DateTime              @default(now())
+  endDate     DateTime?
+  attachments UserDiaryAttachment[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

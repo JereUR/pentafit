@@ -129,6 +129,11 @@ export interface UserDiaryData {
       activityType: string
     }
   }
+  selectedDays?: {
+    id: string
+    timeStart: string
+    timeEnd: string
+  }[]
 }
 
 export default function formatUsersAssignedToString(
