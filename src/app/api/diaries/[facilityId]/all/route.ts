@@ -25,6 +25,7 @@ export async function GET(
         id: true,
         name: true,
         daysAvailable: true,
+        amountOfPeople: true,
         activity: {
           select: {
             id: true,
@@ -43,6 +44,7 @@ export async function GET(
       name: diary.name,
       daysAvailable: diary.daysAvailable.map((day) => day.available),
       activityId: diary.activity.id,
+      amountOfPeople: diary.amountOfPeople,
       activityName: diary.activity.name,
     }))
 

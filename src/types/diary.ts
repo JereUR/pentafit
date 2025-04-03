@@ -68,6 +68,7 @@ export interface AllDIaryData {
   name: string
   activityId: string
   activityName: string
+  amountOfPeople: number
   daysAvailable: boolean[]
 }
 
