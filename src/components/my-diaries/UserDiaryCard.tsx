@@ -63,7 +63,7 @@ export function UserDiaryCard({ userDiary, facilityId, primaryColor }: UserDiary
           </div>
           <div className="flex items-center gap-1">
             <Users className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-muted-foreground flex-shrink-0" />
-            <span className="text-muted-foreground truncate">{userDiary.diary.amountOfPeople} personas</span>
+            <span className="text-muted-foreground truncate">{userDiary.diary.amountOfPeople} personas max.</span>
           </div>
         </div>
 
