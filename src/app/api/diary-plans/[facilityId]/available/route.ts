@@ -69,6 +69,7 @@ export async function GET(
         name: diaryPlan.name,
         daysOfWeek: diaryPlan.daysOfWeek,
         sessionsPerWeek: diaryPlan.sessionsPerWeek,
+        vacancies: diaryPlan.vacancies,
         planId: diaryPlan.planId,
         activityId: diaryPlan.activityId,
         activity: {
