@@ -18,3 +18,18 @@ export interface DayWithInfo {
   timeEnd: string
   dayName: string
 }
+
+export interface CalendarEvent {
+  id: string
+  title: string
+  time: string
+  diaryName: string
+  activityName: string
+}
+
+export interface DayEvents {
+  date: Date
+  dayName: string
+  dayNumber: number
+  events: CalendarEvent[]
+}
