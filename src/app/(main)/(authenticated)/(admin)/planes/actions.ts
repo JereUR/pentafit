@@ -146,6 +146,27 @@ export async function updatePlan(
 
   return await prisma.$transaction(async (tx) => {
     try {
+      const existingPlan = await tx.plan.findUnique({
+        where: { id },
+        include: {
+          diaryPlans: {
+            include: {
+              userDiaries: {
+                include: { attachments: true },
+              },
+            },
+          },
+        },
+      })
+
+      if (!existingPlan) {
+        return { success: false, error: "Plan no encontrado" }
+      }
+
+      const existingDiaryPlanMap = new Map(
+        existingPlan.diaryPlans.map((dp) => [dp.name, dp]),
+      )
+
       const plan = await tx.plan.update({
         where: { id },
         data: {
@@ -161,19 +182,83 @@ export async function updatePlan(
           freeTest: values.freeTest,
           current: values.current,
           facilityId: values.facilityId,
-          diaryPlans: {
-            deleteMany: {},
-            create:
-              values.diaryPlans?.map((dp) => ({
-                name: dp.name,
-                daysOfWeek: dp.daysOfWeek,
-                sessionsPerWeek: dp.sessionsPerWeek,
-                vacancies: dp.vacancies,
-                activityId: dp.activityId,
-              })) || [],
-          },
         },
       })
+
+      const affectedUserIds = new Set<string>()
+
+      const processedDiaryPlanIds = new Set<string>()
+
+      for (const newDp of values.diaryPlans || []) {
+        const existingDp = existingDiaryPlanMap.get(newDp.name)
+
+        if (existingDp) {
+          await tx.diaryPlan.update({
+            where: { id: existingDp.id },
+            data: {
+              daysOfWeek: newDp.daysOfWeek,
+              sessionsPerWeek: newDp.sessionsPerWeek,
+              vacancies: newDp.vacancies,
+              activityId: newDp.activityId,
+            },
+          })
+
+          processedDiaryPlanIds.add(existingDp.id)
+
+          if (
+            JSON.stringify(existingDp.daysOfWeek) !==
+              JSON.stringify(newDp.daysOfWeek) ||
+            existingDp.activityId !== newDp.activityId ||
+            existingDp.sessionsPerWeek !== newDp.sessionsPerWeek
+          ) {
+            existingDp.userDiaries
+              .filter((ud) => ud.isActive)
+              .forEach((ud) => affectedUserIds.add(ud.userId))
+          }
+        } else {
+          const newDiaryPlan = await tx.diaryPlan.create({
+            data: {
+              name: newDp.name,
+              daysOfWeek: newDp.daysOfWeek,
+              sessionsPerWeek: newDp.sessionsPerWeek,
+              vacancies: newDp.vacancies,
+              activityId: newDp.activityId,
+              planId: id,
+            },
+          })
+
+          processedDiaryPlanIds.add(newDiaryPlan.id)
+        }
+      }
+
+      const diaryPlansToRemove = existingPlan.diaryPlans.filter(
+        (dp) => !processedDiaryPlanIds.has(dp.id),
+      )
+
+      for (const dpToRemove of diaryPlansToRemove) {
+        const activeUserDiaries = dpToRemove.userDiaries.filter(
+          (ud) => ud.isActive,
+        )
+
+        if (activeUserDiaries.length > 0) {
+          await tx.userDiary.updateMany({
+            where: {
+              diaryPlanId: dpToRemove.id,
+              isActive: true,
+            },
+            data: {
+              isActive: false,
+              endDate: new Date(),
+            },
+          })
+
+          activeUserDiaries.forEach((ud) => affectedUserIds.add(ud.userId))
+        }
+
+        await tx.diaryPlan.delete({
+          where: { id: dpToRemove.id },
+        })
+      }
 
       await createPlanTransaction({
         tx,
@@ -185,6 +270,12 @@ export async function updatePlan(
           action: "Plan actualizado",
           attachmentId: plan.id,
           attachmentName: plan.name,
+          affectedUserCount: affectedUserIds.size,
+          diaryPlansAdded:
+            values.diaryPlans?.length -
+            existingPlan.diaryPlans.length +
+            diaryPlansToRemove.length,
+          diaryPlansRemoved: diaryPlansToRemove.length,
         },
       })
 
@@ -196,8 +287,22 @@ export async function updatePlan(
         relatedId: plan.id,
       })
 
+      if (affectedUserIds.size > 0) {
+        await createNotification({
+          tx,
+          issuerId: user.id,
+          facilityId: values.facilityId,
+          type: NotificationType.DIARY_PLAN_UPDATED,
+          relatedId: plan.id,
+          assignedUsers: Array.from(affectedUserIds),
+        })
+      }
+
       revalidatePath(`/planes`)
-      return { success: true }
+      return {
+        success: true,
+        affectedUserCount: affectedUserIds.size,
+      }
     } catch (error) {
       console.error(error)
       return { success: false, error: "Error al editar el plan" }
@@ -456,7 +561,9 @@ export async function assignPlanToUsers(
     try {
       const plan = await tx.plan.findUnique({
         where: { id: planId },
-        select: { id: true, name: true },
+        include: {
+          diaryPlans: true,
+        },
       })
 
       if (!plan) {
@@ -473,7 +580,20 @@ export async function assignPlanToUsers(
         },
         include: {
           plan: {
-            select: { name: true },
+            select: {
+              name: true,
+              id: true,
+              diaryPlans: {
+                include: {
+                  userDiaries: {
+                    where: {
+                      userId: { in: userIds },
+                      isActive: true,
+                    },
+                  },
+                },
+              },
+            },
           },
         },
       })
@@ -504,6 +624,28 @@ export async function assignPlanToUsers(
         const userIdsToUnassign = [
           ...new Set(usersWithOtherPlans.map((u) => u.userId)),
         ]
+
+        for (const userPlan of existingUserPlans.filter(
+          (up) =>
+            planIdsToUnassign.includes(up.planId) &&
+            userIdsToUnassign.includes(up.userId),
+        )) {
+          const diaryPlanIds = userPlan.plan.diaryPlans.map((dp) => dp.id)
+
+          if (diaryPlanIds.length > 0) {
+            await tx.userDiary.updateMany({
+              where: {
+                userId: userPlan.userId,
+                diaryPlanId: { in: diaryPlanIds },
+                isActive: true,
+              },
+              data: {
+                isActive: false,
+                endDate: new Date(),
+              },
+            })
+          }
+        }
 
         await tx.userPlan.updateMany({
           where: {
@@ -673,7 +815,9 @@ export async function unassignPlanFromUsers(
     try {
       const plan = await tx.plan.findUnique({
         where: { id: planId },
-        select: { id: true, name: true },
+        include: {
+          diaryPlans: true,
+        },
       })
 
       if (!plan) {
@@ -698,6 +842,33 @@ export async function unassignPlanFromUsers(
         return {
           success: false,
           message: "No hay usuarios asignados a este plan para desasignar",
+        }
+      }
+
+      const diaryPlanIds = plan.diaryPlans.map((dp) => dp.id)
+
+      if (diaryPlanIds.length > 0) {
+        const userDiaries = await tx.userDiary.findMany({
+          where: {
+            userId: { in: existingUserIds },
+            diaryPlanId: { in: diaryPlanIds },
+            isActive: true,
+          },
+          include: {
+            attachments: true,
+          },
+        })
+
+        if (userDiaries.length > 0) {
+          await tx.userDiary.updateMany({
+            where: {
+              id: { in: userDiaries.map((ud) => ud.id) },
+            },
+            data: {
+              isActive: false,
+              endDate: new Date(),
+            },
+          })
         }
       }
 
