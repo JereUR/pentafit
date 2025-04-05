@@ -19,6 +19,7 @@ import type { RoutineData } from "@/types/routine"
 import type { DeleteEntityResult } from "@/lib/utils"
 import { createRoutineTransaction } from "@/lib/transactionHelpers"
 import { TransactionDetails } from "@/types/transactions"
+import { createClientNotification } from "@/lib/clientNotificationHelpers"
 
 type RoutineResult = {
   success: boolean
@@ -713,6 +714,19 @@ export async function assignRoutineToUsers(
             relatedId: routineIdToUnassign,
             assignedUsers: userIds,
           })
+
+          for (const userId of userIdsToUnassign) {
+            await createClientNotification({
+              tx,
+              recipientId: userId,
+              issuerId: user.id,
+              facilityId,
+              type: NotificationType.UNASSIGN_ROUTINE_USER,
+              relatedId: routineIdToUnassign,
+              entityName: routineName,
+              endDate: new Date(),
+            })
+          }
         }
       }
 
@@ -777,6 +791,24 @@ export async function assignRoutineToUsers(
         relatedId: routineId,
         assignedUsers: userIds,
       })
+
+      for (const userId of userIds) {
+        const replacedRoutine = usersWithOtherRoutines.find(
+          (u) => u.userId === userId,
+        )
+
+        await createClientNotification({
+          tx,
+          recipientId: userId,
+          issuerId: user.id,
+          facilityId,
+          type: NotificationType.ASSIGN_ROUTINE_USER,
+          relatedId: routineId,
+          entityName: routine.name,
+          startDate: new Date(),
+          replacedEntityName: replacedRoutine?.routineName,
+        })
+      }
 
       revalidatePath("/entrenamiento/rutinas")
 
@@ -896,6 +928,19 @@ export async function unassignRoutineFromUsers(
         relatedId: routineId,
         assignedUsers: userIds,
       })
+
+      for (const userId of existingUserIds) {
+        await createClientNotification({
+          tx,
+          recipientId: userId,
+          issuerId: user.id,
+          facilityId,
+          type: NotificationType.UNASSIGN_ROUTINE_USER,
+          relatedId: routineId,
+          entityName: routine.name,
+          endDate: new Date(),
+        })
+      }
 
       revalidatePath("/entrenamiento/rutinas")
 
