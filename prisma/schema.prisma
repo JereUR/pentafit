@@ -146,6 +146,7 @@ enum NotificationType {
   ACTIVITY_REPLICATED
   PLAN_CREATED
   PLAN_UPDATED
+  DIARY_PLAN_UPDATED
   PLAN_DELETED
   PLAN_REPLICATED
   ASSIGN_PLAN_USER
@@ -217,6 +218,7 @@ model Notification {
   presetNutritionalPlanId String?
   presetNutritionalPlan   PresetNutritionalPlan? @relation(fields: [presetNutritionalPlanId], references: [id], onDelete: Cascade)
 
+  message   String?
   read      Boolean          @default(false)
   type      NotificationType
   createdAt DateTime         @default(now())
@@ -241,6 +243,7 @@ enum TransactionType {
   CLIENT_MEMBERSHIP_CHANGED
   PLAN_CREATED
   PLAN_UPDATED
+  DIARY_PLAN_UPDATED
   PLAN_DELETED
   PLAN_REPLICATED
   ASSIGN_PLAN_USER
@@ -397,16 +400,16 @@ model Plan {
 }
 
 model DiaryPlan {
-  id              String    @id @default(uuid())
+  id              String      @id @default(uuid())
   name            String
   daysOfWeek      Boolean[]
   sessionsPerWeek Int
-  vacancies       Int       @default(0)
-  plan            Plan      @relation(fields: [planId], references: [id])
+  vacancies       Int         @default(0)
+  plan            Plan        @relation(fields: [planId], references: [id])
   planId          String
-  activity        Activity  @relation(fields: [activityId], references: [id])
+  activity        Activity    @relation(fields: [activityId], references: [id])
   activityId      String
-  userDiaries   UserDiary[]
+  userDiaries     UserDiary[]
 
   @@map("diary_plans")
 }
@@ -508,8 +511,8 @@ model UserDiary {
   id          String                @id @default(uuid())
   userId      String
   user        User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  diaryPlanId     String
-  diaryPlan       DiaryPlan                 @relation(fields: [diaryPlanId], references: [id], onDelete: Cascade)
+  diaryPlanId String
+  diaryPlan   DiaryPlan             @relation(fields: [diaryPlanId], references: [id], onDelete: Cascade)
   isActive    Boolean               @default(true)
   startDate   DateTime              @default(now())
   endDate     DateTime?
