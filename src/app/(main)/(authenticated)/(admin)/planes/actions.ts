@@ -8,11 +8,12 @@ import { notFound } from "next/navigation"
 import type { PlanValues } from "@/lib/validation"
 import prisma from "@/lib/prisma"
 import { createNotification } from "@/lib/notificationHelpers"
-import { NotificationType, Prisma, TransactionType } from "@prisma/client"
+import { NotificationType, TransactionType } from "@prisma/client"
 import { validateRequest } from "@/auth"
 import type { PlanData } from "@/types/plan"
 import type { DeleteEntityResult } from "@/lib/utils"
 import { createPlanTransaction } from "@/lib/transactionHelpers"
+import { createClientNotification } from "@/lib/clientNotificationHelpers"
 
 type PlanResult = {
   success: boolean
@@ -152,7 +153,14 @@ export async function updatePlan(
           diaryPlans: {
             include: {
               userDiaries: {
-                include: { attachments: true },
+                include: {
+                  attachments: true,
+                  user: {
+                    select: {
+                      id: true,
+                    },
+                  },
+                },
               },
             },
           },
@@ -287,6 +295,28 @@ export async function updatePlan(
         relatedId: plan.id,
       })
 
+      const userPlans = await tx.userPlan.findMany({
+        where: {
+          planId: plan.id,
+          isActive: true,
+        },
+        select: {
+          userId: true,
+        },
+      })
+
+      for (const userPlan of userPlans) {
+        await createClientNotification({
+          tx,
+          recipientId: userPlan.userId,
+          issuerId: user.id,
+          facilityId: values.facilityId,
+          type: NotificationType.PLAN_UPDATED,
+          relatedId: plan.id,
+          entityName: plan.name,
+        })
+      }
+
       if (affectedUserIds.size > 0) {
         await createNotification({
           tx,
@@ -296,6 +326,17 @@ export async function updatePlan(
           relatedId: plan.id,
           assignedUsers: Array.from(affectedUserIds),
         })
+        for (const userId of affectedUserIds) {
+          await createClientNotification({
+            tx,
+            recipientId: userId,
+            issuerId: user.id,
+            facilityId: values.facilityId,
+            type: NotificationType.DIARY_PLAN_UPDATED,
+            relatedId: plan.id,
+            entityName: plan.name,
+          })
+        }
       }
 
       revalidatePath(`/planes`)
@@ -696,15 +737,18 @@ export async function assignPlanToUsers(
               replacedByPlanName: plan.name,
             },
           })
-
-          await createNotification({
-            tx,
-            issuerId: user.id,
-            facilityId,
-            type: NotificationType.UNASSIGN_PLAN_USER,
-            relatedId: planIdToUnassign,
-            assignedUsers: userIds,
-          })
+          for (const userId of userIdsToUnassign) {
+            await createClientNotification({
+              tx,
+              recipientId: userId,
+              issuerId: user.id,
+              facilityId,
+              type: NotificationType.UNASSIGN_PLAN_USER,
+              relatedId: planIdToUnassign,
+              entityName: planName,
+              endDate: new Date(),
+            })
+          }
         }
       }
 
@@ -770,6 +814,24 @@ export async function assignPlanToUsers(
         relatedId: planId,
         assignedUsers: userIds,
       })
+
+      for (const userId of userIds) {
+        const replacedPlan = usersWithOtherPlans.find(
+          (u) => u.userId === userId,
+        )
+
+        await createClientNotification({
+          tx,
+          recipientId: userId,
+          issuerId: user.id,
+          facilityId,
+          type: NotificationType.ASSIGN_PLAN_USER,
+          relatedId: planId,
+          entityName: plan.name,
+          startDate: new Date(),
+          replacedEntityName: replacedPlan?.planName,
+        })
+      }
 
       revalidatePath("/planes")
 
@@ -915,7 +977,6 @@ export async function unassignPlanFromUsers(
           unassignedCount: count,
         },
       })
-
       await createNotification({
         tx,
         issuerId: user.id,
@@ -924,6 +985,18 @@ export async function unassignPlanFromUsers(
         relatedId: planId,
         assignedUsers: userIds,
       })
+      for (const userId of existingUserIds) {
+        await createClientNotification({
+          tx,
+          recipientId: userId,
+          issuerId: user.id,
+          facilityId,
+          type: NotificationType.UNASSIGN_PLAN_USER,
+          relatedId: planId,
+          entityName: plan.name,
+          endDate: new Date(),
+        })
+      }
 
       revalidatePath("/planes")
 
