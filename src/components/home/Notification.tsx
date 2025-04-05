@@ -17,6 +17,7 @@ import {
   Apple,
   Salad,
   Copy,
+  Calendar,
 } from "lucide-react"
 import Link from "next/link"
 import type { JSX } from "react"
@@ -86,6 +87,12 @@ export default function Notification({ notification }: NotificationProps) {
       icon: <PlanIcon className="h-4 w-4" />,
       href: `/planes`,
       color: "text-purple-500",
+    },
+    DIARY_PLAN_UPDATED: {
+      message: "actualizó agendas en un plan",
+      icon: <Calendar className="h-4 w-4" />,
+      href: `/planes`,
+      color: "text-amber-500",
     },
     DIARY_CREATED: {
       message: "creó una agenda",
@@ -275,7 +282,9 @@ export default function Notification({ notification }: NotificationProps) {
     },
   }
 
-  const { message, icon, href, color } = notificationTypeMap[notification.type]
+  const { icon, href, color } = notificationTypeMap[notification.type]
+
+  const displayMessage = notification.message || notificationTypeMap[notification.type].message
 
   return (
     <Link href={href} className="block">
@@ -296,12 +305,16 @@ export default function Notification({ notification }: NotificationProps) {
           </AvatarFallback>
         </Avatar>
         <div className="flex-grow">
-          <p className="text-sm font-medium">
-            <span className="font-semibold">
-              {notification.issuer.firstName} {notification.issuer.lastName}
-            </span>{" "}
-            {message}
-          </p>
+          {notification.message ? (
+            <p className="text-sm">{displayMessage}</p>
+          ) : (
+            <p className="text-sm font-medium">
+              <span className="font-semibold">
+                {notification.issuer.firstName} {notification.issuer.lastName}
+              </span>{" "}
+              {displayMessage}
+            </p>
+          )}
           {(notification.activity ||
             notification.plan ||
             notification.diary ||
