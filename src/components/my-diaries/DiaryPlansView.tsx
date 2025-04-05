@@ -4,13 +4,15 @@ import { Suspense } from "react"
 import { Calendar, Clock } from "lucide-react"
 
 import { ClientDashboardSkeleton } from "@/components/skeletons/ClientDashboardSkeleton"
-import { useClientFacility } from "@/contexts/ClientFacilityContext"
 import { DiaryPlansList } from "./DiaryPlansList"
 import { UserDiariesList } from "./UserDiariesList"
 
-export default function DiaryPlansView({ facilityId }: { facilityId: string }) {
-  const { primaryColor } = useClientFacility()
+interface DiaryPlansViewProps {
+  facilityId: string
+  primaryColor: string
+}
 
+export default function DiaryPlansView({ facilityId, primaryColor }: DiaryPlansViewProps) {
   return (
     <div className="space-y-8 px-2 sm:px-4 pb-2 lg:pb-4">
       <div className="grid gap-8 lg:grid-cols-2">

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Calendar, ChevronDown, ChevronUp, Clock, Users } from "lucide-react"
+import { Calendar, ChevronDown, ChevronUp, Clock, Users, CheckCircle } from "lucide-react"
 import type { DiaryPlanData, SimpleDiaryData } from "@/types/user"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -13,6 +13,7 @@ import { useSubscribeToDiaryMutation } from "@/app/(main)/(authenticated)/(clien
 import { DiaryDaySelector } from "./DiaryDaySelector"
 import type { FilteredDayAvailable } from "@/types/diaryClient"
 import LoadingButton from "../LoadingButton"
+import { useUserDiaries } from "@/hooks/useUserDiaries"
 
 interface DiaryPlanCardProps {
   diaryPlan: DiaryPlanData
@@ -25,6 +26,10 @@ export function DiaryPlanCard({ diaryPlan, facilityId, primaryColor }: DiaryPlan
   const [selectedDiaryId, setSelectedDiaryId] = useState<string | null>(null)
   const { mutate: subscribeToDiary, isPending } = useSubscribeToDiaryMutation()
   const [actualAvailableDays, setActualAvailableDays] = useState<string[]>([])
+
+  const { data: userDiariesData } = useUserDiaries(facilityId)
+
+  const isSubscribed = userDiariesData?.userDiaries?.some((userDiary) => userDiary.diaryId === diaryPlan.id)
 
   useEffect(() => {
     if (diaryPlan.diaries.length > 0) {
@@ -96,7 +101,10 @@ export function DiaryPlanCard({ diaryPlan, facilityId, primaryColor }: DiaryPlan
 
   return (
     <>
-      <Card className="overflow-hidden">
+      <Card
+        className={`overflow-hidden ${isSubscribed ? "border-2" : ""}`}
+        style={isSubscribed ? { borderColor: primaryColor } : {}}
+      >
         <CardHeader className="pb-2 px-3 sm:px-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -107,7 +115,18 @@ export function DiaryPlanCard({ diaryPlan, facilityId, primaryColor }: DiaryPlan
                 <Calendar className="h-4 w-4 sm:h-5 sm:w-5" style={{ color: primaryColor }} />
               </div>
               <div className="min-w-0">
-                <CardTitle className="text-sm sm:text-base truncate">{diaryPlan.name}</CardTitle>
+                <div className="flex items-center gap-2">
+                  <CardTitle className="text-sm sm:text-base truncate">{diaryPlan.name}</CardTitle>
+                  {isSubscribed && (
+                    <Badge
+                      className="text-[8px] sm:text-[10px] flex-shrink-0 ml-1"
+                      style={{ backgroundColor: primaryColor }}
+                    >
+                      <CheckCircle className="h-2.5 w-2.5 mr-1" />
+                      Inscrito
+                    </Badge>
+                  )}
+                </div>
                 <p className="text-xs sm:text-sm text-muted-foreground truncate">{diaryPlan.activity.name}</p>
               </div>
             </div>
@@ -179,12 +198,12 @@ export function DiaryPlanCard({ diaryPlan, facilityId, primaryColor }: DiaryPlan
                       <LoadingButton
                         size="sm"
                         onClick={() => handleSubscribeClick(diary.id)}
-                        disabled={isPending}
+                        disabled={isPending || isSubscribed}
                         loading={isPending && selectedDiaryId === diary.id}
-                        style={{ backgroundColor: primaryColor }}
+                        style={{ backgroundColor: isSubscribed ? "#9CA3AF" : primaryColor }}
                         className="text-[10px] sm:text-xs h-6 sm:h-8 px-2 sm:px-3 ml-2 flex-shrink-0"
                       >
-                        Inscribirse
+                        {isSubscribed ? "Inscrito" : "Inscribirse"}
                       </LoadingButton>
                     </div>
 
