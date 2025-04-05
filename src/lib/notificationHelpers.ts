@@ -35,8 +35,7 @@ export async function createNotification({
 
   let recipientUsers = facility.users.filter(
     (userFacility) =>
-      (userFacility.user.role === Role.ADMIN ||
-        userFacility.user.role === Role.SUPER_ADMIN) &&
+      userFacility.user.role !== Role.CLIENT &&
       userFacility.user.id !== issuerId,
   )
 
