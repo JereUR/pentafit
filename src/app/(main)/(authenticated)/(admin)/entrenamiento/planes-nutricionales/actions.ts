@@ -18,6 +18,7 @@ import type { DeleteEntityResult } from "@/lib/utils"
 import { createNutritionalPlanTransaction } from "@/lib/transactionHelpers"
 import { NutritionalPlanData } from "@/types/nutritionalPlans"
 import { DailyMealsValues, NutritionalPlanValues } from "@/lib/validation"
+import { createClientNotification } from "@/lib/clientNotificationHelpers"
 
 type NutritionalPlanResult = {
   success: boolean
@@ -803,6 +804,19 @@ export async function assignNutritionalPlanToUsers(
             relatedId: planIdToUnassign,
             assignedUsers: userIds,
           })
+
+          for (const userId of userIdsToUnassign) {
+            await createClientNotification({
+              tx,
+              recipientId: userId,
+              issuerId: user.id,
+              facilityId,
+              type: NotificationType.UNASSIGN_NUTRITIONAL_PLAN_USER,
+              relatedId: planIdToUnassign,
+              entityName: planName,
+              endDate: new Date(),
+            })
+          }
         }
       }
 
@@ -865,7 +879,26 @@ export async function assignNutritionalPlanToUsers(
         facilityId,
         type: NotificationType.ASSIGN_NUTRITIONAL_PLAN_USER,
         relatedId: nutritionalPlanId,
+        assignedUsers: userIds,
       })
+
+      for (const userId of userIds) {
+        const replacedPlan = usersWithOtherPlans.find(
+          (u) => u.userId === userId,
+        )
+
+        await createClientNotification({
+          tx,
+          recipientId: userId,
+          issuerId: user.id,
+          facilityId,
+          type: NotificationType.ASSIGN_NUTRITIONAL_PLAN_USER,
+          relatedId: nutritionalPlanId,
+          entityName: nutritionalPlan.name,
+          startDate: new Date(),
+          replacedEntityName: replacedPlan?.nutritionalPlanName,
+        })
+      }
 
       revalidatePath("/entrenamiento/planes-nutricionales")
 
@@ -986,6 +1019,19 @@ export async function unassignNutritionalPlanFromUsers(
         relatedId: nutritionalPlanId,
         assignedUsers: userIds,
       })
+
+      for (const userId of existingUserIds) {
+        await createClientNotification({
+          tx,
+          recipientId: userId,
+          issuerId: user.id,
+          facilityId,
+          type: NotificationType.UNASSIGN_NUTRITIONAL_PLAN_USER,
+          relatedId: nutritionalPlanId,
+          entityName: nutritionalPlan.name,
+          endDate: new Date(),
+        })
+      }
 
       revalidatePath("/entrenamiento/planes-nutricionales")
 
