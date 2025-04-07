@@ -38,6 +38,23 @@ export function WeeklyCalendarView({ facilityId, primaryColor }: WeeklyCalendarV
     backgroundColor: `${primaryColor}10`,
   }
 
+  const getArgentinaDate = () => {
+    return new Date(
+      new Date().toLocaleString("es-AR", {
+        timeZone: "America/Argentina/Buenos_Aires",
+      }),
+    )
+  }
+
+  const isArgentinaToday = (date: Date) => {
+    const argentinaDate = getArgentinaDate()
+    return (
+      date.getDate() === argentinaDate.getDate() &&
+      date.getMonth() === argentinaDate.getMonth() &&
+      date.getFullYear() === argentinaDate.getFullYear()
+    )
+  }
+
   if (isLoading) return <WeeklyCalendarViewSkeleton primaryColor={primaryColor} />
 
   if (!data?.userDiaries || data.userDiaries.length === 0) {
@@ -72,7 +89,7 @@ export function WeeklyCalendarView({ facilityId, primaryColor }: WeeklyCalendarV
       <CardContent className="pt-2 pb-4 block sm:hidden">
         <div className="space-y-4">
           {weekDays.map((day) => {
-            const isToday = new Date().toDateString() === day.date.toDateString()
+            const isToday = isArgentinaToday(day.date)
             return (
               <div
                 key={`mobile-day-${day.date.toISOString()}`}
@@ -126,7 +143,7 @@ export function WeeklyCalendarView({ facilityId, primaryColor }: WeeklyCalendarV
       <CardContent className="pt-2 pb-4 overflow-x-auto hidden sm:block">
         <div className="grid grid-cols-7 gap-1 min-w-[700px]">
           {weekDays.map((day) => {
-            const isToday = new Date().toDateString() === day.date.toDateString()
+            const isToday = isArgentinaToday(day.date)
             return (
               <div key={`header-${day.date.toISOString()}`} className="text-center">
                 <div className="font-medium text-xs sm:text-sm">{day.dayName}</div>
@@ -140,7 +157,7 @@ export function WeeklyCalendarView({ facilityId, primaryColor }: WeeklyCalendarV
             )
           })}
           {weekDays.map((day) => {
-            const isToday = new Date().toDateString() === day.date.toDateString()
+            const isToday = isArgentinaToday(day.date)
             return (
               <div
                 key={`day-${day.date.toISOString()}`}
