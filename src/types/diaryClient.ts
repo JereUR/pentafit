@@ -33,3 +33,20 @@ export interface DayEvents {
   dayNumber: number
   events: CalendarEvent[]
 }
+
+export interface DiarySchedule {
+  id: string
+  timeStart: string
+  timeEnd: string
+}
+
+export interface TodayDiaryItem {
+  id: string
+  diaryPlanId: string
+  activityName: string
+  activityDescription: string | null
+  planName: string
+  schedule: DiarySchedule[]
+}
+
+export type TodayDiaryData = TodayDiaryItem[] | null
