@@ -2,8 +2,8 @@
 
 import { Skeleton } from "@/components/ui/skeleton"
 import { useTodayClientData } from "@/hooks/useTodayClientData"
-import { EmptyState } from "../../EmptyState"
 import { MealList } from "./MealList"
+import EmptyState from "@/components/EmptyState"
 
 interface TodayNutritionalPlanProps {
   facilityId: string

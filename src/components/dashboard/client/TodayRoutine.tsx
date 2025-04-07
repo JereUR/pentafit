@@ -3,8 +3,8 @@
 import { getCurrentDayOfWeek, DAY_DISPLAY_NAMES } from "@/lib/utils"
 import { useTodayClientData } from "@/hooks/useTodayClientData"
 import { Skeleton } from "../../ui/skeleton"
-import { EmptyState } from "../../EmptyState"
 import { ExerciseList } from "./ExerciseList"
+import EmptyState from "@/components/EmptyState"
 
 interface TodayRoutineProps {
   facilityId: string

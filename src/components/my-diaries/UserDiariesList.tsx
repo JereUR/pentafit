@@ -1,9 +1,9 @@
 "use client"
 
 import { Skeleton } from "@/components/ui/skeleton"
-import { EmptyState } from "@/components/EmptyState"
 import { UserDiaryCard } from "./UserDiaryCard"
 import { useUserDiaries } from "@/hooks/useUserDiaries"
+import EmptyState from "../EmptyState"
 
 interface UserDiariesListProps {
   facilityId: string

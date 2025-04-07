@@ -2,8 +2,8 @@
 
 import { useDiaryPlans } from "@/hooks/useDiaryPlans"
 import { Skeleton } from "@/components/ui/skeleton"
-import { EmptyState } from "@/components/EmptyState"
 import { DiaryPlanCard } from "./DiaryPlanCard"
+import EmptyState from "../EmptyState"
 
 interface DiaryPlansListProps {
   facilityId: string
