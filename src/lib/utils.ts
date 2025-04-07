@@ -15,16 +15,16 @@ export const formatBirthday = (birthday: string) => {
   return `${formattedDate} (${age} años)`
 }
 
-export const daysOfWeek = ["Lun", "Mar", "Mie", "Jue", "Vie", "Sab", "Dom"]
+export const daysOfWeek = ["Dom", "Lun", "Mar", "Mie", "Jue", "Vie", "Sab"]
 
 export const daysOfWeekFull = [
+  "Domingo",
   "Lunes",
   "Martes",
   "Miércoles",
   "Jueves",
   "Viernes",
   "Sábado",
-  "Domingo",
 ]
 
 export const daysOfWeekMap = [
