@@ -1,13 +1,16 @@
 "use client"
 
-import { ChevronLeft, ChevronRight } from "lucide-react"
+import { useState, useEffect } from "react"
+import { ChevronLeft, ChevronRight, Calendar } from "lucide-react"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useUserDiaries } from "@/hooks/useUserDiaries"
 import { useCalendarEvents } from "@/hooks/useCalendarEvents"
 import WeeklyCalendarViewSkeleton from "../skeletons/WeeklyCalendarViewSkeleton"
 import { useWeeklyCalendar } from "@/hooks/useWeeklyCalendar"
+import { DAY_DISPLAY_NAMES, getCurrentDayOfWeek } from "@/lib/utils"
 
 interface WeeklyCalendarViewProps {
   facilityId: string
@@ -16,6 +19,9 @@ interface WeeklyCalendarViewProps {
 
 export function WeeklyCalendarView({ facilityId, primaryColor }: WeeklyCalendarViewProps) {
   const { data, isLoading } = useUserDiaries(facilityId)
+
+  const currentDayEnum = getCurrentDayOfWeek()
+  const currentDayName = DAY_DISPLAY_NAMES[currentDayEnum].slice(0, 3)
 
   const {
     weekDays: emptyWeekDays,
@@ -28,6 +34,19 @@ export function WeeklyCalendarView({ facilityId, primaryColor }: WeeklyCalendarV
 
   const weekDays = useCalendarEvents(data?.userDiaries, emptyWeekDays)
 
+  const [matchingDayName, setMatchingDayName] = useState<string>("")
+  const [activeTab, setActiveTab] = useState<string>("")
+
+  useEffect(() => {
+    if (weekDays.length > 0) {
+      const matchingDay = weekDays.find((day) => day.dayName === currentDayName)
+      const dayName = matchingDay ? matchingDay.dayName : weekDays[0].dayName
+
+      setMatchingDayName(dayName)
+      setActiveTab(dayName)
+    }
+  }, [weekDays, currentDayName])
+
   const currentDayStyle = {
     backgroundColor: primaryColor,
     color: "#ffffff",
@@ -38,27 +57,25 @@ export function WeeklyCalendarView({ facilityId, primaryColor }: WeeklyCalendarV
     backgroundColor: `${primaryColor}10`,
   }
 
-  const getArgentinaDate = () => {
-    return new Date(
-      new Date().toLocaleString("es-AR", {
-        timeZone: "America/Argentina/Buenos_Aires",
-      }),
-    )
-  }
-
-  const isArgentinaToday = (date: Date) => {
-    const argentinaDate = getArgentinaDate()
-    return (
-      date.getDate() === argentinaDate.getDate() &&
-      date.getMonth() === argentinaDate.getMonth() &&
-      date.getFullYear() === argentinaDate.getFullYear()
-    )
-  }
-
   if (isLoading) return <WeeklyCalendarViewSkeleton primaryColor={primaryColor} />
 
   if (!data?.userDiaries || data.userDiaries.length === 0) {
-    return null
+    return (
+      <Card className="w-full">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-lg">Mi Calendario de Actividades</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col items-center justify-center py-10">
+          <div className="rounded-full bg-card p-4 mb-4">
+            <Calendar className="h-10 w-10" style={{ color: primaryColor }} />
+          </div>
+          <h3 className="text-lg font-medium mb-2">No hay agendas disponibles</h3>
+          <p className="text-sm text-muted-foreground text-center max-w-md">
+            No estás suscrito a ninguna agenda. Suscríbete a una agenda para ver tus actividades programadas.
+          </p>
+        </CardContent>
+      </Card>
+    )
   }
 
   return (
@@ -87,63 +104,85 @@ export function WeeklyCalendarView({ facilityId, primaryColor }: WeeklyCalendarV
         <p className="text-sm text-muted-foreground text-center mt-1">{formatWeekRange()}</p>
       </CardHeader>
       <CardContent className="pt-2 pb-4 block sm:hidden">
-        <div className="space-y-4">
-          {weekDays.map((day) => {
-            const isToday = isArgentinaToday(day.date)
-            return (
-              <div
-                key={`mobile-day-${day.date.toISOString()}`}
-                className={`border rounded-md overflow-hidden ${isToday ? "border-2" : ""}`}
-                style={isToday ? { borderColor: primaryColor } : {}}
-              >
-                <div
-                  className="p-2 flex justify-between items-center"
-                  style={isToday ? { backgroundColor: `${primaryColor}20` } : {}}
+        <Tabs defaultValue={matchingDayName} className="w-full" onValueChange={(value) => setActiveTab(value)}>
+          <TabsList className="grid w-full grid-cols-7 mb-4 h-fit">
+            {weekDays.map((day) => {
+              const isToday = day.dayName === currentDayName
+              const isActive = day.dayName === activeTab
+              return (
+                <TabsTrigger
+                  key={`tab-${day.date.toISOString()}`}
+                  value={day.dayName}
+                  className="text-xs border rounded-md m-0.5"
+                  style={{
+                    borderColor: isToday ? primaryColor : "inherit",
+                    borderWidth: isToday ? "2px" : "1px",
+                    backgroundColor: isActive ? primaryColor : "transparent",
+                    color: isActive ? "white" : "inherit",
+                  }}
                 >
-                  <div>
-                    <div className="font-medium">{day.dayName}</div>
-                    <div className="text-sm text-muted-foreground">{day.date.toLocaleDateString()}</div>
-                  </div>
+                  {day.dayName}
+                </TabsTrigger>
+              )
+            })}
+          </TabsList>
+          {weekDays.map((day) => {
+            const isToday = day.dayName === currentDayName
+            return (
+              <TabsContent key={`tab-content-${day.date.toISOString()}`} value={day.dayName}>
+                <div
+                  className={`border rounded-md overflow-hidden ${isToday ? "border-2" : ""}`}
+                  style={isToday ? { borderColor: primaryColor } : {}}
+                >
                   <div
-                    className="rounded-full w-8 h-8 flex items-center justify-center"
-                    style={isToday ? currentDayStyle : {}}
+                    className="p-2 flex justify-between items-center"
+                    style={isToday ? { backgroundColor: `${primaryColor}20` } : {}}
                   >
-                    {day.dayNumber}
+                    <div>
+                      <div className="font-medium">{day.dayName}</div>
+                      <div className="text-sm text-muted-foreground">{day.date.toLocaleDateString()}</div>
+                    </div>
+                    <div
+                      className="rounded-full w-8 h-8 flex items-center justify-center"
+                      style={isToday ? currentDayStyle : {}}
+                    >
+                      {day.dayNumber}
+                    </div>
+                  </div>
+
+                  <div className="p-2 max-h-[150px] overflow-y-auto">
+                    {day.events.length === 0 ? (
+                      <div className="h-12 flex items-center justify-center text-xs text-muted-foreground">
+                        Sin actividades
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        {day.events.map((event) => (
+                          <div
+                            key={`mobile-${event.id}`}
+                            className="p-2 rounded text-xs"
+                            style={{ backgroundColor: `${primaryColor}20` }}
+                          >
+                            <div className="font-medium" style={{ color: primaryColor }}>
+                              {event.title}
+                            </div>
+                            <div className="text-xs text-muted-foreground">{event.time}</div>
+                            <div className="text-xs">{event.diaryName}</div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
-
-                <div className="p-2 max-h-[150px] overflow-y-auto">
-                  {day.events.length === 0 ? (
-                    <div className="h-12 flex items-center justify-center text-xs text-muted-foreground">
-                      Sin actividades
-                    </div>
-                  ) : (
-                    <div className="space-y-2">
-                      {day.events.map((event) => (
-                        <div
-                          key={`mobile-${event.id}`}
-                          className="p-2 rounded text-xs"
-                          style={{ backgroundColor: `${primaryColor}20` }}
-                        >
-                          <div className="font-medium" style={{ color: primaryColor }}>
-                            {event.title}
-                          </div>
-                          <div className="text-xs text-muted-foreground">{event.time}</div>
-                          <div className="text-xs">{event.diaryName}</div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
+              </TabsContent>
             )
           })}
-        </div>
+        </Tabs>
       </CardContent>
       <CardContent className="pt-2 pb-4 overflow-x-auto hidden sm:block">
         <div className="grid grid-cols-7 gap-1 min-w-[700px]">
           {weekDays.map((day) => {
-            const isToday = isArgentinaToday(day.date)
+            const isToday = day.dayName === currentDayName
             return (
               <div key={`header-${day.date.toISOString()}`} className="text-center">
                 <div className="font-medium text-xs sm:text-sm">{day.dayName}</div>
@@ -157,7 +196,7 @@ export function WeeklyCalendarView({ facilityId, primaryColor }: WeeklyCalendarV
             )
           })}
           {weekDays.map((day) => {
-            const isToday = isArgentinaToday(day.date)
+            const isToday = day.dayName === currentDayName
             return (
               <div
                 key={`day-${day.date.toISOString()}`}
@@ -193,4 +232,3 @@ export function WeeklyCalendarView({ facilityId, primaryColor }: WeeklyCalendarV
     </Card>
   )
 }
-
