@@ -82,26 +82,26 @@ export async function GET(
     let dayIndex: number
 
     switch (today) {
-      case DayOfWeek.MONDAY:
+      case DayOfWeek.SUNDAY:
         dayIndex = 0
-        break
-      case DayOfWeek.TUESDAY:
+      case DayOfWeek.MONDAY:
         dayIndex = 1
         break
-      case DayOfWeek.WEDNESDAY:
+      case DayOfWeek.TUESDAY:
         dayIndex = 2
         break
-      case DayOfWeek.THURSDAY:
+      case DayOfWeek.WEDNESDAY:
         dayIndex = 3
         break
-      case DayOfWeek.FRIDAY:
+      case DayOfWeek.THURSDAY:
         dayIndex = 4
         break
-      case DayOfWeek.SATURDAY:
+      case DayOfWeek.FRIDAY:
         dayIndex = 5
         break
-      case DayOfWeek.SUNDAY:
+      case DayOfWeek.SATURDAY:
         dayIndex = 6
+        break
         break
       default:
         dayIndex = 0
