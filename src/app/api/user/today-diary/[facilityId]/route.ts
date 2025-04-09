@@ -1,6 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server"
+
 import { validateRequest } from "@/auth"
-import prisma from "@/lib/prisma"
+import type { UserDiaryData } from "@/types/user"
+import { getUserDiaries } from "@/app/(main)/(authenticated)/(client)/[facilityId]/mi-agenda/actions"
 import { getCurrentDayOfWeek } from "@/lib/utils"
 import { DayOfWeek } from "@prisma/client"
 
@@ -15,142 +17,93 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const userId = user.id
     const facilityId = (await params).facilityId
 
-    const userFacility = await prisma.userFacility.findUnique({
-      where: {
-        userId_facilityId: {
-          userId,
-          facilityId,
-        },
-      },
-    })
-
-    if (!userFacility) {
+    if (!facilityId) {
       return NextResponse.json(
-        { error: "User does not belong to this facility" },
-        { status: 403 },
+        { error: "Facility ID is required" },
+        { status: 400 },
       )
     }
 
-    const today = getCurrentDayOfWeek()
+    const currentDayOfWeek = getCurrentDayOfWeek()
 
-    const argentinaDate = new Date(
-      new Date().toLocaleString("en-US", {
-        timeZone: "America/Argentina/Buenos_Aires",
-      }),
-    )
+    const { userDiaries } = await getUserDiaries(facilityId)
 
-    const userDiaries = await prisma.userDiary.findMany({
-      where: {
-        userId,
-        isActive: true,
-        diaryPlan: {
-          plan: {
-            facilityId,
-          },
-        },
-        OR: [
-          {
-            endDate: null,
-          },
-          {
-            endDate: {
-              gte: argentinaDate,
-            },
-          },
-        ],
-        startDate: {
-          lte: argentinaDate,
-        },
-      },
-      include: {
-        diaryPlan: {
-          include: {
-            activity: true,
-          },
-        },
-        attachments: {
-          include: {
-            dayAvailable: true,
-          },
-        },
-      },
-    })
-
-    let dayIndex: number
-
-    switch (today) {
-      case DayOfWeek.SUNDAY:
-        dayIndex = 0
-      case DayOfWeek.MONDAY:
-        dayIndex = 1
-        break
-      case DayOfWeek.TUESDAY:
-        dayIndex = 2
-        break
-      case DayOfWeek.WEDNESDAY:
-        dayIndex = 3
-        break
-      case DayOfWeek.THURSDAY:
-        dayIndex = 4
-        break
-      case DayOfWeek.FRIDAY:
-        dayIndex = 5
-        break
-      case DayOfWeek.SATURDAY:
-        dayIndex = 6
-        break
-        break
-      default:
-        dayIndex = 0
+    const dayOfWeekToIndex = {
+      [DayOfWeek.SUNDAY]: 0,
+      [DayOfWeek.MONDAY]: 1,
+      [DayOfWeek.TUESDAY]: 2,
+      [DayOfWeek.WEDNESDAY]: 3,
+      [DayOfWeek.THURSDAY]: 4,
+      [DayOfWeek.FRIDAY]: 5,
+      [DayOfWeek.SATURDAY]: 6,
     }
 
-    const todayDiaries = userDiaries.filter((diary) => {
-      const isDiaryForToday = diary.diaryPlan.daysOfWeek[dayIndex]
-      return isDiaryForToday
-    })
+    const currentDayIndex = dayOfWeekToIndex[currentDayOfWeek]
 
-    if (!todayDiaries.length) {
-      return NextResponse.json({
-        success: true,
-        data: null,
+    const todayDiaries = userDiaries.filter((userDiary: UserDiaryData) => {
+      if (!userDiary.diary?.daysAvailable || !userDiary.selectedDays) {
+        return false
+      }
+
+      return userDiary.selectedDays.some((selectedDay) => {
+        const dayAvailable = userDiary.diary.daysAvailable.find(
+          (day) => day.id === selectedDay.id,
+        )
+
+        if (dayAvailable) {
+          const dayIndex = userDiary.diary.daysAvailable.indexOf(dayAvailable)
+          return dayIndex === currentDayIndex
+        }
+
+        return false
       })
-    }
+    })
 
-    const data = todayDiaries.map((diary) => ({
-      id: diary.id,
-      diaryPlanId: diary.diaryPlanId,
-      activityName: diary.diaryPlan.activity.name,
-      activityDescription: diary.diaryPlan.activity.description,
-      planName: diary.diaryPlan.name,
-      schedule: diary.attachments
-        .filter((attachment) => attachment.dayAvailable.available)
-        .map((attachment) => ({
-          id: attachment.id,
-          timeStart: attachment.dayAvailable.timeStart,
-          timeEnd: attachment.dayAvailable.timeEnd,
+    const data = todayDiaries.map((diary: UserDiaryData) => {
+      const todaySchedule = (diary.selectedDays || [])
+        .filter((day) => {
+          const dayAvailable = diary.diary.daysAvailable.find(
+            (d) => d.id === day.id,
+          )
+          if (dayAvailable) {
+            const dayIndex = diary.diary.daysAvailable.indexOf(dayAvailable)
+            return dayIndex === currentDayIndex
+          }
+          return false
+        })
+        .map((day) => ({
+          id: day.id,
+          timeStart: day.timeStart,
+          timeEnd: day.timeEnd,
         }))
         .sort((a, b) => {
           const aTime = a.timeStart.split(":").map(Number)
           const bTime = b.timeStart.split(":").map(Number)
           return aTime[0] * 60 + aTime[1] - (bTime[0] * 60 + bTime[1])
-        }),
-    }))
+        })
+
+      return {
+        id: diary.id,
+        diaryPlanId: diary.diaryPlan?.id || "",
+        activityName: diary.diary?.activity?.name || "",
+        activityDescription: diary.diary?.activity?.description || "",
+        planName: diary.diaryPlan?.name || "",
+        schedule: todaySchedule,
+      }
+    })
+
+    const filteredData = data.filter((item) => item.schedule.length > 0)
 
     return NextResponse.json({
       success: true,
-      data,
+      data: filteredData,
     })
   } catch (error) {
-    console.error("Error fetching today's diary:", error)
-
+    console.error("[FACILITY_ID_DIARIES_TODAY_GET]", error)
     return NextResponse.json(
-      {
-        success: false,
-        error: "Error al obtener el diario de hoy",
-      },
+      { error: "Internal server error" },
       { status: 500 },
     )
   }
