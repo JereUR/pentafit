@@ -1,16 +1,18 @@
 "use client"
 
+import type React from "react"
 import { useState, useEffect } from "react"
 import { usePathname } from "next/navigation"
 
 import { cn } from "@/lib/utils"
 import { ClientSidebar } from "@/components/menubar/ClientSidebar"
 import ClientTopBar from "@/components/menubar/ClientTopBar"
-import { Sheet, SheetContent, SheetTitle, SheetDescription } from "@/components/ui/sheet"
-import { ClientNavContent } from "@/components/menubar/ClientNavContent"
 import UserTitleWrapper from "@/components/menubar/UserTitleWrapper"
-import { ClientFacilityProvider } from "@/contexts/ClientFacilityContext"
-import { Role } from "@prisma/client"
+import { useClientFacility } from "@/contexts/ClientFacilityContext"
+import type { Role } from "@prisma/client"
+import { MobileBottomNav } from "@/components/menubar/MobileBottomNav"
+import { MobileSidebar } from "@/components/menubar/MobileSidebar"
+import { useNotificationCount } from "@/hooks/useNotificationCount"
 
 interface ClientLayoutProps {
   children: React.ReactNode
@@ -20,7 +22,8 @@ interface ClientLayoutProps {
 export default function ClientLayout({ children, userRole }: ClientLayoutProps) {
   const [isExpanded, setIsExpanded] = useState(true)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const [initialNotificationCount, setInitialNotificationCount] = useState(0)
+  const { notificationCount } = useNotificationCount()
+  const { primaryColor } = useClientFacility()
 
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen)
   const closeMobileMenu = () => setIsMobileMenuOpen(false)
@@ -33,62 +36,44 @@ export default function ClientLayout({ children, userRole }: ClientLayoutProps) 
   const isMyFacilitiesPage = pathParts[1] === "mis-establecimientos"
 
   useEffect(() => {
-    async function fetchInitialNotificationCount() {
-      try {
-        const response = await fetch("/api/notifications/unread-count")
-        if (response.ok) {
-          const data = await response.json()
-          setInitialNotificationCount(data.unreadCount)
-        }
-      } catch (error) {
-        console.error("Error fetching initial notification count:", error)
-      }
+    if (primaryColor) {
+      document.documentElement.style.setProperty("--scrollbar-thumb-color", primaryColor)
     }
-
-    fetchInitialNotificationCount()
-  }, [])
+  }, [primaryColor])
 
   return (
-    <ClientFacilityProvider>
-      <div className="relative h-screen bg-background overflow-hidden">
-        {!isMyFacilitiesPage && (
-          <ClientSidebar isExpanded={isExpanded} onExpandedChange={setIsExpanded} userRole={userRole} />
+    <div className="relative h-screen bg-background overflow-hidden">
+      {!isMyFacilitiesPage && (
+        <ClientSidebar isExpanded={isExpanded} onExpandedChange={setIsExpanded} userRole={userRole} />
+      )}
+      {!isMyFacilitiesPage && (
+        <MobileSidebar isOpen={isMobileMenuOpen} onClose={closeMobileMenu} />
+      )}
+      <div
+        className={cn(
+          "flex flex-col h-full transition-all duration-300",
+          isMyFacilitiesPage ? "" : isExpanded ? "lg:ml-64" : "lg:ml-20",
         )}
-        <div
-          className={cn(
-            "flex flex-col h-full transition-all duration-300",
-            isMyFacilitiesPage ? "" : isExpanded ? "lg:ml-64" : "lg:ml-20",
-          )}
-        >
-          {isUserPage ? (
-            <UserTitleWrapper
-              userId={userId}
-              onMenuClick={toggleMobileMenu}
-              initialNotificationCount={initialNotificationCount}
-              userRole={userRole}
-            />
-          ) : (
-            <ClientTopBar
-              onMenuClick={toggleMobileMenu}
-              initialNotificationCount={initialNotificationCount}
-              userRole={userRole}
-            />
-          )}
-          <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 max-w-full scrollbar-thin">{children}</main>
-        </div>
-
-        <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
-          <SheetContent side="left" className="w-80 p-0 lg:hidden">
-            <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
-            <SheetDescription className="sr-only">Access navigation links and options</SheetDescription>
-            <ClientNavContent
-              isExpanded={true}
-              onExpandedChange={setIsExpanded}
-              onClose={closeMobileMenu}
-            />
-          </SheetContent>
-        </Sheet>
+      >
+        {isUserPage ? (
+          <UserTitleWrapper
+            userId={userId}
+            onMenuClick={toggleMobileMenu}
+            initialNotificationCount={notificationCount}
+            userRole={userRole}
+          />
+        ) : (
+          <ClientTopBar
+            onMenuClick={toggleMobileMenu}
+            initialNotificationCount={notificationCount}
+            userRole={userRole}
+          />
+        )}
+        <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 max-w-full scrollbar-thin pb-20 lg:pb-4">
+          {children}
+        </main>
       </div>
-    </ClientFacilityProvider>
+      <MobileBottomNav />
+    </div>
   )
 }

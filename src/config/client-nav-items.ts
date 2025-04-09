@@ -5,6 +5,7 @@ import {
   LineChart,
   MessageSquare,
   FileText,
+  Utensils,
 } from "lucide-react"
 
 import type { NavItem } from "@/types/sidebar"
@@ -12,16 +13,11 @@ import type { NavItem } from "@/types/sidebar"
 export const clientNavItems: NavItem[] = [
   { title: "Inicio", icon: Home, href: "/inicio" },
   { title: "Mi Agenda", icon: Calendar, href: "/mi-agenda" },
+  { title: "Mi Rutina", icon: Dumbbell, href: "/mi-rutina" },
   {
-    title: "Mis Entrenamientos",
-    icon: Dumbbell,
-    items: [
-      { title: "Rutinas", href: "/mis-entrenamientos/rutinas" },
-      {
-        title: "Plan Nutricional",
-        href: "/mis-entrenamientos/plan-nutricional",
-      },
-    ],
+    title: "Mi Plan Nutricional",
+    icon: Utensils,
+    href: "/mi-plan-nutricional",
   },
   { title: "Mi Progreso", icon: LineChart, href: "/mi-progreso" },
   {

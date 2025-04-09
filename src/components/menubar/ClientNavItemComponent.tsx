@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname, useParams } from "next/navigation" // Add useParams
+import { usePathname, useParams } from "next/navigation"
 import { ChevronRight } from 'lucide-react'
 import { useClientFacility } from "@/contexts/ClientFacilityContext"
 import { CSSProperties } from "react"
