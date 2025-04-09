@@ -2,7 +2,9 @@ import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 
 import { formatDate } from "@/lib/utils"
-import ClientDashboard from "@/components/dashboard/client/ClientDashboard"
+import { Suspense } from "react"
+import { ClientDashboardSkeleton } from "@/components/skeletons/ClientDashboardSkeleton"
+import { ClientDashboard } from "@/components/dashboard/client/ClientDashboard"
 
 type Props = {
   params: Promise<{ facilityId: string }>
@@ -31,7 +33,9 @@ export default async function UserFacilityPage({ params }: Props) {
       <div className="mb-6">
         <h1 className="text-2xl text-muted-foreground">{formattedDate}</h1>
       </div>
-      <ClientDashboard facilityId={facilityId} />
+      <Suspense fallback={<ClientDashboardSkeleton />}>
+        <ClientDashboard facilityId={facilityId} />
+      </Suspense>
     </div>
   )
 }
