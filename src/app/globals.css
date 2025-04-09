@@ -82,7 +82,7 @@ body {
 /* Scrollbar delgada */
 .scrollbar-thin::-webkit-scrollbar {
   height: 8px;
-  width: 8px; /* También se puede definir el ancho de la barra */
+  width: 8px;
 }
 
 /* Contenedor de la scrollbar (track) */
@@ -93,14 +93,17 @@ body {
 
 /* Barra de desplazamiento (thumb) */
 .scrollbar-thin::-webkit-scrollbar-thumb {
-  background: #f97015;
-  border-radius: 10px; /* Agregar border-radius al thumb */
+  background: var(
+    --scrollbar-thumb-color,
+    #f97015
+  ); /* Use CSS variable with fallback */
+  border-radius: 10px;
   opacity: 0.8;
 }
 
 /* Hover en la barra de desplazamiento (thumb) */
 .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-  background: #f97015;
+  background: var(--scrollbar-thumb-color, #f97015);
   opacity: 0.8;
   cursor: grab;
 }
