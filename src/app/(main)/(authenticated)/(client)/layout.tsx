@@ -2,6 +2,7 @@ import { redirect } from "next/navigation"
 
 import { validateRequest, validateRole } from "@/auth"
 import ClientLayout from "./ClientLayout"
+import { ClientFacilityProvider } from "@/contexts/ClientFacilityContext"
 
 export default async function ClientRootLayout({
   children,
@@ -19,5 +20,8 @@ export default async function ClientRootLayout({
     redirect("/panel-de-control")
   }
 
-  return <ClientLayout userRole={roleData.role}>{children}</ClientLayout>
+  return (
+  <ClientFacilityProvider>
+    <ClientLayout userRole={roleData.role}>{children}</ClientLayout>
+  </ClientFacilityProvider>)
 }
