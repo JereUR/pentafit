@@ -39,6 +39,7 @@ export function TodayDiary({ facilityId, primaryColor }: TodayDiaryProps) {
         description="No tienes clases programadas para hoy."
         icon="calendar"
         primaryColor={primaryColor}
+        href="/mi-agenda"
       />
     )
   }
