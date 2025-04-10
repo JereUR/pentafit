@@ -29,14 +29,14 @@ export default async function UserFacilityPage({ params }: Props) {
   }
 
   return (
-    <div className="h-full">
+    <main className="flex flex-col container gap-5 p-5">
       <div className="mb-6">
         <h1 className="text-2xl text-muted-foreground">{formattedDate}</h1>
       </div>
       <Suspense fallback={<ClientDashboardSkeleton />}>
         <ClientDashboard facilityId={facilityId} />
       </Suspense>
-    </div>
+    </main>
   )
 }
 

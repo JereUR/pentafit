@@ -28,7 +28,7 @@ export default async function DiaryPlansPage({ params }: Props) {
   }
 
   return (
-    <div className="h-full">
+    <main className="flex flex-col container gap-5 p-5">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold">Agenda de Actividades</h1>
@@ -40,7 +40,7 @@ export default async function DiaryPlansPage({ params }: Props) {
         </div>
       </div>
       <MyDiaryContent facilityId={facilityId} />
-    </div>
+    </main>
   )
 }
 
