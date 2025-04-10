@@ -132,3 +132,18 @@ export default function formatMealsToString(
     })
     .join("\n\n")
 }
+
+export function sortMealsByType(meals: MealData[]): MealData[] {
+  const mealTypeOrder: Record<string, number> = {}
+  mealTypes.forEach((type, index) => {
+    mealTypeOrder[type.value] = index
+  })
+
+  return [...meals].sort((a, b) => {
+    const orderA =
+      mealTypeOrder[a.mealType] !== undefined ? mealTypeOrder[a.mealType] : 999
+    const orderB =
+      mealTypeOrder[b.mealType] !== undefined ? mealTypeOrder[b.mealType] : 999
+    return orderA - orderB
+  })
+}
