@@ -4,7 +4,7 @@ import prisma from "@/lib/prisma"
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { facilityId: string } },
+  { params }: { params: Promise<{ facilityId: string }> },
 ) {
   try {
     const { user } = await validateRequest()
@@ -13,8 +13,8 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
+    const facilityId = (await params).facilityId
     const userId = user.id
-    const facilityId = params.facilityId
 
     const userFacility = await prisma.userFacility.findUnique({
       where: {
