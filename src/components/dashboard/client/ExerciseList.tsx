@@ -40,19 +40,21 @@ export function ExerciseList({ exercises, primaryColor }: ExerciseListProps) {
     <div className="space-y-4">
       <Card className="overflow-hidden relative">
         <CardContent className="p-0">
-          <div className="flex items-start gap-3 p-4">
+          <div className="flex items-start gap-2 p-3">
             <div
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md"
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md"
               style={{ backgroundColor: `${primaryColor}20` }}
             >
-              <Dumbbell className="h-5 w-5" style={{ color: primaryColor }} />
+              <Dumbbell className="h-4 w-4" style={{ color: primaryColor }} />
             </div>
-            <div className="flex-1 space-y-1">
-              <div className="flex items-center justify-between">
-                <h4 className="font-medium">{currentExercise.name}</h4>
-                <Badge variant="outline">{currentExercise.bodyZone}</Badge>
+            <div className="flex-1 min-w-0">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+                <h4 className="font-medium text-sm truncate">{currentExercise.name}</h4>
+                <Badge variant="outline" className="text-xs self-start sm:self-auto">
+                  {currentExercise.bodyZone}
+                </Badge>
               </div>
-              <div className="flex flex-wrap gap-2 text-sm text-muted-foreground">
+              <div className="flex flex-wrap gap-1 text-xs text-muted-foreground mt-1">
                 <span>{currentExercise.series} series</span>
                 <span>•</span>
                 <span>
@@ -66,53 +68,53 @@ export function ExerciseList({ exercises, primaryColor }: ExerciseListProps) {
                 )}
               </div>
               {currentExercise.description && (
-                <p className="text-sm text-muted-foreground">{currentExercise.description}</p>
+                <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{currentExercise.description}</p>
               )}
             </div>
           </div>
           {currentExercise.photoUrl && (
-            <div className="h-40 w-full mb-2 bg-card/50">
+            <div className="h-40 w-full bg-card/50">
               <Image
                 src={currentExercise.photoUrl || noImage}
                 alt={currentExercise.name}
-                height={80}
-                width={80}
+                height={160}
+                width={320}
                 className="h-full w-full object-contain"
               />
             </div>
           )}
           <Button
-  variant="ghost"
-  size="icon"
-  className="absolute left-2 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full bg-background/80 shadow-sm"
-  onClick={goToPrevious}
-  aria-label="Ejercicio anterior"
-  style={{ backgroundColor: `${primaryColor}20` }}
-  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = `${primaryColor}40`)}
-  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = `${primaryColor}20`)}
->
-  <ChevronLeft className="h-4 w-4" />
-</Button>
+            variant="ghost"
+            size="icon"
+            className="absolute left-2 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full bg-background/80 shadow-sm"
+            onClick={goToPrevious}
+            aria-label="Ejercicio anterior"
+            style={{ backgroundColor: `${primaryColor}20` }}
+            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = `${primaryColor}40`)}
+            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = `${primaryColor}20`)}
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
 
-<Button
-  variant="ghost"
-  size="icon"
-  className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full bg-background/80 shadow-sm"
-  onClick={goToNext}
-  aria-label="Ejercicio siguiente"
-  style={{ backgroundColor: `${primaryColor}20` }}
-  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = `${primaryColor}40`)}
-  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = `${primaryColor}20`)}
->
-  <ChevronRight className="h-4 w-4" />
-</Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full bg-background/80 shadow-sm"
+            onClick={goToNext}
+            aria-label="Ejercicio siguiente"
+            style={{ backgroundColor: `${primaryColor}20` }}
+            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = `${primaryColor}40`)}
+            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = `${primaryColor}20`)}
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
         </CardContent>
-        <CardFooter className='flex flex-col items-center gap-2'>
-          <div className="flex justify-center gap-1.5 pt-2">
+        <CardFooter className="flex flex-col items-center gap-1 py-2">
+          <div className="flex justify-center gap-1.5">
             {exercises.map((_, index) => (
               <button
                 key={index}
-                className={`h-2 w-2 rounded-full transition-all ${index === currentIndex ? "bg-primary w-4" : "bg-muted hover:bg-primary/50"
+                className={`h-2 rounded-full transition-all ${index === currentIndex ? "w-4" : "w-2 bg-muted hover:bg-primary/50"
                   }`}
                 style={index === currentIndex ? { backgroundColor: primaryColor } : undefined}
                 onClick={() => goToIndex(index)}
@@ -120,13 +122,11 @@ export function ExerciseList({ exercises, primaryColor }: ExerciseListProps) {
               />
             ))}
           </div>
-          <div className="text-center text-sm text-muted-foreground">
+          <div className="text-center text-xs text-muted-foreground">
             Ejercicio {currentIndex + 1} de {exercises.length}
           </div>
         </CardFooter>
       </Card>
-
     </div>
   )
 }
-
