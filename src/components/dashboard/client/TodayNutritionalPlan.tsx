@@ -35,7 +35,7 @@ export function TodayNutritionalPlan({ facilityId, primaryColor }: TodayNutritio
         description="No tienes comidas programadas para hoy."
         icon="food"
         primaryColor={primaryColor}
-        href="/mi-plan-nutricional"
+        href={`/${facilityId}/mi-plan-nutricional`}
       />
     )
   }

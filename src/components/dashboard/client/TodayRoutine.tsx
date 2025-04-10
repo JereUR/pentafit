@@ -39,7 +39,7 @@ export function TodayRoutine({ facilityId, primaryColor }: TodayRoutineProps) {
         description="No tienes ejercicios programados para hoy."
         icon="workout"
         primaryColor={primaryColor}
-        href="/mi-rutina"
+        href={`/${facilityId}/mi-rutina`}
       />
     )
   }
