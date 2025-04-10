@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import kyInstance from "@/lib/ky"
 import type { NotificationCountInfo } from "@/types/notification"
 import NotificationsDropdown from "./NotificationsDropdown"
+import { cn } from "@/lib/utils"
 
 interface NotificationsButtonProps {
   initialState: NotificationCountInfo
@@ -48,7 +49,7 @@ export default function NotificationsButton({ initialState, primaryColor }: Noti
             <Bell className="h-5 w-5 text-foreground" />
           </div>
           {!!data.unreadCount && (
-            <span className="absolute -right-2 -top-2 flex min-w-[1.25rem] min-h-[1.25rem] items-center justify-center rounded-full bg-primary px-1 text-xs font-medium text-primary-foreground">
+            <span className={cn("absolute -right-2 -top-2 flex min-w-[1.25rem] min-h-[1.25rem] items-center justify-center rounded-full px-1 text-xs font-medium text-primary-foreground", primaryColor ? `bg-[${primaryColor}]` : "bg-primary")}>
               {formatCount(data.unreadCount)}
             </span>
           )}
