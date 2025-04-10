@@ -73,7 +73,7 @@ export function WeeklyNutritionalPlanView({ facilityId, primaryColor }: WeeklyNu
                       meals={nutritionalPlanData.dailyMeals.find((dm) => dm.dayOfWeek === day)?.meals || []}
                       primaryColor={primaryColor}
                       dayName={dayNames[day]}
-                      itemsPerPage={2}
+                      itemsPerPage={1}
                     />
                   ) : null}
                 </TabsContent>
