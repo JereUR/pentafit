@@ -1,7 +1,7 @@
-import type React from "react"
 import { Calendar, CalendarX, Utensils } from "lucide-react"
-import { Button } from "@/components/ui/button"
 import Link from "next/link"
+
+import { Button } from "@/components/ui/button"
 
 interface EmptyStateProps {
   icon: "workout" | "food" | "calendar"
@@ -32,7 +32,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({
       <h2 className="text-2xl font-semibold mt-4">{title}</h2>
       <p className="text-muted-foreground text-sm mt-2">{description}</p>
       {showRedirectButton &&
-        (href ? (
+        (href  ? (
           <Button variant="outline" className="mt-4" asChild>
             <Link href={href}>
               {icon === "workout"
