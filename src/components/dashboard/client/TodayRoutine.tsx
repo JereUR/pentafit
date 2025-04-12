@@ -50,7 +50,7 @@ export function TodayRoutine({ facilityId, primaryColor }: TodayRoutineProps) {
         {routineData.description && <p className="text-sm text-muted-foreground">{routineData.description}</p>}
       </div>
 
-      <ExerciseList exercises={routineData.exercises} primaryColor={primaryColor} />
+      <ExerciseList exercises={routineData.exercises} primaryColor={primaryColor} routineId={routineData.id} facilityId={facilityId} />
     </div>
   )
 }
