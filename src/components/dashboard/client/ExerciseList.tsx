@@ -7,16 +7,22 @@ import Image from "next/image"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
 import type { ExerciseData } from "@/types/routine"
 import noImage from "@/assets/no-image.png"
+import { useCompleteExerciseMutation } from "@/app/(main)/(authenticated)/(client)/[facilityId]/mi-progreso/mutations"
 
 interface ExerciseListProps {
   exercises: ExerciseData[]
   primaryColor: string
+  routineId: string
+  facilityId: string
 }
 
-export function ExerciseList({ exercises, primaryColor }: ExerciseListProps) {
+export function ExerciseList({ exercises, primaryColor, routineId, facilityId }: ExerciseListProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
+  const [completedExercises, setCompletedExercises] = useState<string[]>([])
+  const completeExerciseMutation = useCompleteExerciseMutation()
 
   if (!exercises.length) {
     return <div className="text-center text-muted-foreground">No hay ejercicios disponibles</div>
@@ -34,6 +40,29 @@ export function ExerciseList({ exercises, primaryColor }: ExerciseListProps) {
 
   const goToIndex = (index: number) => {
     setCurrentIndex(index)
+  }
+
+  const toggleExerciseCompletion = (exerciseId: string) => {
+    const isCompleted = completedExercises.includes(exerciseId)
+
+    setCompletedExercises((prev) => {
+      if (isCompleted) {
+        return prev.filter((id) => id !== exerciseId)
+      } else {
+        return [...prev, exerciseId]
+      }
+    })
+
+    completeExerciseMutation.mutate({
+      exerciseId,
+      routineId,
+      facilityId,
+      completed: !isCompleted,
+    })
+  }
+
+  const isExerciseCompleted = (exerciseId: string) => {
+    return completedExercises.includes(exerciseId)
   }
 
   return (
@@ -109,7 +138,21 @@ export function ExerciseList({ exercises, primaryColor }: ExerciseListProps) {
             <ChevronRight className="h-4 w-4" />
           </Button>
         </CardContent>
-        <CardFooter className="flex flex-col items-center gap-1 py-2">
+        <CardFooter className="flex justify-between items-center py-2 px-4">
+          <div className="flex items-center gap-2">
+            <Checkbox
+              id={`complete-${currentExercise.id}`}
+              checked={isExerciseCompleted(currentExercise.id)}
+              onCheckedChange={() => toggleExerciseCompletion(currentExercise.id)}
+              style={{
+                borderColor: isExerciseCompleted(currentExercise.id) ? primaryColor : undefined,
+                backgroundColor: isExerciseCompleted(currentExercise.id) ? primaryColor : undefined,
+              }}
+            />
+            <label htmlFor={`complete-${currentExercise.id}`} className="text-sm cursor-pointer">
+              Marcar como completado
+            </label>
+          </div>
           <div className="flex justify-center gap-1.5">
             {exercises.map((_, index) => (
               <button
@@ -121,9 +164,6 @@ export function ExerciseList({ exercises, primaryColor }: ExerciseListProps) {
                 aria-label={`Ir al ejercicio ${index + 1}`}
               />
             ))}
-          </div>
-          <div className="text-center text-xs text-muted-foreground">
-            Ejercicio {currentIndex + 1} de {exercises.length}
           </div>
         </CardFooter>
       </Card>
