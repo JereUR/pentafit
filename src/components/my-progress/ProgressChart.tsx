@@ -1,7 +1,9 @@
 "use client"
+
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
+
 import { ProgressDataPoint, ProgressType } from "@/types/progress"
 
 interface ProgressChartProps {
@@ -14,10 +16,8 @@ interface ProgressChartProps {
 export function ProgressChart({ data, primaryColor, showLegend = false, showTooltip = false }: ProgressChartProps) {
   if (!data) return null
 
-  // Prepare data for the chart
   const chartData = prepareChartData(data)
 
-  // Define colors for different progress types
   const colors: Record<ProgressType, string> = {
     EXERCISE_COMPLETION: primaryColor,
     NUTRITION_ADHERENCE: "#22c55e",
@@ -26,7 +26,6 @@ export function ProgressChart({ data, primaryColor, showLegend = false, showTool
     MEASUREMENT: "#8b5cf6",
   }
 
-  // Map progress type names to display names
   const typeNames: Record<ProgressType, string> = {
     EXERCISE_COMPLETION: "Rutina",
     NUTRITION_ADHERENCE: "Nutrición",
@@ -78,9 +77,7 @@ export function ProgressChart({ data, primaryColor, showLegend = false, showTool
   )
 }
 
-// Helper function to prepare data for the chart
 function prepareChartData(data: Record<string, ProgressDataPoint[]>) {
-  // Get all unique dates from all progress types
   const allDates = new Set<string>()
 
   Object.values(data).forEach((progressArray) => {
@@ -89,14 +86,11 @@ function prepareChartData(data: Record<string, ProgressDataPoint[]>) {
     })
   })
 
-  // Sort dates chronologically
   const sortedDates = Array.from(allDates).sort()
 
-  // Create chart data with all progress types for each date
   return sortedDates.map((dateStr) => {
     const result: Record<string, string | number | null> = { date: dateStr }
 
-    // Add values for each progress type
     Object.entries(data).forEach(([type, progressArray]) => {
       const matchingItem = progressArray.find((item) => new Date(item.date).toISOString().split("T")[0] === dateStr)
 

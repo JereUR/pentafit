@@ -1,3 +1,5 @@
+"use client"
+
 import type React from "react"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -13,12 +15,11 @@ interface ProgressCardProps {
 }
 
 export function ProgressCard({ title, value, icon, description, primaryColor, isOverall = false }: ProgressCardProps) {
-  // Function to determine color based on progress value
   const getProgressColor = (value: number) => {
     if (isOverall) return primaryColor
-    if (value < 30) return "#ef4444" // Red for low progress
-    if (value < 70) return "#f97316" // Orange for medium progress
-    return "#22c55e" // Green for good progress
+    if (value < 30) return "#ef4444"
+    if (value < 70) return "#f97316"
+    return "#22c55e"
   }
 
   const progressColor = getProgressColor(value)
@@ -40,11 +41,13 @@ export function ProgressCard({ title, value, icon, description, primaryColor, is
         <Progress
           value={value}
           className="h-2 mt-3"
-          style={
-            {
-              "--progress-foreground": progressColor,
-            } as React.CSSProperties
-          }
+          indicatorClassName="bg-none" 
+          style={{
+            backgroundColor: `${primaryColor}20`, 
+          }}
+          indicatorStyle={{
+            backgroundColor: progressColor, 
+          }}
         />
       </CardContent>
     </Card>

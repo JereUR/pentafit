@@ -144,6 +144,7 @@ export function ExerciseList({ exercises, primaryColor, routineId, facilityId }:
               id={`complete-${currentExercise.id}`}
               checked={isExerciseCompleted(currentExercise.id)}
               onCheckedChange={() => toggleExerciseCompletion(currentExercise.id)}
+              className={`bg-[${primaryColor}] border-[${primaryColor}]`}
               style={{
                 borderColor: isExerciseCompleted(currentExercise.id) ? primaryColor : undefined,
                 backgroundColor: isExerciseCompleted(currentExercise.id) ? primaryColor : undefined,

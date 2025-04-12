@@ -25,7 +25,7 @@ export default function ProgressDashboard({ facilityId }: ProgressDashboardProps
   const [activeTab, setActiveTab] = useState("overview")
 
   if (isLoading) {
-    return <ProgressSkeleton />
+    return <ProgressSkeleton primaryColor={primaryColor} />
   }
 
   if (error) {
@@ -33,7 +33,7 @@ export default function ProgressDashboard({ facilityId }: ProgressDashboardProps
       <div className="flex flex-col items-center justify-center min-h-[50vh] p-4">
         <h2 className="text-xl font-semibold mb-2">Error al cargar los datos</h2>
         <p className="text-muted-foreground">{error}</p>
-        <Button className="mt-4" onClick={() => window.location.reload()} style={{ backgroundColor: primaryColor }}>
+        <Button className={`mt-4 bg-[${primaryColor}]`} onClick={() => window.location.reload()} style={{ backgroundColor: primaryColor }}>
           Reintentar
         </Button>
       </div>
