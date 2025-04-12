@@ -55,6 +55,9 @@ model User {
   nutritionalPlan        UserNutritionalPlan[]
   plan                   UserPlan[]
   diaries                UserDiary[]
+  progress               UserProgress[]
+  completions            ExerciseCompletion[]
+  measurements           UserMeasurement[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -106,6 +109,9 @@ model Facility {
   presetRoutines         PresetRoutine[]
   nutritionalPlans       NutritionalPlan[]
   presetNutritionalPlans PresetNutritionalPlan[]
+  userProgress           UserProgress[]
+  exerciseCompletions    ExerciseCompletion[]
+  userMeasurements       UserMeasurement[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -489,6 +495,7 @@ model Diary {
   offerDays     OfferDay[]
   notifications Notification[]
   transactions  Transaction[]
+  progress      UserProgress[]
 
   @@map("diaries")
 }
@@ -538,15 +545,17 @@ enum DayOfWeek {
 }
 
 model Routine {
-  id             String          @id @default(uuid())
+  id             String               @id @default(uuid())
   name           String
   description    String?
   facilityId     String
-  facility       Facility        @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  facility       Facility             @relation(fields: [facilityId], references: [id], onDelete: Cascade)
   dailyExercises DailyExercise[]
   userRoutines   UserRoutine[]
   notifications  Notification[]
   transactions   Transaction[]
+  progress       UserProgress[]
+  completions    ExerciseCompletion[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -732,4 +741,91 @@ model UserNutritionalPlan {
 
   @@unique([userId, nutritionalPlanId])
   @@map("user_nutritional_plans")
+}
+
+enum ProgressType {
+  EXERCISE_COMPLETION
+  NUTRITION_ADHERENCE
+  CLASS_ATTENDANCE
+  WEIGHT_TRACKING
+  MEASUREMENT
+}
+
+model UserProgress {
+  id         String       @id @default(uuid())
+  userId     String
+  user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  facilityId String
+  facility   Facility     @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  type       ProgressType
+  date       DateTime     @default(now())
+  value      Float        @default(0)
+  notes      String?
+
+  exerciseId String?
+  routineId  String?
+  routine    Routine? @relation(fields: [routineId], references: [id], onDelete: SetNull)
+
+  mealId     String?
+  foodItemId String?
+
+  diaryId String?
+  diary   Diary?  @relation(fields: [diaryId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, facilityId, type, date])
+  @@index([userId, facilityId, type, date])
+  @@map("user_progress")
+}
+
+model ExerciseCompletion {
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  facilityId String
+  facility   Facility @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  exerciseId String
+  routineId  String
+  routine    Routine  @relation(fields: [routineId], references: [id], onDelete: Cascade)
+  date       DateTime @default(now())
+  completed  Boolean  @default(true)
+  series     Int?
+  reps       Int?
+  weight     Float?
+  duration   Int?
+  notes      String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, exerciseId, date])
+  @@index([userId, routineId, date])
+  @@map("exercise_completions")
+}
+
+model UserMeasurement {
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  facilityId String
+  facility   Facility @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  date       DateTime @default(now())
+  weight     Float?
+  height     Float?
+  bodyFat    Float?
+  muscle     Float?
+  chest      Float?
+  waist      Float?
+  hips       Float?
+  arms       Float?
+  thighs     Float?
+  notes      String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, date])
+  @@map("user_measurements")
 }
