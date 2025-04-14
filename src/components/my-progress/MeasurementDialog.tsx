@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Ruler } from "lucide-react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
-import * as z from "zod"
+import type * as z from "zod"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -20,47 +20,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { useRecordMeasurementMutation } from "@/app/(main)/(authenticated)/(client)/[facilityId]/mi-progreso/mutations"
-
-
-const measurementFormSchema = z.object({
-  weight: z
-    .string()
-    .optional()
-    .transform((val) => (val ? Number.parseFloat(val) : undefined)),
-  height: z
-    .string()
-    .optional()
-    .transform((val) => (val ? Number.parseFloat(val) : undefined)),
-  bodyFat: z
-    .string()
-    .optional()
-    .transform((val) => (val ? Number.parseFloat(val) : undefined)),
-  muscle: z
-    .string()
-    .optional()
-    .transform((val) => (val ? Number.parseFloat(val) : undefined)),
-  chest: z
-    .string()
-    .optional()
-    .transform((val) => (val ? Number.parseFloat(val) : undefined)),
-  waist: z
-    .string()
-    .optional()
-    .transform((val) => (val ? Number.parseFloat(val) : undefined)),
-  hips: z
-    .string()
-    .optional()
-    .transform((val) => (val ? Number.parseFloat(val) : undefined)),
-  arms: z
-    .string()
-    .optional()
-    .transform((val) => (val ? Number.parseFloat(val) : undefined)),
-  thighs: z
-    .string()
-    .optional()
-    .transform((val) => (val ? Number.parseFloat(val) : undefined)),
-  notes: z.string().optional(),
-})
+import { measurementFormSchema, MeasurementFormValues } from "@/lib/validation"
 
 interface MeasurementDialogProps {
   facilityId: string
@@ -71,7 +31,7 @@ export function MeasurementDialog({ facilityId, primaryColor }: MeasurementDialo
   const [open, setOpen] = useState(false)
   const recordMeasurementMutation = useRecordMeasurementMutation()
 
-  const form = useForm<z.infer<typeof measurementFormSchema>>({
+  const form = useForm<MeasurementFormValues>({
     resolver: zodResolver(measurementFormSchema),
     defaultValues: {
       weight: undefined,

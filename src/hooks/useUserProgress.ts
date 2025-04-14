@@ -1,15 +1,14 @@
 "use client"
 
 import { useQuery } from "@tanstack/react-query"
-
 import { getUserProgress } from "@/app/(main)/(authenticated)/(client)/[facilityId]/mi-progreso/actions"
-import { ProgressData } from "@/types/progress"
+import type { ProgressData } from "@/types/progress"
 
-export function useUserProgress(facilityId: string) {
+export function useUserProgress(facilityId: string, userId: string) {
   const { data, isLoading, error } = useQuery({
-    queryKey: ["userProgress", facilityId],
+    queryKey: ["userProgress", userId, facilityId],
     queryFn: () => getUserProgress(facilityId),
-    enabled: !!facilityId,
+    enabled: !!facilityId && !!userId,
     staleTime: 5 * 60 * 1000,
   })
 

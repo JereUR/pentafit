@@ -17,11 +17,12 @@ import { MeasurementsView } from "./MeasurementView"
 
 interface ProgressDashboardProps {
   facilityId: string
+  userId: string
 }
 
-export default function ProgressDashboard({ facilityId }: ProgressDashboardProps) {
+export default function ProgressDashboard({ facilityId, userId }: ProgressDashboardProps) {
   const { primaryColor } = useClientFacility()
-  const { progressData, isLoading, error } = useUserProgress(facilityId)
+  const { progressData, isLoading, error } = useUserProgress(facilityId, userId)
   const [activeTab, setActiveTab] = useState("overview")
 
   if (isLoading) {
