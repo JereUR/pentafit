@@ -1,56 +1,54 @@
 "use client"
 
-import { useToast } from "@/hooks/use-toast"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useRouter } from "next/navigation"
+
+import { useToast } from "@/hooks/use-toast"
 import { completeExercise, recordMeasurement } from "./actions"
+import { MeasurementFormValues } from "@/lib/validation"
+import { ExerciseCompletionResult, MeasurementResult } from "@/types/progress"
+
+type CompleteExerciseParams = {
+  exerciseId: string
+  routineId: string
+  facilityId: string
+  completed: boolean
+  series?: number
+  reps?: number
+  weight?: number
+  duration?: number
+  notes?: string
+}
 
 export function useCompleteExerciseMutation() {
   const { toast } = useToast()
   const router = useRouter()
   const queryClient = useQueryClient()
 
-  const mutation = useMutation({
-    mutationFn: async ({
-      exerciseId,
-      routineId,
-      facilityId,
-      completed,
-      series,
-      reps,
-      weight,
-      duration,
-      notes,
-    }: {
-      exerciseId: string
-      routineId: string
-      facilityId: string
-      completed: boolean
-      series?: number
-      reps?: number
-      weight?: number
-      duration?: number
-      notes?: string
-    }) => {
-      const result = await completeExercise({
-        exerciseId,
-        routineId,
-        facilityId,
-        completed,
-        series,
-        reps,
-        weight,
-        duration,
-        notes,
-      })
+  return useMutation<ExerciseCompletionResult, Error, CompleteExerciseParams>({
+    mutationFn: async (params) => {
+      const result = await completeExercise(params)
+      if (!result.success) {
+        throw new Error(result.error)
+      }
       return result
     },
-    onSuccess: () => {
+    onSuccess: (result, variables) => {
       toast({
         title: "Ejercicio registrado",
         description: "El ejercicio ha sido marcado como completado",
       })
-      queryClient.invalidateQueries({ queryKey: ["userProgress"] })
+
+      if (result.userId) {
+        queryClient.invalidateQueries({
+          queryKey: ["userProgress", result.userId, variables.facilityId],
+        })
+      } else {
+        queryClient.invalidateQueries({
+          queryKey: ["userProgress"],
+        })
+      }
+
       queryClient.invalidateQueries({ queryKey: ["exerciseCompletions"] })
       router.refresh()
     },
@@ -62,8 +60,6 @@ export function useCompleteExerciseMutation() {
       })
     },
   })
-
-  return mutation
 }
 
 export function useRecordMeasurementMutation() {
@@ -71,53 +67,33 @@ export function useRecordMeasurementMutation() {
   const router = useRouter()
   const queryClient = useQueryClient()
 
-  const mutation = useMutation({
-    mutationFn: async ({
-      facilityId,
-      weight,
-      height,
-      bodyFat,
-      muscle,
-      chest,
-      waist,
-      hips,
-      arms,
-      thighs,
-      notes,
-    }: {
-      facilityId: string
-      weight?: number
-      height?: number
-      bodyFat?: number
-      muscle?: number
-      chest?: number
-      waist?: number
-      hips?: number
-      arms?: number
-      thighs?: number
-      notes?: string
-    }) => {
-      const result = await recordMeasurement({
-        facilityId,
-        weight,
-        height,
-        bodyFat,
-        muscle,
-        chest,
-        waist,
-        hips,
-        arms,
-        thighs,
-        notes,
-      })
+  return useMutation<
+    MeasurementResult,
+    Error,
+    MeasurementFormValues & { facilityId: string }
+  >({
+    mutationFn: async (values) => {
+      const result = await recordMeasurement(values)
+      if (!result.success) {
+        throw new Error(result.error)
+      }
       return result
     },
-    onSuccess: () => {
+    onSuccess: (result, variables) => {
       toast({
         title: "Medidas registradas",
         description: "Tus medidas han sido registradas correctamente",
       })
-      queryClient.invalidateQueries({ queryKey: ["userProgress"] })
+      if (result.userId) {
+        queryClient.invalidateQueries({
+          queryKey: ["userProgress", result.userId, variables.facilityId],
+        })
+      } else {
+        queryClient.invalidateQueries({
+          queryKey: ["userProgress"],
+        })
+      }
+
       queryClient.invalidateQueries({ queryKey: ["userMeasurements"] })
       router.refresh()
     },
@@ -129,6 +105,4 @@ export function useRecordMeasurementMutation() {
       })
     },
   })
-
-  return mutation
 }

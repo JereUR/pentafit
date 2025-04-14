@@ -1,8 +1,11 @@
 "use server"
 
+import { revalidatePath } from "next/cache"
+
 import { validateRequest } from "@/auth"
 import prisma from "@/lib/prisma"
-import { revalidatePath } from "next/cache"
+import { MeasurementFormValues } from "@/lib/validation"
+import { ExerciseCompletionResult, MeasurementResult } from "@/types/progress"
 
 export async function completeExercise({
   exerciseId,
@@ -24,7 +27,7 @@ export async function completeExercise({
   weight?: number
   duration?: number
   notes?: string
-}) {
+}): Promise<ExerciseCompletionResult> {
   try {
     const { user } = await validateRequest()
 
@@ -110,14 +113,20 @@ export async function completeExercise({
     revalidatePath(`/${facilityId}/inicio`)
     revalidatePath(`/${facilityId}/mi-rutina`)
 
-    return { success: true, data: exerciseCompletion }
+    return {
+      success: true,
+      data: exerciseCompletion,
+      userId: user.id,
+    }
   } catch (error) {
     console.error("Error completing exercise:", error)
-    throw new Error(
-      error instanceof Error
-        ? error.message
-        : "Error al registrar el ejercicio completado",
-    )
+    return {
+      success: false,
+      error:
+        error instanceof Error
+          ? error.message
+          : "Error al registrar el ejercicio completado",
+    }
   }
 }
 
@@ -199,31 +208,9 @@ async function updateRoutineProgress(
   }
 }
 
-export async function recordMeasurement({
-  facilityId,
-  weight,
-  height,
-  bodyFat,
-  muscle,
-  chest,
-  waist,
-  hips,
-  arms,
-  thighs,
-  notes,
-}: {
-  facilityId: string
-  weight?: number
-  height?: number
-  bodyFat?: number
-  muscle?: number
-  chest?: number
-  waist?: number
-  hips?: number
-  arms?: number
-  thighs?: number
-  notes?: string
-}) {
+export async function recordMeasurement(
+  values: MeasurementFormValues & { facilityId: string },
+): Promise<MeasurementResult> {
   try {
     const { user } = await validateRequest()
 
@@ -235,7 +222,7 @@ export async function recordMeasurement({
       where: {
         userId_facilityId: {
           userId: user.id,
-          facilityId,
+          facilityId: values.facilityId,
         },
       },
     })
@@ -247,29 +234,37 @@ export async function recordMeasurement({
     const measurement = await prisma.userMeasurement.create({
       data: {
         userId: user.id,
-        facilityId,
-        weight,
-        height,
-        bodyFat,
-        muscle,
-        chest,
-        waist,
-        hips,
-        arms,
-        thighs,
-        notes,
+        facilityId: values.facilityId,
+        weight: values.weight,
+        height: values.height,
+        bodyFat: values.bodyFat,
+        muscle: values.muscle,
+        chest: values.chest,
+        waist: values.waist,
+        hips: values.hips,
+        arms: values.arms,
+        thighs: values.thighs,
+        notes: values.notes,
       },
     })
 
-    revalidatePath(`/${facilityId}/inicio`)
-    revalidatePath(`/${facilityId}/mi-progreso`)
+    revalidatePath(`/${values.facilityId}/inicio`)
+    revalidatePath(`/${values.facilityId}/mi-progreso`)
 
-    return { success: true, data: measurement }
+    return {
+      success: true,
+      data: measurement,
+      userId: user.id,
+    }
   } catch (error) {
     console.error("Error recording measurement:", error)
-    throw new Error(
-      error instanceof Error ? error.message : "Error al registrar las medidas",
-    )
+    return {
+      success: false,
+      error:
+        error instanceof Error
+          ? error.message
+          : "Error al registrar las medidas",
+    }
   }
 }
 

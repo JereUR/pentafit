@@ -1,3 +1,8 @@
+import {
+  ExerciseCompletion,
+  UserMeasurement as UserMeasurementPrisma,
+} from "@prisma/client"
+
 export interface UserMeasurement {
   id: string
   userId: string
@@ -38,3 +43,17 @@ export type ProgressType =
   | "CLASS_ATTENDANCE"
   | "WEIGHT_TRACKING"
   | "MEASUREMENT"
+
+export type MeasurementResult = {
+  success: boolean
+  data?: UserMeasurementPrisma
+  error?: string
+  userId?: string
+}
+
+export type ExerciseCompletionResult = {
+  success: boolean
+  data?: ExerciseCompletion
+  error?: string
+  userId?: string
+}

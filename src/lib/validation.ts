@@ -509,3 +509,45 @@ export const userNutritionalPlanSchema = z.object({
 export type UserNutritionalPlanValues = z.infer<
   typeof userNutritionalPlanSchema
 >
+
+export const measurementFormSchema = z.object({
+  weight: z
+    .string()
+    .optional()
+    .transform((val) => (val ? Number.parseFloat(val) : undefined)),
+  height: z
+    .string()
+    .optional()
+    .transform((val) => (val ? Number.parseFloat(val) : undefined)),
+  bodyFat: z
+    .string()
+    .optional()
+    .transform((val) => (val ? Number.parseFloat(val) : undefined)),
+  muscle: z
+    .string()
+    .optional()
+    .transform((val) => (val ? Number.parseFloat(val) : undefined)),
+  chest: z
+    .string()
+    .optional()
+    .transform((val) => (val ? Number.parseFloat(val) : undefined)),
+  waist: z
+    .string()
+    .optional()
+    .transform((val) => (val ? Number.parseFloat(val) : undefined)),
+  hips: z
+    .string()
+    .optional()
+    .transform((val) => (val ? Number.parseFloat(val) : undefined)),
+  arms: z
+    .string()
+    .optional()
+    .transform((val) => (val ? Number.parseFloat(val) : undefined)),
+  thighs: z
+    .string()
+    .optional()
+    .transform((val) => (val ? Number.parseFloat(val) : undefined)),
+  notes: z.string().optional(),
+})
+
+export type MeasurementFormValues = z.infer<typeof measurementFormSchema>
