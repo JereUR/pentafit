@@ -1,6 +1,6 @@
 import { Suspense } from 'react'
 import { Metadata } from "next"
-import { notFound } from "next/navigation"
+import { notFound, redirect } from "next/navigation"
 import { cache } from "react"
 
 import { validateRequest } from "@/auth"
@@ -70,7 +70,7 @@ export async function generateMetadata(
 export default async function UserPage() {
   const { user: loggedUser } = await validateRequest()
 
-  if (!loggedUser) return null
+  if (!loggedUser) redirect("/iniciar-sesion")
 
   return (
     <main className="flex container gap-5 p-5">

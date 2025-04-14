@@ -1,9 +1,10 @@
 import type { Metadata } from "next"
-import { notFound } from "next/navigation"
+import { notFound, redirect } from "next/navigation"
 import { Activity } from "lucide-react"
 
 import { formatDate } from "@/lib/utils"
 import ProgressDashboard from "@/components/my-progress/ProgressDashboard"
+import { validateRequest } from "@/auth"
 
 type Props = {
   params: Promise<{ facilityId: string }>
@@ -19,6 +20,10 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
 }
 
 export default async function MiProgresoPage({ params }: Props) {
+  const { user } = await validateRequest()
+
+  if (!user) redirect("/iniciar-sesion")
+
   const facilityId = (await params).facilityId
   const today = new Date()
   const formattedDate = formatDate(today)
@@ -39,7 +44,7 @@ export default async function MiProgresoPage({ params }: Props) {
           <span className="text-sm text-muted-foreground hidden sm:inline">Seguimiento de tu rendimiento</span>
         </div>
       </div>
-      <ProgressDashboard facilityId={facilityId} />
+      <ProgressDashboard facilityId={facilityId} userId={user.id} />
     </main>
   )
 }

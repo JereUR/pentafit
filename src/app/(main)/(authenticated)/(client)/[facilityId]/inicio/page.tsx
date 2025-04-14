@@ -1,10 +1,11 @@
 import type { Metadata } from "next"
-import { notFound } from "next/navigation"
+import { notFound, redirect } from "next/navigation"
 
 import { formatDate } from "@/lib/utils"
 import { Suspense } from "react"
 import { ClientDashboardSkeleton } from "@/components/skeletons/ClientDashboardSkeleton"
 import { ClientDashboard } from "@/components/dashboard/client/ClientDashboard"
+import { validateRequest } from "@/auth"
 
 type Props = {
   params: Promise<{ facilityId: string }>
@@ -20,6 +21,10 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
 }
 
 export default async function UserFacilityPage({ params }: Props) {
+  const { user } = await validateRequest()
+
+  if (!user) redirect("/iniciar-sesion")
+
   const facilityId = (await params).facilityId
   const today = new Date()
   const formattedDate = formatDate(today)

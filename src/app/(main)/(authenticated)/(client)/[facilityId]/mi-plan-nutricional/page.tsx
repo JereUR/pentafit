@@ -1,7 +1,8 @@
 import type { Metadata } from "next"
-import { notFound } from "next/navigation"
+import { notFound, redirect } from "next/navigation"
 
 import { ClientWeeklyNutritionalPlan } from "@/components/my-nutritional-plan/ClientWeeklyNutritionalPlan"
+import { validateRequest } from "@/auth"
 
 type Props = {
   params: Promise<{ facilityId: string }>
@@ -17,6 +18,10 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
 }
 
 export default async function UserFacilityPage({ params }: Props) {
+  const { user } = await validateRequest()
+
+  if (!user) redirect("/iniciar-sesion")
+
   const facilityId = (await params).facilityId
 
   if (!facilityId) {

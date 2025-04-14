@@ -1,9 +1,10 @@
 import type { Metadata } from "next"
-import { notFound } from "next/navigation"
+import { notFound, redirect } from "next/navigation"
 import { Calendar } from "lucide-react"
 
 import { formatDate } from "@/lib/utils"
 import MyDiaryContent from "./MyDiaryContent"
+import { validateRequest } from "@/auth"
 
 type Props = {
   params: Promise<{ facilityId: string }>
@@ -19,6 +20,10 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
 }
 
 export default async function DiaryPlansPage({ params }: Props) {
+  const { user } = await validateRequest()
+
+  if (!user) redirect("/iniciar-sesion")
+
   const facilityId = (await params).facilityId
   const today = new Date()
   const formattedDate = formatDate(today)
