@@ -73,7 +73,7 @@ export default function ClientLayout({ children, userRole }: ClientLayoutProps) 
           {children}
         </main>
       </div>
-      <MobileBottomNav />
+      {!isMyFacilitiesPage && <MobileBottomNav />}
     </div>
   )
 }
