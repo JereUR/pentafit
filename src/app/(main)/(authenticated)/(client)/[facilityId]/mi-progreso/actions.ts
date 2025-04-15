@@ -130,7 +130,113 @@ export async function completeExercise({
   }
 }
 
-async function updateRoutineProgress(
+export async function completeAllExercises({
+  exerciseIds,
+  routineId,
+  facilityId,
+  completed,
+}: {
+  exerciseIds: string[]
+  routineId: string
+  facilityId: string
+  completed: boolean
+}): Promise<ExerciseCompletionResult> {
+  try {
+    const { user } = await validateRequest()
+
+    if (!user) {
+      throw new Error("No autorizado.")
+    }
+
+    const userFacility = await prisma.userFacility.findUnique({
+      where: {
+        userId_facilityId: {
+          userId: user.id,
+          facilityId,
+        },
+      },
+    })
+
+    if (!userFacility) {
+      throw new Error("El usuario no pertenece a este establecimiento")
+    }
+
+    const userRoutine = await prisma.userRoutine.findFirst({
+      where: {
+        userId: user.id,
+        routineId,
+        isActive: true,
+      },
+    })
+
+    if (!userRoutine) {
+      throw new Error("El usuario no tiene asignada esta rutina")
+    }
+
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const tomorrow = new Date(today)
+    tomorrow.setDate(tomorrow.getDate() + 1)
+
+    await prisma.$transaction(async (tx) => {
+      for (const exerciseId of exerciseIds) {
+        const existingCompletion = await tx.exerciseCompletion.findFirst({
+          where: {
+            userId: user.id,
+            exerciseId,
+            date: {
+              gte: today,
+              lt: tomorrow,
+            },
+          },
+        })
+
+        if (existingCompletion) {
+          await tx.exerciseCompletion.update({
+            where: {
+              id: existingCompletion.id,
+            },
+            data: {
+              completed,
+              updatedAt: new Date(),
+            },
+          })
+        } else {
+          await tx.exerciseCompletion.create({
+            data: {
+              userId: user.id,
+              facilityId,
+              exerciseId,
+              routineId,
+              completed,
+            },
+          })
+        }
+      }
+    })
+
+    await updateRoutineProgress(user.id, facilityId, routineId)
+
+    revalidatePath(`/${facilityId}/inicio`)
+    revalidatePath(`/${facilityId}/mi-rutina`)
+
+    return {
+      success: true,
+      userId: user.id,
+    }
+  } catch (error) {
+    console.error("Error completing all exercises:", error)
+    return {
+      success: false,
+      error:
+        error instanceof Error
+          ? error.message
+          : "Error al registrar los ejercicios completados",
+    }
+  }
+}
+
+export async function updateRoutineProgress(
   userId: string,
   facilityId: string,
   routineId: string,
@@ -150,13 +256,16 @@ async function updateRoutineProgress(
       0,
     )
 
+    const weekStartDate = new Date()
+    weekStartDate.setDate(weekStartDate.getDate() - 7)
+
     const completedExercises = await prisma.exerciseCompletion.count({
       where: {
         userId,
         routineId,
         completed: true,
         date: {
-          gte: new Date(new Date().setDate(new Date().getDate() - 7)),
+          gte: weekStartDate,
         },
       },
     })

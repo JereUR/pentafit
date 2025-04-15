@@ -4,9 +4,17 @@ import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useRouter } from "next/navigation"
 
 import { useToast } from "@/hooks/use-toast"
-import { completeExercise, recordMeasurement } from "./actions"
+import {
+  completeAllExercises,
+  completeExercise,
+  recordMeasurement,
+} from "./actions"
 import { MeasurementFormValues } from "@/lib/validation"
-import { ExerciseCompletionResult, MeasurementResult } from "@/types/progress"
+import {
+  CompleteAllExercisesParams,
+  ExerciseCompletionResult,
+  MeasurementResult,
+} from "@/types/progress"
 
 type CompleteExerciseParams = {
   exerciseId: string
@@ -50,12 +58,68 @@ export function useCompleteExerciseMutation() {
       }
 
       queryClient.invalidateQueries({ queryKey: ["exerciseCompletions"] })
+      queryClient.invalidateQueries({
+        queryKey: ["todayRoutine", variables.facilityId],
+      })
       router.refresh()
     },
     onError: (error: Error) => {
       toast({
         variant: "destructive",
         title: "Error al registrar el ejercicio",
+        description: error.message,
+      })
+    },
+  })
+}
+
+export function useCompleteAllExercisesMutation() {
+  const { toast } = useToast()
+  const router = useRouter()
+  const queryClient = useQueryClient()
+
+  return useMutation<
+    ExerciseCompletionResult,
+    Error,
+    CompleteAllExercisesParams
+  >({
+    mutationFn: async (params) => {
+      const result = await completeAllExercises(params)
+      if (!result.success) {
+        throw new Error(result.error)
+      }
+      return result
+    },
+    onSuccess: (result, variables) => {
+      toast({
+        title: variables.completed
+          ? "Ejercicios completados"
+          : "Ejercicios desmarcados",
+        description: variables.completed
+          ? "Todos los ejercicios han sido marcados como completados"
+          : "Todos los ejercicios han sido desmarcados",
+      })
+
+      if (result.userId) {
+        queryClient.invalidateQueries({
+          queryKey: ["userProgress", result.userId, variables.facilityId],
+        })
+      } else {
+        queryClient.invalidateQueries({
+          queryKey: ["userProgress"],
+        })
+      }
+
+      queryClient.invalidateQueries({ queryKey: ["exerciseCompletions"] })
+      queryClient.invalidateQueries({
+        queryKey: ["todayRoutine", variables.facilityId],
+      })
+      router.refresh()
+    },
+    onError: (error: Error) => {
+      toast({
+        variant: "destructive",
+        title: "Error al actualizar los ejercicios",
         description: error.message,
       })
     },
