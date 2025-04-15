@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { ChevronLeft, ChevronRight, Dumbbell } from "lucide-react"
+import { useState, useEffect } from "react"
+import { ChevronLeft, ChevronRight, Dumbbell, CheckSquare, Loader2 } from "lucide-react"
 import Image from "next/image"
 
 import { Badge } from "@/components/ui/badge"
@@ -11,18 +11,39 @@ import { Checkbox } from "@/components/ui/checkbox"
 import type { ExerciseData } from "@/types/routine"
 import noImage from "@/assets/no-image.png"
 import { useCompleteExerciseMutation } from "@/app/(main)/(authenticated)/(client)/[facilityId]/mi-progreso/mutations"
+import { useCompleteAllExercisesMutation } from "@/app/(main)/(authenticated)/(client)/[facilityId]/mi-progreso/mutations"
+import LoadingButton from "@/components/LoadingButton"
 
 interface ExerciseListProps {
   exercises: ExerciseData[]
   primaryColor: string
   routineId: string
   facilityId: string
+  completedExercises: string[]
 }
 
-export function ExerciseList({ exercises, primaryColor, routineId, facilityId }: ExerciseListProps) {
+export function ExerciseList({
+  exercises,
+  primaryColor,
+  routineId,
+  facilityId,
+  completedExercises,
+}: ExerciseListProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
-  const [completedExercises, setCompletedExercises] = useState<string[]>([])
-  const completeExerciseMutation = useCompleteExerciseMutation()
+  const [localCompletedExercises, setLocalCompletedExercises] = useState<string[]>(completedExercises)
+  const [loadingExerciseId, setLoadingExerciseId] = useState<string | null>(null)
+  const { mutate: completeExerciseMutation, isPending: isLoadingExercise } = useCompleteExerciseMutation()
+  const { mutate: completeAllExercisesMutation, isPending: loadingAllExercise } = useCompleteAllExercisesMutation()
+
+  useEffect(() => {
+    setLocalCompletedExercises(completedExercises)
+  }, [completedExercises])
+
+  useEffect(() => {
+    if (!isLoadingExercise) {
+      setLoadingExerciseId(null)
+    }
+  }, [isLoadingExercise])
 
   if (!exercises.length) {
     return <div className="text-center text-muted-foreground">No hay ejercicios disponibles</div>
@@ -43,17 +64,18 @@ export function ExerciseList({ exercises, primaryColor, routineId, facilityId }:
   }
 
   const toggleExerciseCompletion = (exerciseId: string) => {
-    const isCompleted = completedExercises.includes(exerciseId)
+    const isCompleted = localCompletedExercises.includes(exerciseId)
 
-    setCompletedExercises((prev) => {
+    setLocalCompletedExercises((prev) => {
       if (isCompleted) {
         return prev.filter((id) => id !== exerciseId)
       } else {
         return [...prev, exerciseId]
       }
     })
+    setLoadingExerciseId(exerciseId)
 
-    completeExerciseMutation.mutate({
+    completeExerciseMutation({
       exerciseId,
       routineId,
       facilityId,
@@ -61,12 +83,59 @@ export function ExerciseList({ exercises, primaryColor, routineId, facilityId }:
     })
   }
 
-  const isExerciseCompleted = (exerciseId: string) => {
-    return completedExercises.includes(exerciseId)
+  const handleCompleteAll = () => {
+    const exerciseIds = exercises.map((exercise) => exercise.id)
+    const allCompleted = exerciseIds.every((id) => localCompletedExercises.includes(id))
+
+    const newCompletionState = !allCompleted
+
+    if (newCompletionState) {
+      setLocalCompletedExercises(exerciseIds)
+    } else {
+      setLocalCompletedExercises([])
+    }
+
+    completeAllExercisesMutation({
+      exerciseIds,
+      routineId,
+      facilityId,
+      completed: newCompletionState,
+    })
   }
+
+  const isExerciseCompleted = (exerciseId: string) => {
+    return localCompletedExercises.includes(exerciseId)
+  }
+
+  const isExerciseLoading = (exerciseId: string) => {
+    return loadingExerciseId === exerciseId || loadingAllExercise
+  }
+
+  const areAllExercisesCompleted =
+    exercises.length > 0 && exercises.every((exercise) => localCompletedExercises.includes(exercise.id))
+
+  const isLoading = isLoadingExercise || loadingAllExercise
 
   return (
     <div className="space-y-4">
+      <div className="flex justify-end">
+        <LoadingButton
+          loading={loadingAllExercise}
+          variant="outline"
+          size="sm"
+          className="flex items-center gap-2"
+          onClick={handleCompleteAll}
+          style={{
+            borderColor: primaryColor,
+            color: areAllExercisesCompleted ? "white" : primaryColor,
+            backgroundColor: areAllExercisesCompleted ? primaryColor : "transparent",
+          }}
+        >
+          <CheckSquare className="h-4 w-4" />
+          <span>{areAllExercisesCompleted ? "Desmarcar todos" : "Completar todos"}</span>
+        </LoadingButton>
+      </div>
+
       <Card className="overflow-hidden relative">
         <CardContent className="p-0">
           <div className="flex items-start gap-2 p-3">
@@ -121,6 +190,7 @@ export function ExerciseList({ exercises, primaryColor, routineId, facilityId }:
             style={{ backgroundColor: `${primaryColor}20` }}
             onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = `${primaryColor}40`)}
             onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = `${primaryColor}20`)}
+            disabled={isLoading}
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
@@ -134,6 +204,7 @@ export function ExerciseList({ exercises, primaryColor, routineId, facilityId }:
             style={{ backgroundColor: `${primaryColor}20` }}
             onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = `${primaryColor}40`)}
             onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = `${primaryColor}20`)}
+            disabled={isLoading}
           >
             <ChevronRight className="h-4 w-4" />
           </Button>
@@ -144,15 +215,24 @@ export function ExerciseList({ exercises, primaryColor, routineId, facilityId }:
               id={`complete-${currentExercise.id}`}
               checked={isExerciseCompleted(currentExercise.id)}
               onCheckedChange={() => toggleExerciseCompletion(currentExercise.id)}
+              disabled={isExerciseLoading(currentExercise.id)}
               className={`bg-[${primaryColor}] border-[${primaryColor}]`}
               style={{
                 borderColor: isExerciseCompleted(currentExercise.id) ? primaryColor : undefined,
                 backgroundColor: isExerciseCompleted(currentExercise.id) ? primaryColor : undefined,
               }}
             />
-            <label htmlFor={`complete-${currentExercise.id}`} className="text-sm cursor-pointer">
-              Marcar como completado
-            </label>
+            <div className="flex items-center gap-2">
+              {isExerciseLoading(currentExercise.id) && (
+                <Loader2 className="h-3 w-3 animate-spin" style={{ color: primaryColor }} />
+              )}
+              <label
+                htmlFor={`complete-${currentExercise.id}`}
+                className={`text-sm cursor-pointer ${isExerciseLoading(currentExercise.id) ? "text-muted-foreground" : ""}`}
+              >
+                Marcar como completado
+              </label>
+            </div>
           </div>
           <div className="flex justify-center gap-1.5">
             {exercises.map((_, index) => (
@@ -163,6 +243,7 @@ export function ExerciseList({ exercises, primaryColor, routineId, facilityId }:
                 style={index === currentIndex ? { backgroundColor: primaryColor } : undefined}
                 onClick={() => goToIndex(index)}
                 aria-label={`Ir al ejercicio ${index + 1}`}
+                disabled={isLoading}
               />
             ))}
           </div>

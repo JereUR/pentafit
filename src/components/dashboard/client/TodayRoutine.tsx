@@ -1,4 +1,4 @@
-'use client'
+"use client"
 
 import { getCurrentDayOfWeek, DAY_DISPLAY_NAMES } from "@/lib/utils"
 import { useTodayClientData } from "@/hooks/useTodayClientData"
@@ -31,7 +31,6 @@ export function TodayRoutine({ facilityId, primaryColor }: TodayRoutineProps) {
     return <div className="p-4 text-sm text-red-500">{error}</div>
   }
 
-
   if (!routineData) {
     return (
       <EmptyState
@@ -46,12 +45,15 @@ export function TodayRoutine({ facilityId, primaryColor }: TodayRoutineProps) {
 
   return (
     <div className="space-y-4">
-      <div>
-        {routineData.description && <p className="text-sm text-muted-foreground">{routineData.description}</p>}
-      </div>
+      <div>{routineData.description && <p className="text-sm text-muted-foreground">{routineData.description}</p>}</div>
 
-      <ExerciseList exercises={routineData.exercises} primaryColor={primaryColor} routineId={routineData.id} facilityId={facilityId} />
+      <ExerciseList
+        exercises={routineData.exercises}
+        primaryColor={primaryColor}
+        routineId={routineData.id}
+        facilityId={facilityId}
+        completedExercises={routineData.completedExercises || []}
+      />
     </div>
   )
 }
-
