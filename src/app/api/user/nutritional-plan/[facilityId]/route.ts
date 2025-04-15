@@ -65,6 +65,37 @@ export async function GET(
       })
     }
 
+    const todayDate = new Date()
+    todayDate.setHours(0, 0, 0, 0)
+
+    const tomorrowDate = new Date(todayDate)
+    tomorrowDate.setDate(tomorrowDate.getDate() + 1)
+
+    const weekStartDate = new Date(todayDate)
+    weekStartDate.setDate(weekStartDate.getDate() - 7)
+
+    const completedMeals = await prisma.userProgress.findMany({
+      where: {
+        userId,
+        facilityId,
+        type: "NUTRITION_ADHERENCE",
+        value: 100,
+        date: {
+          gte: weekStartDate,
+        },
+        mealId: {
+          not: null,
+        },
+      },
+      select: {
+        mealId: true,
+      },
+    })
+
+    const completedMealIds = completedMeals
+      .map((item) => item.mealId)
+      .filter(Boolean) as string[]
+
     const data = {
       id: userNutritionalPlan.nutritionalPlanId,
       name: userNutritionalPlan.nutritionalPlan.name,
@@ -87,9 +118,11 @@ export async function GET(
               fat: foodItem.fat,
               notes: foodItem.notes,
             })),
+            completed: completedMealIds.includes(meal.id),
           })),
         }),
       ),
+      completedMeals: completedMealIds,
     }
 
     return NextResponse.json({
