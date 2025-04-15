@@ -75,6 +75,7 @@ export interface TodayRoutineData {
   name: string
   description?: string | null
   exercises: ExerciseData[]
+  completedExercises: string[]
 }
 
 export default function formatExercisesToString(

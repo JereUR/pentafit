@@ -57,3 +57,22 @@ export type ExerciseCompletionResult = {
   error?: string
   userId?: string
 }
+
+export interface CompleteExerciseParams {
+  exerciseId: string
+  routineId: string
+  facilityId: string
+  completed: boolean
+  series?: number
+  reps?: number
+  weight?: number
+  duration?: number
+  notes?: string
+}
+
+export interface CompleteAllExercisesParams {
+  exerciseIds: string[]
+  routineId: string
+  facilityId: string
+  completed: boolean
+}
