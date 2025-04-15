@@ -121,3 +121,23 @@ export function formatDate(date: Date): string {
 
   return formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1)
 }
+
+export const DAY_OF_WEEK_VALUES = {
+  MONDAY: 0,
+  TUESDAY: 1,
+  WEDNESDAY: 2,
+  THURSDAY: 3,
+  FRIDAY: 4,
+  SATURDAY: 5,
+  SUNDAY: 6,
+}
+
+export function isDayTodayOrPast(dayOfWeek: string): boolean {
+  const today = getCurrentDayOfWeek()
+  const todayValue =
+    DAY_OF_WEEK_VALUES[today as keyof typeof DAY_OF_WEEK_VALUES]
+  const dayValue =
+    DAY_OF_WEEK_VALUES[dayOfWeek as keyof typeof DAY_OF_WEEK_VALUES]
+
+  return dayValue <= todayValue
+}

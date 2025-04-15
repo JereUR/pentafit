@@ -67,12 +67,15 @@ export function WeeklyRoutineView({ facilityId, primaryColor }: WeeklyRoutineVie
               </TabsList>
 
               {dayKeys.map((day) => (
-                <TabsContent key={day} value={day}>
+                <TabsContent key={`tab-content-${day}`} value={day}>
                   {routineData.dailyExercises.find((de) => de.dayOfWeek === day) ? (
                     <RoutineCarousel
                       exercises={routineData.dailyExercises.find((de) => de.dayOfWeek === day)?.exercises || []}
                       primaryColor={primaryColor}
                       dayName={dayNames[day]}
+                      dayOfWeek={day}
+                      routineId={routineData.id}
+                      facilityId={facilityId}
                       itemsPerPage={1}
                     />
                   ) : null}
@@ -96,6 +99,9 @@ export function WeeklyRoutineView({ facilityId, primaryColor }: WeeklyRoutineVie
                 exercises={activeExercises}
                 primaryColor={primaryColor}
                 dayName={dayNames[activeDay]}
+                dayOfWeek={activeDay}
+                routineId={routineData.id}
+                facilityId={facilityId}
                 itemsPerPage={3}
               />
             </div>
