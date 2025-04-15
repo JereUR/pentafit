@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server"
+import { type NextRequest, NextResponse } from "next/server"
 
 import { validateRequest } from "@/auth"
 import { getCurrentDayOfWeek } from "@/lib/utils"
@@ -73,6 +73,35 @@ export async function GET(
 
     const dailyMeal = userNutritionalPlan.nutritionalPlan.dailyMeals[0]
 
+    const todayDate = new Date()
+    todayDate.setHours(0, 0, 0, 0)
+
+    const tomorrowDate = new Date(todayDate)
+    tomorrowDate.setDate(tomorrowDate.getDate() + 1)
+
+    const completedMeals = await prisma.userProgress.findMany({
+      where: {
+        userId,
+        facilityId,
+        type: "NUTRITION_ADHERENCE",
+        value: 100,
+        date: {
+          gte: todayDate,
+          lt: tomorrowDate,
+        },
+        mealId: {
+          in: dailyMeal.meals.map((meal) => meal.id),
+        },
+      },
+      select: {
+        mealId: true,
+      },
+    })
+
+    const completedMealIds = completedMeals
+      .map((item) => item.mealId)
+      .filter(Boolean) as string[]
+
     const data = {
       id: userNutritionalPlan.nutritionalPlanId,
       name: userNutritionalPlan.nutritionalPlan.name,
@@ -92,7 +121,9 @@ export async function GET(
           fat: food.fat,
           notes: food.notes,
         })),
+        completed: completedMealIds.includes(meal.id),
       })),
+      completedMeals: completedMealIds,
     }
 
     return NextResponse.json({
