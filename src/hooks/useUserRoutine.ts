@@ -3,8 +3,8 @@
 import { useQuery } from "@tanstack/react-query"
 
 import { DAY_DISPLAY_NAMES } from "@/lib/utils"
-import type { RoutineData } from "@/types/routine"
 import type { DayOfWeek } from "@prisma/client"
+import { RoutineData } from "@/types/routineClient"
 
 async function fetchRoutineData(
   facilityId: string,

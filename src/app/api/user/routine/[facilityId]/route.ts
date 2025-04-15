@@ -2,10 +2,7 @@ import { type NextRequest, NextResponse } from "next/server"
 import { validateRequest } from "@/auth"
 import prisma from "@/lib/prisma"
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ facilityId: string }> },
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ facilityId: string }> }) {
   try {
     const { user } = await validateRequest()
 
@@ -26,10 +23,7 @@ export async function GET(
     })
 
     if (!userFacility) {
-      return NextResponse.json(
-        { error: "User does not belong to this facility" },
-        { status: 403 },
-      )
+      return NextResponse.json({ error: "User does not belong to this facility" }, { status: 403 })
     }
 
     const userRoutine = await prisma.userRoutine.findFirst({
@@ -60,26 +54,49 @@ export async function GET(
       })
     }
 
+    const todayStart = new Date()
+    todayStart.setHours(0, 0, 0, 0)
+
+    const weekStart = new Date(todayStart)
+    weekStart.setDate(weekStart.getDate() - 7)
+
+    const completedExercises = await prisma.exerciseCompletion.findMany({
+      where: {
+        userId,
+        routineId: userRoutine.routineId,
+        completed: true,
+        date: {
+          gte: weekStart,
+        },
+      },
+      select: {
+        exerciseId: true,
+        date: true,
+      },
+    })
+
+    const completedExerciseIds = completedExercises.map((item) => item.exerciseId)
+
     const data = {
       id: userRoutine.routineId,
       name: userRoutine.routine.name,
       description: userRoutine.routine.description,
-      dailyExercises: userRoutine.routine.dailyExercises.map(
-        (dailyExercise) => ({
-          dayOfWeek: dailyExercise.dayOfWeek,
-          exercises: dailyExercise.exercises.map((exercise) => ({
-            id: exercise.id,
-            name: exercise.name,
-            bodyZone: exercise.bodyZone,
-            series: exercise.series,
-            count: exercise.count,
-            measure: exercise.measure,
-            rest: exercise.rest,
-            description: exercise.description,
-            photoUrl: exercise.photoUrl,
-          })),
-        }),
-      ),
+      dailyExercises: userRoutine.routine.dailyExercises.map((dailyExercise) => ({
+        dayOfWeek: dailyExercise.dayOfWeek,
+        exercises: dailyExercise.exercises.map((exercise) => ({
+          id: exercise.id,
+          name: exercise.name,
+          bodyZone: exercise.bodyZone,
+          series: exercise.series,
+          count: exercise.count,
+          measure: exercise.measure,
+          rest: exercise.rest,
+          description: exercise.description,
+          photoUrl: exercise.photoUrl,
+          completed: completedExerciseIds.includes(exercise.id),
+        })),
+      })),
+      completedExercises: completedExerciseIds,
     }
 
     return NextResponse.json({

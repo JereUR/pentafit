@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server"
+import { type NextRequest, NextResponse } from "next/server"
 import { getCurrentDayOfWeek } from "@/lib/utils"
 import { validateRequest } from "@/auth"
 import prisma from "@/lib/prisma"
@@ -67,6 +67,31 @@ export async function GET(
 
     const dailyExercise = userRoutine.routine.dailyExercises[0]
 
+    const todayStart = new Date()
+    todayStart.setHours(0, 0, 0, 0)
+
+    const tomorrowStart = new Date(todayStart)
+    tomorrowStart.setDate(tomorrowStart.getDate() + 1)
+
+    const completedExercises = await prisma.exerciseCompletion.findMany({
+      where: {
+        userId,
+        routineId: userRoutine.routineId,
+        completed: true,
+        date: {
+          gte: todayStart,
+          lt: tomorrowStart,
+        },
+      },
+      select: {
+        exerciseId: true,
+      },
+    })
+
+    const completedExerciseIds = completedExercises.map(
+      (item) => item.exerciseId,
+    )
+
     const data = {
       id: userRoutine.routineId,
       name: userRoutine.routine.name,
@@ -82,6 +107,7 @@ export async function GET(
         description: exercise.description,
         photoUrl: exercise.photoUrl,
       })),
+      completedExercises: completedExerciseIds,
     }
 
     return NextResponse.json({
