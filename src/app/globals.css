@@ -195,3 +195,23 @@ body {
     transform: scaleX(1);
   }
 }
+
+/* Custom radio color */
+
+@layer components {
+  .custom-radio {
+    border-color: var(--radio-border-color) !important;
+  }
+
+  .custom-radio[data-state="checked"] {
+    border-color: var(--radio-border-color) !important;
+  }
+
+  .custom-radio[data-state="checked"] [data-state="checked"] .fill-primary {
+    fill: var(--radio-border-color) !important;
+  }
+
+  .custom-radio:focus {
+    box-shadow: 0 0 0 2px var(--radio-border-color) !important;
+  }
+}
