@@ -10,6 +10,7 @@ export function useUserProgress(facilityId: string, userId: string) {
     queryFn: () => getUserProgress(facilityId),
     enabled: !!facilityId && !!userId,
     staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
   })
 
   return {
