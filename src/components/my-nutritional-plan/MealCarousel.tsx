@@ -1,38 +1,64 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
-import { ChevronLeft, ChevronRight } from "lucide-react"
+import { useState, useEffect, useMemo } from "react"
+import { ChevronLeft, ChevronRight, CheckSquare } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { MealCard } from "./MealCard"
 import EmptyState from "@/components/EmptyState"
-import { sortMealsByType, type MealData } from "@/types/nutritionalPlans"
+import LoadingButton from "@/components/LoadingButton"
+import { isDayTodayOrPast } from "@/lib/utils"
+import { useCompleteAllMealsMutation } from "@/app/(main)/(authenticated)/(client)/[facilityId]/mi-plan-nutricional/mutations"
+import { MealData, sortMealsByType } from "@/types/nutritionaPlansClient"
 
 interface MealCarouselProps {
   meals: MealData[]
   primaryColor: string
   dayName: string
+  dayOfWeek: string
+  nutritionalPlanId: string
+  facilityId: string
   itemsPerPage?: number
 }
 
-export function MealCarousel({ meals, primaryColor, dayName, itemsPerPage = 3 }: MealCarouselProps) {
-  const sortedMeals = sortMealsByType(meals)
+export function MealCarousel({
+  meals,
+  primaryColor,
+  dayName,
+  dayOfWeek,
+  nutritionalPlanId,
+  facilityId,
+  itemsPerPage = 3,
+}: MealCarouselProps) {
+  const sortedMeals = useMemo(() => sortMealsByType([...meals]), [meals])
 
   const [currentPage, setCurrentPage] = useState(0)
-  const [totalPages, setTotalPages] = useState(Math.ceil(sortedMeals.length / itemsPerPage))
+  const [totalPages, setTotalPages] = useState(1)
+  const [localCompletedMeals, setLocalCompletedMeals] = useState<string[]>([])
+  const [localCompletedFoodItems, setLocalCompletedFoodItems] = useState<string[]>([])
 
-  const updateTotalPages = useCallback(() => {
-    setTotalPages(Math.ceil(sortedMeals.length / itemsPerPage))
+  const { mutate: completeAllMealsMutation, isPending: loadingAllMeals } = useCompleteAllMealsMutation()
+
+  const canMarkComplete = isDayTodayOrPast(dayOfWeek)
+
+  useEffect(() => {
+    setTotalPages(Math.max(1, Math.ceil(sortedMeals.length / itemsPerPage)))
   }, [sortedMeals.length, itemsPerPage])
 
   useEffect(() => {
-    updateTotalPages()
-  }, [updateTotalPages])
-
-  useEffect(() => {
-    if (currentPage >= totalPages) {
+    if (currentPage >= totalPages && totalPages > 0) {
       setCurrentPage(0)
     }
   }, [totalPages, currentPage])
+
+  useEffect(() => {
+    setLocalCompletedMeals(sortedMeals.filter((meal) => meal.completed).map((meal) => meal.id))
+    setLocalCompletedFoodItems(
+      sortedMeals
+        .flatMap((meal) => meal.foodItems)
+        .filter((food) => food.completed)
+        .map((food) => food.id),
+    )
+  }, [sortedMeals])
 
   if (sortedMeals.length === 0) {
     return (
@@ -48,7 +74,51 @@ export function MealCarousel({ meals, primaryColor, dayName, itemsPerPage = 3 }:
     )
   }
 
+  const handleMealToggle = (mealId: string, completed: boolean) => {
+    setLocalCompletedMeals((prev) => {
+      if (completed) {
+        return [...prev, mealId]
+      } else {
+        return prev.filter((id) => id !== mealId)
+      }
+    })
+  }
+
+  const handleFoodItemToggle = (foodItemId: string, completed: boolean) => {
+    setLocalCompletedFoodItems((prev) => {
+      if (completed) {
+        return [...prev, foodItemId]
+      } else {
+        return prev.filter((id) => id !== foodItemId)
+      }
+    })
+  }
+
+  const handleCompleteAll = () => {
+    const mealIds = sortedMeals.map((meal) => meal.id)
+    const allCompleted = mealIds.every((id) => localCompletedMeals.includes(id))
+    const newCompletionState = !allCompleted
+
+    completeAllMealsMutation({
+      mealIds,
+      nutritionalPlanId,
+      facilityId,
+      completed: newCompletionState,
+    })
+
+    if (newCompletionState) {
+      setLocalCompletedMeals(mealIds)
+      setLocalCompletedFoodItems(sortedMeals.flatMap((meal) => meal.foodItems).map((food) => food.id))
+    } else {
+      setLocalCompletedMeals([])
+      setLocalCompletedFoodItems([])
+    }
+  }
+
   const currentMeals = sortedMeals.slice(currentPage * itemsPerPage, (currentPage + 1) * itemsPerPage)
+
+  const areAllMealsCompleted =
+    sortedMeals.length > 0 && sortedMeals.every((meal) => localCompletedMeals.includes(meal.id))
 
   const goToNextPage = () => {
     setCurrentPage((prev) => (prev + 1) % totalPages)
@@ -63,15 +133,45 @@ export function MealCarousel({ meals, primaryColor, dayName, itemsPerPage = 3 }:
 
   return (
     <div className="relative">
+      {canMarkComplete && sortedMeals.length > 0 && (
+        <div className="flex justify-end mb-4">
+          <LoadingButton
+            loading={loadingAllMeals}
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-2"
+            onClick={handleCompleteAll}
+            style={{
+              borderColor: primaryColor,
+              color: areAllMealsCompleted ? "white" : primaryColor,
+              backgroundColor: areAllMealsCompleted ? primaryColor : "transparent",
+            }}
+          >
+            <CheckSquare className="h-4 w-4" />
+            <span>{areAllMealsCompleted ? "Desmarcar todas" : "Completar todas"}</span>
+          </LoadingButton>
+        </div>
+      )}
+
       <div className={`grid ${gridClass} gap-4 mx-auto justify-center`}>
         {currentMeals.map((meal, index) => (
           <MealCard
             key={meal.id}
-            mealType={meal.mealType}
-            time={meal.time}
-            foodItems={meal.foodItems}
+            meal={{
+              ...meal,
+              completed: localCompletedMeals.includes(meal.id),
+              foodItems: meal.foodItems.map((food) => ({
+                ...food,
+                completed: localCompletedFoodItems.includes(food.id),
+              })),
+            }}
             primaryColor={primaryColor}
             mealNumber={currentPage * itemsPerPage + index + 1}
+            nutritionalPlanId={nutritionalPlanId}
+            facilityId={facilityId}
+            dayOfWeek={dayOfWeek}
+            onMealToggle={handleMealToggle}
+            onFoodItemToggle={handleFoodItemToggle}
           />
         ))}
       </div>

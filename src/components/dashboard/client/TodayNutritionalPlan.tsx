@@ -50,8 +50,12 @@ export function TodayNutritionalPlan({ facilityId, primaryColor }: TodayNutritio
         {nutritionData.description && <p className="text-sm text-muted-foreground">{nutritionData.description}</p>}
       </div>
 
-      <MealList meals={nutritionData.meals} />
+      <MealList
+        meals={nutritionData.meals}
+        nutritionalPlanId={nutritionData.id}
+        facilityId={facilityId}
+        primaryColor={primaryColor}
+      />
     </div>
   )
 }
-

@@ -1,34 +1,112 @@
 "use client"
 
-import { Clock, Utensils } from "lucide-react"
-
+import { useState, useEffect } from "react"
+import { Clock, Utensils, Loader2 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
-import { Card, CardContent } from "@/components/ui/card"
-import type { FoodItemData } from "@/types/nutritionalPlans"
-import type { MealType } from "@prisma/client"
-import { mealTypes } from "@/types/nutritionalPlans"
+import { Card, CardContent, CardFooter } from "@/components/ui/card"
+import { Separator } from "@/components/ui/separator"
+import { isDayTodayOrPast } from "@/lib/utils"
+import {
+  useCompleteFoodItemMutation,
+  useCompleteMealMutation,
+} from "@/app/(main)/(authenticated)/(client)/[facilityId]/mi-plan-nutricional/mutations"
+import { CustomCheckbox } from "./CustomCheckbox"
+import { MealData, mealTypeNames } from "@/types/nutritionaPlansClient"
 
 interface MealCardProps {
-  mealType: MealType
-  time: string | null
-  foodItems: FoodItemData[]
+  meal: MealData
   primaryColor: string
   mealNumber?: number
+  nutritionalPlanId: string
+  facilityId: string
+  dayOfWeek: string
+  onMealToggle?: (mealId: string, completed: boolean) => void
+  onFoodItemToggle?: (foodItemId: string, completed: boolean) => void
 }
 
-function getMealTypeName(mealType: MealType): string {
-  const mealTypeObj = mealTypes.find((type) => type.value === mealType)
-  return mealTypeObj ? mealTypeObj.label : mealType
-}
+export function MealCard({
+  meal,
+  primaryColor,
+  mealNumber,
+  nutritionalPlanId,
+  facilityId,
+  dayOfWeek,
+  onMealToggle,
+  onFoodItemToggle,
+}: MealCardProps) {
+  const [isCompleted, setIsCompleted] = useState(() => Boolean(meal.completed))
+  const [completedFoodItems, setCompletedFoodItems] = useState<string[]>(
+    meal.foodItems.filter((food) => food.completed).map((food) => food.id),
+  )
 
-export function MealCard({ mealType, time, foodItems, primaryColor, mealNumber }: MealCardProps) {
-  const mealTypeName = getMealTypeName(mealType)
+  const { mutate: completeMealMutation, isPending: loadingMeal } = useCompleteMealMutation()
+  const { mutate: completeFoodItemMutation, isPending: loadingFoodItem } = useCompleteFoodItemMutation()
+
+  const canMarkComplete = isDayTodayOrPast(dayOfWeek)
+
+  useEffect(() => {
+    setIsCompleted(Boolean(meal.completed))
+    setCompletedFoodItems(meal.foodItems.filter((food) => food.completed).map((food) => food.id))
+  }, [meal.completed, meal.foodItems])
+
+  const toggleMealCompletion = () => {
+    if (!canMarkComplete || loadingMeal) return
+
+    const newCompletedState = !isCompleted
+
+    completeMealMutation({
+      mealId: meal.id,
+      nutritionalPlanId,
+      facilityId,
+      completed: newCompletedState,
+    })
+
+    setIsCompleted(newCompletedState)
+    const newFoodItems = newCompletedState ? meal.foodItems.map((food) => food.id) : []
+    setCompletedFoodItems(newFoodItems)
+
+    if (onMealToggle) {
+      onMealToggle(meal.id, newCompletedState)
+    }
+
+    if (onFoodItemToggle) {
+      meal.foodItems.forEach((food) => {
+        onFoodItemToggle(food.id, newCompletedState)
+      })
+    }
+  }
+
+  const toggleFoodItemCompletion = (foodItemId: string) => {
+    if (!canMarkComplete || loadingFoodItem) return
+
+    const isFoodCompleted = completedFoodItems.includes(foodItemId)
+
+    completeFoodItemMutation({
+      foodItemId,
+      mealId: meal.id,
+      nutritionalPlanId,
+      facilityId,
+      completed: !isFoodCompleted,
+    })
+
+    setCompletedFoodItems((prev) =>
+      isFoodCompleted
+        ? prev.filter((id) => id !== foodItemId)
+        : [...prev, foodItemId],
+    )
+
+    if (onFoodItemToggle) {
+      onFoodItemToggle(foodItemId, !isFoodCompleted)
+    }
+  }
+
+  const mealTypeName = mealTypeNames[meal.mealType]
 
   return (
     <Card className="overflow-hidden h-full">
       <CardContent className="p-3">
-        {mealNumber !== undefined && (
-          <div className="mb-2">
+        <div className="flex justify-between items-start mb-2">
+          {mealNumber !== undefined && (
             <Badge
               variant="outline"
               className="text-xs font-medium"
@@ -36,8 +114,21 @@ export function MealCard({ mealType, time, foodItems, primaryColor, mealNumber }
             >
               Comida N°{mealNumber}
             </Badge>
-          </div>
-        )}
+          )}
+          {canMarkComplete && (
+            <Badge
+              variant={isCompleted ? "default" : "outline"}
+              className="text-xs font-medium"
+              style={{
+                backgroundColor: isCompleted ? primaryColor : "transparent",
+                borderColor: primaryColor,
+                color: isCompleted ? "white" : primaryColor,
+              }}
+            >
+              {isCompleted ? "Completada" : "Pendiente"}
+            </Badge>
+          )}
+        </div>
         <div className="flex items-start gap-2 mb-3">
           <div
             className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md"
@@ -49,37 +140,82 @@ export function MealCard({ mealType, time, foodItems, primaryColor, mealNumber }
           <div className="flex-1 min-w-0">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
               <h4 className="font-medium text-sm">{mealTypeName}</h4>
-              {time && (
+              {meal.time && (
                 <div className="flex items-center gap-1 text-xs text-muted-foreground">
                   <Clock className="h-3 w-3" />
-                  <span>{time}</span>
+                  <span>{meal.time}</span>
                 </div>
               )}
             </div>
           </div>
         </div>
         <div className="space-y-2">
-          {foodItems.map((food) => (
+          {meal.foodItems.map((food, index) => (
             <div key={food.id} className="text-sm">
-              <div className="flex justify-between">
-                <span className="font-medium">{food.name}</span>
+              {index > 0 && <Separator className="my-2" />}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  {canMarkComplete && (
+                    <CustomCheckbox
+                      id={`food-${food.id}`}
+                      checked={completedFoodItems.includes(food.id)}
+                      onChange={() => toggleFoodItemCompletion(food.id)}
+                      disabled={loadingFoodItem}
+                      primaryColor={primaryColor}
+                    />
+                  )}
+                  <label
+                    htmlFor={`food-${food.id}`}
+                    className={`text-sm ${canMarkComplete ? "cursor-pointer" : ""} ${loadingFoodItem ? "text-muted-foreground" : ""
+                      }`}
+                  >
+                    {food.name}
+                  </label>
+                </div>
                 <span className="text-muted-foreground">
                   {food.portion} {food.unit}
                 </span>
               </div>
               {(food.calories || food.protein || food.carbs || food.fat) && (
-                <div className="flex gap-2 text-xs text-muted-foreground mt-1">
+                <div className="flex gap-2 text-xs text-muted-foreground mt-1 ml-6">
                   {food.calories && <span>{food.calories} kcal</span>}
                   {food.protein && <span>{food.protein}g prot</span>}
                   {food.carbs && <span>{food.carbs}g carb</span>}
                   {food.fat && <span>{food.fat}g gras</span>}
                 </div>
               )}
-              {food.notes && <p className="text-xs text-muted-foreground mt-1">{food.notes}</p>}
+              {food.notes && (
+                <p className="text-xs text-muted-foreground mt-1 ml-6">{food.notes}</p>
+              )}
             </div>
           ))}
         </div>
       </CardContent>
+      {canMarkComplete && (
+        <CardFooter className="px-3 py-2 border-t">
+          <div className="flex items-center gap-2">
+            <CustomCheckbox
+              id={`complete-${meal.id}`}
+              checked={isCompleted}
+              onChange={toggleMealCompletion}
+              disabled={loadingMeal}
+              primaryColor={primaryColor}
+            />
+            <div className="flex items-center gap-2">
+              {loadingMeal && (
+                <Loader2 className="h-3 w-3 animate-spin" style={{ color: primaryColor }} />
+              )}
+              <label
+                htmlFor={`complete-${meal.id}`}
+                className={`text-sm cursor-pointer ${loadingMeal ? "text-muted-foreground" : ""}`}
+                onClick={toggleMealCompletion}
+              >
+                Marcar comida completa
+              </label>
+            </div>
+          </div>
+        </CardFooter>
+      )}
     </Card>
   )
 }

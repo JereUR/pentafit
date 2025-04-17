@@ -67,12 +67,15 @@ export function WeeklyNutritionalPlanView({ facilityId, primaryColor }: WeeklyNu
               </TabsList>
 
               {dayKeys.map((day) => (
-                <TabsContent key={day} value={day}>
+                <TabsContent key={`tab-content-${day}`} value={day}>
                   {nutritionalPlanData.dailyMeals.find((dm) => dm.dayOfWeek === day) ? (
                     <MealCarousel
                       meals={nutritionalPlanData.dailyMeals.find((dm) => dm.dayOfWeek === day)?.meals || []}
                       primaryColor={primaryColor}
                       dayName={dayNames[day]}
+                      dayOfWeek={day}
+                      nutritionalPlanId={nutritionalPlanData.id}
+                      facilityId={facilityId}
                       itemsPerPage={1}
                     />
                   ) : null}
@@ -96,6 +99,9 @@ export function WeeklyNutritionalPlanView({ facilityId, primaryColor }: WeeklyNu
                 meals={activeMeals}
                 primaryColor={primaryColor}
                 dayName={dayNames[activeDay]}
+                dayOfWeek={activeDay}
+                nutritionalPlanId={nutritionalPlanData.id}
+                facilityId={facilityId}
                 itemsPerPage={3}
               />
             </div>
