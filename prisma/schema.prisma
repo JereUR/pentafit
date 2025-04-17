@@ -57,6 +57,7 @@ model User {
   diaries                UserDiary[]
   progress               UserProgress[]
   completions            ExerciseCompletion[]
+  foodItemCompletions    FoodItemCompletion[]
   measurements           UserMeasurement[]
 
   createdAt DateTime @default(now())
@@ -111,6 +112,7 @@ model Facility {
   presetNutritionalPlans PresetNutritionalPlan[]
   userProgress           UserProgress[]
   exerciseCompletions    ExerciseCompletion[]
+  foodItemCompletions    FoodItemCompletion[]
   userMeasurements       UserMeasurement[]
 
   createdAt DateTime @default(now())
@@ -644,15 +646,17 @@ enum MealType {
 }
 
 model NutritionalPlan {
-  id            String                @id @default(uuid())
-  name          String
-  description   String?
-  facilityId    String
-  facility      Facility              @relation(fields: [facilityId], references: [id], onDelete: Cascade)
-  dailyMeals    DailyMeal[]
-  userPlans     UserNutritionalPlan[]
-  notifications Notification[]
-  transactions  Transaction[]
+  id                  String                @id @default(uuid())
+  name                String
+  description         String?
+  facilityId          String
+  facility            Facility              @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  dailyMeals          DailyMeal[]
+  userPlans           UserNutritionalPlan[]
+  progress            UserProgress[]
+  notifications       Notification[]
+  transactions        Transaction[]
+  foodItemCompletions FoodItemCompletion[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -694,12 +698,14 @@ model DailyMeal {
 }
 
 model Meal {
-  id          String     @id @default(uuid())
-  mealType    MealType
-  time        String?
-  dailyMealId String
-  dailyMeal   DailyMeal  @relation(fields: [dailyMealId], references: [id], onDelete: Cascade)
-  foodItems   FoodItem[]
+  id                  String               @id @default(uuid())
+  mealType            MealType
+  time                String?
+  dailyMealId         String
+  dailyMeal           DailyMeal            @relation(fields: [dailyMealId], references: [id], onDelete: Cascade)
+  foodItems           FoodItem[]
+  progress            UserProgress[]
+  foodItemCompletions FoodItemCompletion[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -708,17 +714,19 @@ model Meal {
 }
 
 model FoodItem {
-  id       String  @id @default(uuid())
-  name     String
-  portion  Float
-  unit     String
-  calories Float?
-  protein  Float?
-  carbs    Float?
-  fat      Float?
-  notes    String?
-  mealId   String
-  meal     Meal    @relation(fields: [mealId], references: [id], onDelete: Cascade)
+  id                  String               @id @default(uuid())
+  name                String
+  portion             Float
+  unit                String
+  calories            Float?
+  protein             Float?
+  carbs               Float?
+  fat                 Float?
+  notes               String?
+  mealId              String
+  meal                Meal                 @relation(fields: [mealId], references: [id], onDelete: Cascade)
+  progress            UserProgress[]
+  foodItemCompletions FoodItemCompletion[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -766,8 +774,12 @@ model UserProgress {
   routineId  String?
   routine    Routine? @relation(fields: [routineId], references: [id], onDelete: SetNull)
 
-  mealId     String?
-  foodItemId String?
+  foodItemId        String?
+  foodItem          FoodItem?        @relation(fields: [foodItemId], references: [id], onDelete: SetNull)
+  mealId            String?
+  meal              Meal?            @relation(fields: [mealId], references: [id], onDelete: SetNull)
+  nutritionalPlanId String?
+  nutritionalPlan   NutritionalPlan? @relation(fields: [nutritionalPlanId], references: [id], onDelete: SetNull)
 
   diaryId String?
   diary   Diary?  @relation(fields: [diaryId], references: [id], onDelete: SetNull)
@@ -803,6 +815,30 @@ model ExerciseCompletion {
   @@unique([userId, exerciseId, date])
   @@index([userId, routineId, date])
   @@map("exercise_completions")
+}
+
+model FoodItemCompletion {
+  id                String          @id @default(uuid())
+  userId            String
+  user              User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  facilityId        String
+  facility          Facility        @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  foodItemId        String
+  foodItem          FoodItem        @relation(fields: [foodItemId], references: [id], onDelete: Cascade)
+  mealId            String
+  meal              Meal            @relation(fields: [mealId], references: [id], onDelete: Cascade)
+  nutritionalPlanId String
+  nutritionalPlan   NutritionalPlan @relation(fields: [nutritionalPlanId], references: [id], onDelete: Cascade)
+  date              DateTime        @default(now())
+  completed         Boolean         @default(true)
+  notes             String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, foodItemId, mealId, date])
+  @@index([userId, nutritionalPlanId, date])
+  @@map("food_item_completions")
 }
 
 model UserMeasurement {
