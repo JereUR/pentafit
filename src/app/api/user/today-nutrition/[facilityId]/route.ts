@@ -1,5 +1,4 @@
 import { type NextRequest, NextResponse } from "next/server"
-
 import { validateRequest } from "@/auth"
 import { getCurrentDayOfWeek } from "@/lib/utils"
 import prisma from "@/lib/prisma"
@@ -79,28 +78,36 @@ export async function GET(
     const tomorrowDate = new Date(todayDate)
     tomorrowDate.setDate(tomorrowDate.getDate() + 1)
 
-    const completedMeals = await prisma.userProgress.findMany({
+    const completedFoodItems = await prisma.foodItemCompletion.findMany({
       where: {
         userId,
         facilityId,
-        type: "NUTRITION_ADHERENCE",
-        value: 100,
+        nutritionalPlanId: userNutritionalPlan.nutritionalPlanId,
+        mealId: {
+          in: dailyMeal.meals.map((meal) => meal.id),
+        },
         date: {
           gte: todayDate,
           lt: tomorrowDate,
         },
-        mealId: {
-          in: dailyMeal.meals.map((meal) => meal.id),
-        },
+        completed: true,
       },
       select: {
+        foodItemId: true,
         mealId: true,
       },
     })
 
-    const completedMealIds = completedMeals
-      .map((item) => item.mealId)
-      .filter(Boolean) as string[]
+    const completedFoodItemIds = completedFoodItems.map(
+      (item) => item.foodItemId,
+    )
+    const completedMealIds = dailyMeal.meals
+      .filter((meal) =>
+        meal.foodItems.every((foodItem) =>
+          completedFoodItemIds.includes(foodItem.id),
+        ),
+      )
+      .map((meal) => meal.id)
 
     const data = {
       id: userNutritionalPlan.nutritionalPlanId,
@@ -120,6 +127,7 @@ export async function GET(
           carbs: food.carbs,
           fat: food.fat,
           notes: food.notes,
+          completed: completedFoodItemIds.includes(food.id),
         })),
         completed: completedMealIds.includes(meal.id),
       })),
@@ -132,7 +140,6 @@ export async function GET(
     })
   } catch (error) {
     console.error("Error fetching today's nutritional plan:", error)
-
     return NextResponse.json(
       {
         success: false,

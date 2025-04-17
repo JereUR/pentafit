@@ -1,5 +1,4 @@
 import { type NextRequest, NextResponse } from "next/server"
-
 import { validateRequest } from "@/auth"
 import prisma from "@/lib/prisma"
 
@@ -68,34 +67,27 @@ export async function GET(
     const todayDate = new Date()
     todayDate.setHours(0, 0, 0, 0)
 
-    const tomorrowDate = new Date(todayDate)
-    tomorrowDate.setDate(tomorrowDate.getDate() + 1)
-
     const weekStartDate = new Date(todayDate)
     weekStartDate.setDate(weekStartDate.getDate() - 7)
 
-    const completedMeals = await prisma.userProgress.findMany({
+    const completedFoodItems = await prisma.foodItemCompletion.findMany({
       where: {
         userId,
         facilityId,
-        type: "NUTRITION_ADHERENCE",
-        value: 100,
+        nutritionalPlanId: userNutritionalPlan.nutritionalPlanId,
         date: {
           gte: weekStartDate,
         },
-        mealId: {
-          not: null,
-        },
+        completed: true,
       },
       select: {
+        foodItemId: true,
         mealId: true,
+        date: true,
       },
     })
 
-    const completedMealIds = completedMeals
-      .map((item) => item.mealId)
-      .filter(Boolean) as string[]
-
+    const completedMealIds: string[] = []
     const data = {
       id: userNutritionalPlan.nutritionalPlanId,
       name: userNutritionalPlan.nutritionalPlan.name,
@@ -103,11 +95,8 @@ export async function GET(
       dailyMeals: userNutritionalPlan.nutritionalPlan.dailyMeals.map(
         (dailyMeal) => ({
           dayOfWeek: dailyMeal.dayOfWeek,
-          meals: dailyMeal.meals.map((meal) => ({
-            id: meal.id,
-            mealType: meal.mealType,
-            time: meal.time,
-            foodItems: meal.foodItems.map((foodItem) => ({
+          meals: dailyMeal.meals.map((meal) => {
+            const mealFoodItems = meal.foodItems.map((foodItem) => ({
               id: foodItem.id,
               name: foodItem.name,
               portion: foodItem.portion,
@@ -117,9 +106,29 @@ export async function GET(
               carbs: foodItem.carbs,
               fat: foodItem.fat,
               notes: foodItem.notes,
-            })),
-            completed: completedMealIds.includes(meal.id),
-          })),
+              completed: completedFoodItems.some(
+                (completion) =>
+                  completion.foodItemId === foodItem.id &&
+                  completion.mealId === meal.id &&
+                  completion.date.getTime() === todayDate.getTime(),
+              ),
+            }))
+
+            const isMealCompleted = mealFoodItems.every(
+              (foodItem) => foodItem.completed,
+            )
+            if (isMealCompleted) {
+              completedMealIds.push(meal.id)
+            }
+
+            return {
+              id: meal.id,
+              mealType: meal.mealType,
+              time: meal.time,
+              foodItems: mealFoodItems,
+              completed: isMealCompleted,
+            }
+          }),
         }),
       ),
       completedMeals: completedMealIds,
