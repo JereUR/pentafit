@@ -3,8 +3,8 @@
 import { useQuery } from "@tanstack/react-query"
 import { getCurrentDayOfWeek, DAY_DISPLAY_NAMES } from "@/lib/utils"
 import type { TodayRoutineData } from "@/types/routine"
-import type { TodayNutritionalPlanData } from "@/types/nutritionalPlans"
 import { TodayDiaryData } from "@/types/diaryClient"
+import { TodayNutritionalPlanData } from "@/types/nutritionaPlansClient"
 
 async function fetchRoutineData(
   facilityId: string,
