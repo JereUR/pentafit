@@ -16,9 +16,10 @@ import { Role } from '@prisma/client'
 interface UserProfileProps {
   user: UserData
   loggedUserId: string
+  primaryColor?: string
 }
 
-export function UserProfile({ user, loggedUserId }: UserProfileProps) {
+export function UserProfile({ user, loggedUserId, primaryColor }: UserProfileProps) {
   const [isEditing, setIsEditing] = useState(false)
   const router = useRouter()
 
@@ -60,7 +61,9 @@ export function UserProfile({ user, loggedUserId }: UserProfileProps) {
           </div>
           {user.id === loggedUserId && (
             <div className="flex space-x-4 mt-4">
-              <Button onClick={() => setIsEditing(true)}>
+              <Button onClick={() => setIsEditing(true)}
+                style={{ backgroundColor: primaryColor }}
+              >
                 Editar Perfil
               </Button>
               {user.role === Role.SUPER_ADMIN && <Button variant="outline" onClick={() => router.push(`/actualizar-membresia/${user.id}`)}>
@@ -80,7 +83,7 @@ export function UserProfile({ user, loggedUserId }: UserProfileProps) {
             className="fixed inset-y-0 right-0 w-full max-w-md bg-background shadow-lg z-50"
             style={{ top: 0 }}
           >
-            <EditUserForm user={user} onClose={() => setIsEditing(false)} />
+            <EditUserForm user={user} onClose={() => setIsEditing(false)} primaryColor={primaryColor} />
           </motion.div>
         )}
       </AnimatePresence>

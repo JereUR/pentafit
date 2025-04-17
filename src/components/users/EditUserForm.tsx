@@ -1,12 +1,12 @@
-"use client"
+'use client'
 
-import { useState } from "react"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
+import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { X } from 'lucide-react'
 
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import {
   Form,
   FormControl,
@@ -14,33 +14,34 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+} from '@/components/ui/form'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { UserData } from '@/types/user'
-import LoadingButton from "@/components/LoadingButton"
-import { updateUserProfileSchema, UpdateUserProfileValues } from "@/lib/validation"
-import { useUpdateProfileMutation } from "./mutations"
-import avatarPlaceholder from "@/assets/avatar-placeholder.png"
-import { AvatarInput } from "@/components/AvatarInput"
+import LoadingButton from '@/components/LoadingButton'
+import { updateUserProfileSchema, UpdateUserProfileValues } from '@/lib/validation'
+import { useUpdateProfileMutation } from './mutations'
+import avatarPlaceholder from '@/assets/avatar-placeholder.png'
+import { AvatarInput } from '@/components/AvatarInput'
 
 const GENDER_OPTIONS = [
-  { value: "Masculino", label: "Masculino" },
-  { value: "Femenino", label: "Femenino" },
-  { value: "Otros", label: "Otros" },
+  { value: 'Masculino', label: 'Masculino' },
+  { value: 'Femenino', label: 'Femenino' },
+  { value: 'Otros', label: 'Otros' },
 ] as const
 
 interface EditUserFormProps {
   user: UserData
   onClose: () => void
+  primaryColor?: string
 }
 
-export function EditUserForm({ user, onClose }: EditUserFormProps) {
+export function EditUserForm({ user, onClose, primaryColor }: EditUserFormProps) {
   const form = useForm<UpdateUserProfileValues>({
     resolver: zodResolver(updateUserProfileSchema),
     defaultValues: {
       firstName: user.firstName,
       lastName: user.lastName,
-      gender: user.gender as "Masculino" | "Femenino" | "Otros",
+      gender: user.gender as 'Masculino' | 'Femenino' | 'Otros',
       birthday: user.birthday,
     },
   })
@@ -67,6 +68,8 @@ export function EditUserForm({ user, onClose }: EditUserFormProps) {
       },
     )
   }
+
+  console.log('primaryColor:', primaryColor)
 
   return (
     <Form {...form}>
@@ -129,13 +132,23 @@ export function EditUserForm({ user, onClose }: EditUserFormProps) {
                       className="grid grid-cols-3 gap-2"
                     >
                       {GENDER_OPTIONS.map((option) => (
-                        <FormItem key={option.value} className="flex items-center space-x-2 space-y-0 ring-1 p-2 ring-primary rounded-lg">
+                        <FormItem
+                          key={option.value}
+                          className="flex items-center space-x-2 space-y-0 p-2 rounded-lg border"
+                          style={{
+                            borderColor: primaryColor || '#F97015',
+                          }}
+                        >
                           <FormControl>
-                            <RadioGroupItem value={option.value} />
+                            <RadioGroupItem
+                              value={option.value}
+                              className="custom-radio"
+                              style={{
+                                '--radio-border-color': primaryColor || '#F97015',
+                              } as React.CSSProperties}
+                            />
                           </FormControl>
-                          <FormLabel className="font-normal">
-                            {option.label}
-                          </FormLabel>
+                          <FormLabel className="font-normal">{option.label}</FormLabel>
                         </FormItem>
                       ))}
                     </RadioGroup>
@@ -165,7 +178,12 @@ export function EditUserForm({ user, onClose }: EditUserFormProps) {
           </div>
         </div>
         <div className="pt-6">
-          <LoadingButton loading={mutation.isPending} type="submit" className="w-full">
+          <LoadingButton
+            loading={mutation.isPending}
+            type="submit"
+            className="w-full"
+            style={{ backgroundColor: primaryColor }}
+          >
             Guardar Cambios
           </LoadingButton>
         </div>
@@ -173,4 +191,3 @@ export function EditUserForm({ user, onClose }: EditUserFormProps) {
     </Form>
   )
 }
-

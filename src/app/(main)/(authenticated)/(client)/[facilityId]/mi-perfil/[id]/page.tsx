@@ -1,12 +1,10 @@
-import { Suspense } from 'react'
+import { cache } from 'react'
 import { Metadata } from "next"
 import { notFound, redirect } from "next/navigation"
-import { cache } from "react"
 
 import { validateRequest } from "@/auth"
 import prisma from "@/lib/prisma"
-import { UserProfileSkeleton } from "@/components/skeletons/UserProfileSkeleton"
-import { UserProfile } from '@/components/users/UserProfile'
+import ProfileClient from './ProfileClient'
 
 interface UserPageProps {
   params: Promise<{ id: string }>
@@ -74,15 +72,13 @@ export default async function UserPage() {
 
   return (
     <main className="flex container gap-5 p-5">
-      <Suspense fallback={<UserProfileSkeleton />}>
-        <UserProfileContent userId={loggedUser.id} />
-      </Suspense>
+      <UserProfileContent userId={loggedUser.id} />
     </main>
   )
 }
 
 async function UserProfileContent({ userId }: { userId: string }) {
   const user = await getUser(userId)
-  return <UserProfile user={user} loggedUserId={userId} />
+  return <ProfileClient user={user} userId={userId} />
 }
 
