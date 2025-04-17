@@ -16,7 +16,7 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   const facilityName = (await searchParams).facilityName || "Establecimiento"
 
   return {
-    title: `${facilityName} | Mi Establecimiento`,
+    title: `Inicio | ${facilityName}`,
   }
 }
 
