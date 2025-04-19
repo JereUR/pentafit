@@ -154,3 +154,59 @@ export default function formatUsersAssignedToString(
     })
     .join("\n\n")
 }
+
+// CLIENT DATA
+
+export interface Activity {
+  name: string
+  description: string | null
+}
+
+export interface DiaryPlan {
+  id: string
+  name: string
+  daysOfWeek: boolean[]
+  sessionsPerWeek: number
+  vacancies: number
+  activity: Activity
+}
+
+export interface Plan {
+  id: string
+  name: string
+  price: number
+  paymentTypes: string[]
+  diaryPlans: DiaryPlan[]
+}
+
+export interface UserPlan {
+  plan: Plan
+}
+
+export interface UserMeasurement {
+  id: string
+  date: Date
+  weight?: number | null
+  height?: number | null
+  bodyFat?: number | null
+  muscle?: number | null
+  chest?: number | null
+  waist?: number | null
+  hips?: number | null
+  arms?: number | null
+  thighs?: number | null
+  notes?: string | null
+}
+
+export interface ClientUserProfileData {
+  id: string
+  firstName: string
+  lastName: string
+  email: string | null
+  birthday: string
+  avatarUrl: string | null
+  gender: string
+  plan: UserPlan[]
+  createdAt: Date
+  measurements?: UserMeasurement[]
+}
