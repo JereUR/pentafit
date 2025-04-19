@@ -16,10 +16,9 @@ import { Role } from '@prisma/client'
 interface UserProfileProps {
   user: UserData
   loggedUserId: string
-  primaryColor?: string
 }
 
-export function UserProfile({ user, loggedUserId, primaryColor }: UserProfileProps) {
+export function UserProfile({ user, loggedUserId }: UserProfileProps) {
   const [isEditing, setIsEditing] = useState(false)
   const router = useRouter()
 
@@ -52,17 +51,18 @@ export function UserProfile({ user, loggedUserId, primaryColor }: UserProfilePro
                   <UserIcon className="text-muted-foreground" />
                   <span>{user.gender}</span>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <CrownIcon className="text-muted-foreground" />
-                  <span>{user.membershipLevel}</span>
-                </div>
+                {user.role === Role.SUPER_ADMIN && (
+                  <div className="flex items-center space-x-2">
+                    <CrownIcon className="text-muted-foreground" />
+                    <span>{user.membershipLevel}</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
           {user.id === loggedUserId && (
             <div className="flex space-x-4 mt-4">
               <Button onClick={() => setIsEditing(true)}
-                style={{ backgroundColor: primaryColor }}
               >
                 Editar Perfil
               </Button>
@@ -83,7 +83,7 @@ export function UserProfile({ user, loggedUserId, primaryColor }: UserProfilePro
             className="fixed inset-y-0 right-0 w-full max-w-md bg-background shadow-lg z-50"
             style={{ top: 0 }}
           >
-            <EditUserForm user={user} onClose={() => setIsEditing(false)} primaryColor={primaryColor} />
+            <EditUserForm user={user} onClose={() => setIsEditing(false)} />
           </motion.div>
         )}
       </AnimatePresence>
