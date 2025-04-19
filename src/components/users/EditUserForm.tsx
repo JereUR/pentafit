@@ -16,7 +16,7 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
-import { UserData } from '@/types/user'
+import { ClientUserProfileData, UserData } from '@/types/user'
 import LoadingButton from '@/components/LoadingButton'
 import { updateUserProfileSchema, UpdateUserProfileValues } from '@/lib/validation'
 import { useUpdateProfileMutation } from './mutations'
@@ -30,7 +30,7 @@ const GENDER_OPTIONS = [
 ] as const
 
 interface EditUserFormProps {
-  user: UserData
+  user: UserData | ClientUserProfileData
   onClose: () => void
   primaryColor?: string
 }
