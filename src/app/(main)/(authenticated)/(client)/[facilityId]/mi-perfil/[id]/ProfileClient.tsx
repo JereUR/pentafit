@@ -1,23 +1,24 @@
-'use client'
+"use client"
 
 import { Suspense } from "react"
 
 import { UserProfileSkeleton } from "@/components/skeletons/UserProfileSkeleton"
-import { UserProfile } from "@/components/users/UserProfile"
 import { useClientFacility } from "@/contexts/ClientFacilityContext"
-import { UserData } from "@/types/user"
+import type { ClientUserProfileData } from "@/types/user"
+import { ClientUserProfile } from "@/components/users/ClientUserProfile"
 
 interface ProfileClientProps {
-  user: UserData
+  user: ClientUserProfileData
   userId: string
+  isOwnProfile: boolean
 }
 
-export default function ProfileClient({ user, userId }: ProfileClientProps) {
+export default function ProfileClient({ user, userId, isOwnProfile }: ProfileClientProps) {
   const { primaryColor } = useClientFacility()
 
   return (
     <Suspense fallback={<UserProfileSkeleton />}>
-      <UserProfile user={user} loggedUserId={userId} primaryColor={primaryColor} />
+      <ClientUserProfile user={user} loggedUserId={userId} primaryColor={primaryColor} isOwnProfile={isOwnProfile} />
     </Suspense>
   )
 }
