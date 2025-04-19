@@ -1,15 +1,12 @@
 "use server"
 
-import { PrismaClient } from "@prisma/client"
-
 import { validateRequest } from "@/auth"
+import prisma from "@/lib/prisma"
 import {
   updateUserProfileSchema,
   UpdateUserProfileValues,
 } from "@/lib/validation"
 import { getUserDataSelect } from "@/types/user"
-
-const prisma = new PrismaClient()
 
 export async function updateUserProfile(
   values: UpdateUserProfileValues & { avatarUrl?: string },
