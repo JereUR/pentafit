@@ -551,3 +551,61 @@ export const measurementFormSchema = z.object({
 })
 
 export type MeasurementFormValues = z.infer<typeof measurementFormSchema>
+
+export const chronicConditionSchema = z.object({
+  name: z.string().min(1, "El nombre es requerido"),
+  diagnosisDate: z.string().optional(),
+  severity: z.enum(["MILD", "MODERATE", "SEVERE"], {
+    errorMap: () => ({ message: "Selecciona una severidad válida" }),
+  }),
+  notes: z.string().optional(),
+})
+
+export const medicationSchema = z.object({
+  name: z.string().min(1, "El nombre es requerido"),
+  dosage: z.string().min(1, "La dosis es requerida"),
+  frequency: z.string().min(1, "La frecuencia es requerida"),
+  purpose: z.string().optional(),
+})
+
+export const injurySchema = z.object({
+  name: z.string().min(1, "El nombre es requerido"),
+  bodyPart: z.string().min(1, "La parte del cuerpo es requerida"),
+  dateOccurred: z.string().optional(),
+  affectsExercise: z.boolean(),
+  exerciseRestrictions: z.string().optional(),
+  severity: z.enum(["MILD", "MODERATE", "SEVERE"], {
+    errorMap: () => ({ message: "Selecciona una severidad válida" }),
+  }),
+})
+
+export const allergySchema = z.object({
+  allergen: z.string().min(1, "El alérgeno es requerido"),
+  reaction: z.string().min(1, "La reacción es requerida"),
+  severity: z.enum(["MILD", "MODERATE", "SEVERE"], {
+    errorMap: () => ({ message: "Selecciona una severidad válida" }),
+  }),
+})
+
+export const healthInfoSchema = z.object({
+  userId: z.string().min(1,"ID de usuario inválido"),
+  facilityId: z.string().uuid("ID de establecimiento inválido"),
+  hasChronicConditions: z.boolean(),
+  chronicConditions: z.array(chronicConditionSchema).optional(),
+  takingMedication: z.boolean(),
+  medications: z.array(medicationSchema).optional(),
+  hasInjuries: z.boolean(),
+  injuries: z.array(injurySchema).optional(),
+  hasAllergies: z.boolean(),
+  allergies: z.array(allergySchema).optional(),
+  emergencyContactName: z.string().optional(),
+  emergencyContactPhone: z.string().optional(),
+  emergencyContactRelation: z.string().optional(),
+  medicalNotes: z.string().optional(),
+})
+
+export type HealthInfoValues = z.infer<typeof healthInfoSchema>
+export type ChronicConditionValues = z.infer<typeof chronicConditionSchema>
+export type MedicationValues = z.infer<typeof medicationSchema>
+export type InjuryValues = z.infer<typeof injurySchema>
+export type AllergyValues = z.infer<typeof allergySchema>
