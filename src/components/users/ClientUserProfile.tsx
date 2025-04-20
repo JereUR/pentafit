@@ -12,15 +12,17 @@ import type { ClientUserProfileData } from "@/types/user"
 import avatarPlaceholder from "@/assets/avatar-placeholder.png"
 import { PlanDetailsDialog } from "./PlanDetailsDialog"
 import { UserMeasurementsCard } from "./UserMeasurementsCard"
+import { UserHealthInfoCard } from "./UserHealthInfoCard"
 
 interface ClientUserProfileProps {
   user: ClientUserProfileData
   loggedUserId: string
   primaryColor?: string
   isOwnProfile: boolean
+  facilityId: string
 }
 
-export function ClientUserProfile({ user, loggedUserId, primaryColor, isOwnProfile }: ClientUserProfileProps) {
+export function ClientUserProfile({ user, loggedUserId, primaryColor, isOwnProfile, facilityId }: ClientUserProfileProps) {
   const [isEditing, setIsEditing] = useState(false)
 
   const activePlan = user.plan.find((up) => up.plan)?.plan
@@ -81,11 +83,19 @@ export function ClientUserProfile({ user, loggedUserId, primaryColor, isOwnProfi
           )}
         </CardContent>
       </Card>
-
-      {isOwnProfile && user.measurements && user.measurements.length > 0 && (
-        <UserMeasurementsCard measurements={user.measurements} primaryColor={primaryColor} />
+      {isOwnProfile && (
+        <>
+          {user.measurements && user.measurements.length > 0 && (
+            <UserMeasurementsCard measurements={user.measurements} primaryColor={primaryColor} />
+          )}
+          <UserHealthInfoCard
+            healthInfo={user.healthInfo}
+            primaryColor={primaryColor}
+            userId={user.id}
+            facilityId={facilityId}
+          />
+        </>
       )}
-
       <AnimatePresence>
         {isEditing && (
           <motion.div
