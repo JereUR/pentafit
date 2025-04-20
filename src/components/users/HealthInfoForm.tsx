@@ -91,7 +91,7 @@ export function HealthInfoForm({ healthInfo, userId, facilityId, onClose, primar
   }
 
   return (
-    <div className="h-full overflow-y-auto bg-background p-6">
+    <div className="scrollbar-thin overflow-y-auto h-full bg-background p-6">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-bold">Información Médica</h2>
         <Button variant="ghost" size="icon" onClick={onClose}>

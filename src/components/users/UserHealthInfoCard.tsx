@@ -57,7 +57,7 @@ export function UserHealthInfoCard({ healthInfo, primaryColor, userId, facilityI
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
               transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              className="scrollbar-thin fixed inset-y-0 left-0 w-full max-w-md bg-background shadow-lg z-50 overflow-y-auto"
+              className="fixed inset-y-0 left-0 w-full max-w-md bg-background shadow-lg z-50"
               style={{ top: 0, maxHeight: "100vh" }}
             >
               <HealthInfoForm
@@ -111,7 +111,7 @@ export function UserHealthInfoCard({ healthInfo, primaryColor, userId, facilityI
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
               transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              className="scrollbar-thin fixed inset-y-0 left-0 w-full max-w-md bg-background shadow-lg z-50 overflow-y-auto"
+              className="fixed inset-y-0 left-0 w-full max-w-md bg-background shadow-lg z-50"
               style={{ top: 0, maxHeight: "100vh" }}
             >
               <HealthInfoForm
@@ -367,7 +367,7 @@ export function UserHealthInfoCard({ healthInfo, primaryColor, userId, facilityI
             animate={{ x: 0 }}
             exit={{ x: "-100%" }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            className="scrollbar-thin fixed inset-y-0 left-0 w-full max-w-md bg-background shadow-lg z-50 overflow-y-auto"
+            className="fixed inset-y-0 left-0 w-full max-w-md bg-background shadow-lg z-50"
             style={{ top: 0, maxHeight: "100vh" }}
           >
             <HealthInfoForm
