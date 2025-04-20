@@ -1,8 +1,9 @@
 import { useUploadThing } from "@/lib/uploadthing"
 import { useToast } from "@/hooks/use-toast"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { updateUserProfile } from "./actions"
+import { updateUserHealthInfo, updateUserProfile } from "./actions"
 import { useRouter } from "next/navigation"
+import { healthInfoSchema, HealthInfoValues } from "@/lib/validation"
 
 export interface UpdateUserProfileValues {
   firstName: string
@@ -51,6 +52,36 @@ export function useUpdateProfileMutation() {
       toast({
         variant: "destructive",
         title: "Error al actualizar el perfil",
+        description: error.message,
+      })
+    },
+  })
+
+  return mutation
+}
+
+export function useUpdateHealthInfoMutation() {
+  const { toast } = useToast()
+  const router = useRouter()
+  const queryClient = useQueryClient()
+
+  const mutation = useMutation({
+    mutationFn: async (values: HealthInfoValues) => {
+      const validatedData = healthInfoSchema.parse(values)
+      const updatedHealthInfo = await updateUserHealthInfo(validatedData)
+      return updatedHealthInfo
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Información médica actualizada correctamente",
+      })
+      queryClient.invalidateQueries({ queryKey: ["user", data.userId] })
+      router.refresh()
+    },
+    onError: (error: Error) => {
+      toast({
+        variant: "destructive",
+        title: "Error al actualizar la información médica",
         description: error.message,
       })
     },
