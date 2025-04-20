@@ -1,4 +1,5 @@
 import { MembershipLevel, type Prisma } from "@prisma/client"
+import { UserHealthInfo } from "./health"
 
 export const GENDER_OPTIONS = [
   { value: "Masculino", label: "Masculino" },
@@ -209,4 +210,5 @@ export interface ClientUserProfileData {
   plan: UserPlan[]
   createdAt: Date
   measurements?: UserMeasurement[]
+  healthInfo?: UserHealthInfo
 }
