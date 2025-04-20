@@ -5,6 +5,7 @@ import { notFound, redirect } from "next/navigation"
 import { validateRequest } from "@/auth"
 import prisma from "@/lib/prisma"
 import ProfileClient from "./ProfileClient"
+import type { UserHealthInfo } from "@/types/health"
 
 interface UserPageProps {
   params: Promise<{ id: string; facilityId: string }>
@@ -94,14 +95,39 @@ const getUser = cache(async (id: string, facilityId: string, isOwnProfile = fals
             notes: true,
           },
         },
+        healthInfo: {
+          where: {
+            facilityId: facilityId,
+          },
+          select: {
+            id: true,
+            hasChronicConditions: true,
+            chronicConditions: true,
+            takingMedication: true,
+            medications: true,
+            hasInjuries: true,
+            injuries: true,
+            hasAllergies: true,
+            allergies: true,
+            emergencyContactName: true,
+            emergencyContactPhone: true,
+            emergencyContactRelation: true,
+            medicalNotes: true,
+          },
+        },
       }),
     },
   })
 
   if (!user) notFound()
 
+  const transformedUser = {
+    ...user,
+    healthInfo: user.healthInfo ? (user.healthInfo as unknown as UserHealthInfo) : undefined,
+  }
+
   return {
-    user,
+    user: transformedUser,
     facilityName: facility.name,
   }
 })
@@ -152,5 +178,5 @@ async function UserProfileContent({
   loggedUserId: string
 }) {
   const { user } = await getUser(userId, facilityId, isOwnProfile)
-  return <ProfileClient user={user} userId={loggedUserId} isOwnProfile={isOwnProfile} />
+  return <ProfileClient user={user} userId={loggedUserId} isOwnProfile={isOwnProfile} facilityId={facilityId}/>
 }
