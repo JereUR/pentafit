@@ -3,6 +3,7 @@
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { X, Plus, Trash2 } from "lucide-react"
+import { z } from "zod"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -21,7 +22,6 @@ import {
   type InjuryValues,
   type AllergyValues,
 } from "@/lib/validation"
-import { z } from "zod"
 import { useUpdateHealthInfoMutation } from "./mutations"
 import LoadingButton from "../LoadingButton"
 
@@ -155,7 +155,7 @@ export function HealthInfoForm({ healthInfo, userId, facilityId, onClose, primar
                   <FormItem className="flex items-center space-x-2">
                     <FormLabel>Tengo condiciones crónicas</FormLabel>
                     <FormControl>
-                      <Switch checked={field.value} onCheckedChange={field.onChange} />
+                      <Switch primaryColor={primaryColor} checked={field.value} onCheckedChange={field.onChange} />
                     </FormControl>
                   </FormItem>
                 )}
@@ -279,7 +279,7 @@ export function HealthInfoForm({ healthInfo, userId, facilityId, onClose, primar
                   <FormItem className="flex items-center space-x-2">
                     <FormLabel>Tomo medicamentos</FormLabel>
                     <FormControl>
-                      <Switch checked={field.value} onCheckedChange={field.onChange} />
+                      <Switch primaryColor={primaryColor} checked={field.value} onCheckedChange={field.onChange} />
                     </FormControl>
                   </FormItem>
                 )}
@@ -389,7 +389,7 @@ export function HealthInfoForm({ healthInfo, userId, facilityId, onClose, primar
                   <FormItem className="flex items-center space-x-2">
                     <FormLabel>Tengo lesiones</FormLabel>
                     <FormControl>
-                      <Switch checked={field.value} onCheckedChange={field.onChange} />
+                      <Switch primaryColor={primaryColor} checked={field.value} onCheckedChange={field.onChange} />
                     </FormControl>
                   </FormItem>
                 )}
@@ -491,7 +491,7 @@ export function HealthInfoForm({ healthInfo, userId, facilityId, onClose, primar
                         <FormItem className="flex items-center space-x-2">
                           <FormLabel>Afecta al ejercicio</FormLabel>
                           <FormControl>
-                            <Switch checked={field.value} onCheckedChange={field.onChange} />
+                            <Switch primaryColor={primaryColor} checked={field.value} onCheckedChange={field.onChange} />
                           </FormControl>
                         </FormItem>
                       )}
@@ -549,7 +549,7 @@ export function HealthInfoForm({ healthInfo, userId, facilityId, onClose, primar
                   <FormItem className="flex items-center space-x-2">
                     <FormLabel>Tengo alergias</FormLabel>
                     <FormControl>
-                      <Switch checked={field.value} onCheckedChange={field.onChange} />
+                      <Switch primaryColor={primaryColor} checked={field.value} onCheckedChange={field.onChange} />
                     </FormControl>
                   </FormItem>
                 )}
