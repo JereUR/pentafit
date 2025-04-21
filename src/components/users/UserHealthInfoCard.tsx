@@ -30,6 +30,7 @@ interface UserHealthInfoCardProps {
 export function UserHealthInfoCard({ healthInfo, primaryColor, userId, facilityId }: UserHealthInfoCardProps) {
   const [isExpanded, setIsExpanded] = useState(false)
   const [showHealthForm, setShowHealthForm] = useState(false)
+  const [activeTab, setActiveTab] = useState("overview")
 
   if (!healthInfo) {
     return (
@@ -176,13 +177,67 @@ export function UserHealthInfoCard({ healthInfo, primaryColor, userId, facilityI
           </div>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="overview" className="w-full">
+          <Tabs defaultValue="overview" className="w-full"
+            onValueChange={(value) => setActiveTab(value)}>
             <TabsList className="mb-4">
-              <TabsTrigger value="overview">Resumen</TabsTrigger>
-              {healthInfo.hasChronicConditions && <TabsTrigger value="conditions">Condiciones</TabsTrigger>}
-              {healthInfo.takingMedication && <TabsTrigger value="medications">Medicamentos</TabsTrigger>}
-              {healthInfo.hasInjuries && <TabsTrigger value="injuries">Lesiones</TabsTrigger>}
-              {healthInfo.hasAllergies && <TabsTrigger value="allergies">Alergias</TabsTrigger>}
+              <TabsTrigger
+                value="overview"
+                className="text-sm"
+                style={{
+                  backgroundColor: activeTab === "overview" ? primaryColor : "transparent",
+                  color: activeTab === "overview" ? "#ffffff" : "inherit",
+                }}
+              >
+                Resumen
+              </TabsTrigger>
+              {healthInfo.hasChronicConditions && (
+                <TabsTrigger
+                  value="conditions"
+                  className="text-sm"
+                  style={{
+                    backgroundColor: activeTab === "conditions" ? primaryColor : "transparent",
+                    color: activeTab === "conditions" ? "#ffffff" : "inherit",
+                  }}
+                >
+                  Condiciones
+                </TabsTrigger>
+              )}
+              {healthInfo.takingMedication && (
+                <TabsTrigger
+                  value="medications"
+                  className="text-sm"
+                  style={{
+                    backgroundColor: activeTab === "medications" ? primaryColor : "transparent",
+                    color: activeTab === "medications" ? "#ffffff" : "inherit",
+                  }}
+                >
+                  Medicamentos
+                </TabsTrigger>
+              )}
+              {healthInfo.hasInjuries && (
+                <TabsTrigger
+                  value="injuries"
+                  className="text-sm"
+                  style={{
+                    backgroundColor: activeTab === "injuries" ? primaryColor : "transparent",
+                    color: activeTab === "injuries" ? "#ffffff" : "inherit",
+                  }}
+                >
+                  Lesiones
+                </TabsTrigger>
+              )}
+              {healthInfo.hasAllergies && (
+                <TabsTrigger
+                  value="allergies"
+                  className="text-sm"
+                  style={{
+                    backgroundColor: activeTab === "allergies" ? primaryColor : "transparent",
+                    color: activeTab === "allergies" ? "#ffffff" : "inherit",
+                  }}
+                >
+                  Alergias
+                </TabsTrigger>
+              )}
             </TabsList>
 
             <TabsContent value="overview">
