@@ -7,8 +7,6 @@ import {
   Pill,
   LigatureIcon as Bandage,
   AlertTriangle,
-  ChevronDown,
-  ChevronUp,
   Plus,
 } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
@@ -28,7 +26,7 @@ interface UserHealthInfoCardProps {
 }
 
 export function UserHealthInfoCard({ healthInfo, primaryColor, userId, facilityId }: UserHealthInfoCardProps) {
-  const [isExpanded, setIsExpanded] = useState(false)
+  /* const [isExpanded, setIsExpanded] = useState(false) */
   const [showHealthForm, setShowHealthForm] = useState(false)
   const [activeTab, setActiveTab] = useState("overview")
 
@@ -165,14 +163,14 @@ export function UserHealthInfoCard({ healthInfo, primaryColor, userId, facilityI
               <Button variant="outline" size="sm" onClick={() => setShowHealthForm(true)}>
                 Editar
               </Button>
-              <Button
+              {/* <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsExpanded(!isExpanded)}
                 className="text-muted-foreground"
               >
                 {isExpanded ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
-              </Button>
+              </Button> */}
             </div>
           </div>
         </CardHeader>
