@@ -1,5 +1,5 @@
 import { MembershipLevel, type Prisma } from "@prisma/client"
-import { UserHealthInfo } from "./health"
+import { Allergy, ChronicCondition, Injury, Medication, UserHealthInfo } from "./health"
 
 export const GENDER_OPTIONS = [
   { value: "Masculino", label: "Masculino" },
@@ -65,6 +65,14 @@ export interface UserClient {
   lastName: string
   email?: string | null
   avatarUrl: string | null
+  hasChronicConditions: boolean
+  chronicConditions?: ChronicCondition[]
+  takingMedication: boolean
+  medications?: Medication[]
+  hasInjuries: boolean
+  injuries?: Injury[]
+  hasAllergies: boolean
+  allergies?: Allergy[]
 }
 
 export interface UserAssigned {
