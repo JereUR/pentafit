@@ -141,3 +141,19 @@ export function isDayTodayOrPast(dayOfWeek: string): boolean {
 
   return dayValue <= todayValue
 }
+
+export function safeJsonParse<T>(json: unknown, fallback: T[]): T[] {
+  if (!json) return fallback
+  try {
+    if (Array.isArray(json)) {
+      return json as T[]
+    }
+    if (typeof json === "string") {
+      return JSON.parse(json) as T[]
+    }
+    return fallback
+  } catch (e) {
+    console.error("Error parsing JSON:", e)
+    return fallback
+  }
+}
