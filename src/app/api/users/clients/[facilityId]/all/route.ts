@@ -1,9 +1,11 @@
 import { type NextRequest, NextResponse } from "next/server"
 
 import prisma from "@/lib/prisma"
-import { UserClient } from "@/types/user"
+import type { UserClient } from "@/types/user"
 import { Role } from "@prisma/client"
 import { validateRequest } from "@/auth"
+import type { Allergy, ChronicCondition, Injury, Medication } from "@/types/health"
+import { safeJsonParse } from "@/lib/utils"
 
 export async function GET(
   request: NextRequest,
@@ -31,14 +33,24 @@ export async function GET(
             email: true,
             avatarUrl: true,
             role: true,
+            healthInfo: {
+              select: {
+                hasChronicConditions: true,
+                chronicConditions: true,
+                takingMedication: true,
+                medications: true,
+                hasInjuries: true,
+                injuries: true,
+                hasAllergies: true,
+                allergies: true,
+              },
+            },
           },
         },
       },
     })
 
-    const filterClients = allUsers.filter(
-      (user) => user.user.role === Role.CLIENT,
-    )
+    const filterClients = allUsers.filter((user) => user.user.role === Role.CLIENT)
 
     if (!filterClients) {
       return NextResponse.json([])
@@ -50,6 +62,14 @@ export async function GET(
       lastName: client.user.lastName,
       email: client.user.email || "",
       avatarUrl: client.user.avatarUrl || null,
+      hasChronicConditions: client.user.healthInfo?.hasChronicConditions || false,
+      chronicConditions: safeJsonParse<ChronicCondition>(client.user.healthInfo?.chronicConditions, []),
+      takingMedication: client.user.healthInfo?.takingMedication || false,
+      medications: safeJsonParse<Medication>(client.user.healthInfo?.medications, []),
+      hasInjuries: client.user.healthInfo?.hasInjuries || false,
+      injuries: safeJsonParse<Injury>(client.user.healthInfo?.injuries, []),
+      hasAllergies: client.user.healthInfo?.hasAllergies || false,
+      allergies: safeJsonParse<Allergy>(client.user.healthInfo?.allergies, []),
     }))
 
     return NextResponse.json(formattedClients)
