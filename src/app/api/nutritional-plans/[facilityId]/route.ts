@@ -1,19 +1,13 @@
 import { validateRequest } from "@/auth"
 import prisma from "@/lib/prisma"
-import formatMealsToString, {
-  NutritionalPlanData,
-} from "@/types/nutritionalPlans"
+import formatMealsToString, { type NutritionalPlanData } from "@/types/nutritionalPlans"
 import { type NextRequest, NextResponse } from "next/server"
+import type { UserClient } from "@/types/user"
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ facilityId: string }> },
-): Promise<
-  NextResponse<
-    | { nutritionalPlans: NutritionalPlanData[]; total: number }
-    | { error: string }
-  >
-> {
+): Promise<NextResponse<{ nutritionalPlans: NutritionalPlanData[]; total: number } | { error: string }>> {
   try {
     const { user } = await validateRequest()
 
@@ -75,43 +69,59 @@ export async function GET(
       }),
     ])
 
-    const formattedNutritionalPlans: NutritionalPlanData[] =
-      nutritionalPlans.map((plan) => ({
-        id: plan.id,
-        name: plan.name,
-        description: plan.description,
-        facilityId: id,
-        dailyMeals: plan.dailyMeals.map((dailyMeal) => ({
-          id: dailyMeal.id,
-          dayOfWeek: dailyMeal.dayOfWeek,
-          nutritionalPlanId: dailyMeal.nutritionalPlanId,
-          meals: dailyMeal.meals.map((meal) => ({
-            id: meal.id,
-            mealType: meal.mealType,
-            time: meal.time,
-            dailyMealId: meal.dailyMealId,
-            foodItems: meal.foodItems.map((item) => ({
-              id: item.id,
-              name: item.name,
-              portion: item.portion,
-              unit: item.unit,
-              calories: item.calories,
-              protein: item.protein,
-              carbs: item.carbs,
-              fat: item.fat,
-              notes: item.notes,
-              mealId: item.mealId,
-            })),
+    const formattedNutritionalPlans: NutritionalPlanData[] = nutritionalPlans.map((plan) => ({
+      id: plan.id,
+      name: plan.name,
+      description: plan.description,
+      facilityId: id,
+      dailyMeals: plan.dailyMeals.map((dailyMeal) => ({
+        id: dailyMeal.id,
+        dayOfWeek: dailyMeal.dayOfWeek,
+        nutritionalPlanId: dailyMeal.nutritionalPlanId,
+        meals: dailyMeal.meals.map((meal) => ({
+          id: meal.id,
+          mealType: meal.mealType,
+          time: meal.time,
+          dailyMealId: meal.dailyMealId,
+          foodItems: meal.foodItems.map((item) => ({
+            id: item.id,
+            name: item.name,
+            portion: item.portion,
+            unit: item.unit,
+            calories: item.calories,
+            protein: item.protein,
+            carbs: item.carbs,
+            fat: item.fat,
+            notes: item.notes,
+            mealId: item.mealId,
           })),
-          createdAt: dailyMeal.createdAt,
-          updatedAt: dailyMeal.updatedAt,
         })),
-        meals: formatMealsToString(plan.dailyMeals),
-        assignedUsers: plan.userPlans.map((up) => up.user),
-        assignedUsersCount: plan.userPlans.length,
-        createdAt: plan.createdAt,
-        updatedAt: plan.updatedAt,
-      }))
+        createdAt: dailyMeal.createdAt,
+        updatedAt: dailyMeal.updatedAt,
+      })),
+      meals: formatMealsToString(plan.dailyMeals),
+      assignedUsers: plan.userPlans.map(
+        (up) =>
+          ({
+            id: up.user.id,
+            firstName: up.user.firstName,
+            lastName: up.user.lastName,
+            email: up.user.email || "",
+            avatarUrl: up.user.avatarUrl,
+            hasChronicConditions: false,
+            chronicConditions: [],
+            takingMedication: false,
+            medications: [],
+            hasInjuries: false,
+            injuries: [],
+            hasAllergies: false,
+            allergies: [],
+          }) as UserClient,
+      ),
+      assignedUsersCount: plan.userPlans.length,
+      createdAt: plan.createdAt,
+      updatedAt: plan.updatedAt,
+    }))
 
     return NextResponse.json({
       nutritionalPlans: formattedNutritionalPlans,
@@ -119,9 +129,6 @@ export async function GET(
     })
   } catch (error) {
     console.error("Error fetching nutritional plans:", error)
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
 }

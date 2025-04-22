@@ -1,14 +1,13 @@
 import { type NextRequest, NextResponse } from "next/server"
 import prisma, { PAGE_SIZE } from "@/lib/prisma"
-import { PlanData } from "@/types/plan"
+import type { PlanData } from "@/types/plan"
 import { validateRequest } from "@/auth"
+import type { UserClient } from "@/types/user"
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ facilityId: string }> },
-): Promise<
-  NextResponse<{ plans: PlanData[]; total: number } | { error: string }>
-> {
+): Promise<NextResponse<{ plans: PlanData[]; total: number } | { error: string }>> {
   try {
     const { user } = await validateRequest()
 
@@ -19,10 +18,7 @@ export async function GET(
     const facilityId = (await params).facilityId
     const { searchParams } = request.nextUrl
     const page = Number.parseInt(searchParams.get("page") || "1", 10)
-    const pageSize = Number.parseInt(
-      searchParams.get("pageSize") || PAGE_SIZE.toString(),
-      10,
-    )
+    const pageSize = Number.parseInt(searchParams.get("pageSize") || PAGE_SIZE.toString(), 10)
     const search = searchParams.get("search") || ""
     const skip = (page - 1) * pageSize
 
@@ -96,15 +92,29 @@ export async function GET(
         activityId: dp.activity.id,
       })),
       assignedUsersCount: plan.userPlans.length,
-      assignedUsers: plan.userPlans.map((up) => up.user),
+      assignedUsers: plan.userPlans.map(
+        (up) =>
+          ({
+            id: up.user.id,
+            firstName: up.user.firstName,
+            lastName: up.user.lastName,
+            email: up.user.email || "",
+            avatarUrl: up.user.avatarUrl,
+            hasChronicConditions: false,
+            chronicConditions: [],
+            takingMedication: false,
+            medications: [],
+            hasInjuries: false,
+            injuries: [],
+            hasAllergies: false,
+            allergies: [],
+          }) as UserClient,
+      ),
     }))
 
     return NextResponse.json({ plans: formattedPlans, total })
   } catch (error) {
     console.error("Error fetching plans:", error)
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
 }

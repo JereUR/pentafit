@@ -1,14 +1,13 @@
 import { validateRequest } from "@/auth"
 import prisma from "@/lib/prisma"
-import formatExercisesToString, { RoutineData } from "@/types/routine"
+import formatExercisesToString, { type RoutineData } from "@/types/routine"
 import { type NextRequest, NextResponse } from "next/server"
+import type { UserClient } from "@/types/user"
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ facilityId: string }> },
-): Promise<
-  NextResponse<{ routines: RoutineData[]; total: number } | { error: string }>
-> {
+): Promise<NextResponse<{ routines: RoutineData[]; total: number } | { error: string }>> {
   try {
     const { user } = await validateRequest()
 
@@ -91,7 +90,24 @@ export async function GET(
         updatedAt: dailyExercise.updatedAt,
       })),
       exercises: formatExercisesToString(routine.dailyExercises),
-      assignedUsers: routine.userRoutines.map((ur) => ur.user),
+      assignedUsers: routine.userRoutines.map(
+        (ur) =>
+          ({
+            id: ur.user.id,
+            firstName: ur.user.firstName,
+            lastName: ur.user.lastName,
+            email: ur.user.email || "",
+            avatarUrl: ur.user.avatarUrl,
+            hasChronicConditions: false,
+            chronicConditions: [],
+            takingMedication: false,
+            medications: [],
+            hasInjuries: false,
+            injuries: [],
+            hasAllergies: false,
+            allergies: [],
+          }) as UserClient,
+      ),
       assignedUsersCount: routine.userRoutines.length,
       createdAt: routine.createdAt,
       updatedAt: routine.updatedAt,
@@ -100,9 +116,6 @@ export async function GET(
     return NextResponse.json({ routines: formattedRoutines, total })
   } catch (error) {
     console.error("Error fetching routines:", error)
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
 }
