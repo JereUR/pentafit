@@ -1,5 +1,7 @@
+"use client"
+
 import { useState, useEffect } from "react"
-import { Loader2 } from 'lucide-react'
+import { Loader2 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -13,11 +15,11 @@ import {
 import { useAllClients } from "@/hooks/useAllClients"
 import {
   useAssignRoutineToUsersMutation,
-  useUnassignRoutineFromUsersMutation
+  useUnassignRoutineFromUsersMutation,
 } from "@/app/(main)/(authenticated)/(admin)/entrenamiento/rutinas/mutations"
-import { SelectUsers } from "../ui/select-users"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { useAssignedRoutineUsers } from "@/hooks/useAssignedRoutineUsers"
+import { SelectUsers } from "../SelectUsers"
 
 interface RoutineUserAssignmentDialogProps {
   open: boolean
@@ -43,9 +45,7 @@ export function RoutineUserAssignmentDialog({
   const { mutate: assignRoutineToUsers, isPending: isAssigning } = useAssignRoutineToUsersMutation()
   const { mutate: unassignRoutineFromUsers, isPending: isUnassigning } = useUnassignRoutineFromUsersMutation()
 
-  const unassignedClients = clients.filter(
-    client => !assignedUsers.some(assigned => assigned.id === client.id)
-  )
+  const unassignedClients = clients.filter((client) => !assignedUsers.some((assigned) => assigned.id === client.id))
 
   useEffect(() => {
     if (!open) {
@@ -105,10 +105,13 @@ export function RoutineUserAssignmentDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <Tabs value={activeTab} onValueChange={(value) => {
-          setActiveTab(value as "assign" | "unassign")
-          setSelectedUserIds([])
-        }}>
+        <Tabs
+          value={activeTab}
+          onValueChange={(value) => {
+            setActiveTab(value as "assign" | "unassign")
+            setSelectedUserIds([])
+          }}
+        >
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="assign">Asignar usuarios</TabsTrigger>
             <TabsTrigger value="unassign">Desasignar usuarios</TabsTrigger>
@@ -121,14 +124,13 @@ export function RoutineUserAssignmentDialog({
                   <Loader2 className="h-6 w-6 animate-spin text-primary" />
                 </div>
               ) : availableUsers.length === 0 ? (
-                <div className="text-center py-4 text-muted-foreground">
-                  No hay usuarios disponibles para asignar
-                </div>
+                <div className="text-center py-4 text-muted-foreground">No hay usuarios disponibles para asignar</div>
               ) : (
                 <SelectUsers
                   users={availableUsers}
                   selectedUserIds={selectedUserIds}
                   onChange={setSelectedUserIds}
+                  showHealthWarnings={true}
                 />
               )}
             </div>
@@ -141,14 +143,13 @@ export function RoutineUserAssignmentDialog({
                   <Loader2 className="h-6 w-6 animate-spin text-primary" />
                 </div>
               ) : availableUsers.length === 0 ? (
-                <div className="text-center py-4 text-muted-foreground">
-                  No hay usuarios asignados a esta rutina
-                </div>
+                <div className="text-center py-4 text-muted-foreground">No hay usuarios asignados a esta rutina</div>
               ) : (
                 <SelectUsers
                   users={availableUsers}
                   selectedUserIds={selectedUserIds}
                   onChange={setSelectedUserIds}
+                  showHealthWarnings={true}
                 />
               )}
             </div>
@@ -173,7 +174,8 @@ export function RoutineUserAssignmentDialog({
             variant={activeTab === "unassign" ? "destructive" : "default"}
           >
             {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {activeTab === "assign" ? "Asignar" : "Desasignar"} {selectedUserIds.length > 0 && `(${selectedUserIds.length})`}
+            {activeTab === "assign" ? "Asignar" : "Desasignar"}{" "}
+            {selectedUserIds.length > 0 && `(${selectedUserIds.length})`}
           </Button>
         </DialogFooter>
       </DialogContent>

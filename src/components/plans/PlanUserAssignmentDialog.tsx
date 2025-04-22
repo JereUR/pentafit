@@ -13,10 +13,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { useAllClients } from "@/hooks/useAllClients"
-import { SelectUsers } from "../ui/select-users"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { useAssignPlanToUsersMutation, useUnassignPlanFromUsersMutation } from "@/app/(main)/(authenticated)/(admin)/planes/mutations"
+import {
+  useAssignPlanToUsersMutation,
+  useUnassignPlanFromUsersMutation,
+} from "@/app/(main)/(authenticated)/(admin)/planes/mutations"
 import { useAssignedPlanUsers } from "@/hooks/useAssignedPlanUsers"
+import { SelectUsers } from "../SelectUsers"
 
 interface PlanUserAssignmentDialogProps {
   open: boolean
@@ -123,7 +126,12 @@ export function PlanUserAssignmentDialog({
               ) : availableUsers.length === 0 ? (
                 <div className="text-center py-4 text-muted-foreground">No hay usuarios disponibles para asignar</div>
               ) : (
-                <SelectUsers users={availableUsers} selectedUserIds={selectedUserIds} onChange={setSelectedUserIds} />
+                <SelectUsers
+                  users={availableUsers}
+                  selectedUserIds={selectedUserIds}
+                  onChange={setSelectedUserIds}
+                  showHealthWarnings={false}
+                />
               )}
             </div>
           </TabsContent>
@@ -137,7 +145,12 @@ export function PlanUserAssignmentDialog({
               ) : availableUsers.length === 0 ? (
                 <div className="text-center py-4 text-muted-foreground">No hay usuarios asignados a este plan</div>
               ) : (
-                <SelectUsers users={availableUsers} selectedUserIds={selectedUserIds} onChange={setSelectedUserIds} />
+                <SelectUsers
+                  users={availableUsers}
+                  selectedUserIds={selectedUserIds}
+                  onChange={setSelectedUserIds}
+                  showHealthWarnings={false}
+                />
               )}
             </div>
           </TabsContent>
@@ -169,4 +182,3 @@ export function PlanUserAssignmentDialog({
     </Dialog>
   )
 }
-
