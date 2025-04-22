@@ -4,7 +4,7 @@ import type { Control } from "react-hook-form"
 import { FormField, FormItem, FormLabel } from "@/components/ui/form"
 import type { ActivityValues } from "@/lib/validation"
 import { useAllStaff } from "@/hooks/useAllStaff"
-import { SelectUsers } from "../ui/select-users"
+import { SelectUsers } from "../SelectUsers"
 
 interface StaffTabActivityFormProps {
   control: Control<ActivityValues>
@@ -36,6 +36,7 @@ export function StaffTabActivityForm({ control, facilityId }: StaffTabActivityFo
                     console.log("SelectUsers onChange called with:", ids)
                     field.onChange(ids)
                   }}
+                  showHealthWarnings={false}
                 />
               )}
             </FormItem>
