@@ -12,10 +12,10 @@ import { cn } from "@/lib/utils"
 import { DeleteConfirmationDialog } from "../DeleteConfirmationDialog"
 import { useToast } from "@/hooks/use-toast"
 import { columnsNutritionalPlans, NutritionalPlanData } from "@/types/nutritionalPlans"
-import { UserAssignmentDialog } from "./userAssignmentDialog"
 import { AssignedUsersDialog } from "./AssignedUsersDialog"
 import { ConvertToPresetButton } from "./ConvertToPresetButton"
 import { MealsDialog } from "./MealsDialog"
+import { NutritionalPlanUserAssignmentDialog } from "./NutritionalPlanUserAssignmentDialog"
 
 interface NutritionalPlanRowProps {
   nutritionalPlan: NutritionalPlanData
@@ -179,7 +179,7 @@ export default function NutritionalPlanRow({
         dailyMeals={nutritionalPlan.dailyMeals}
         planName={nutritionalPlan.name}
       />
-      <UserAssignmentDialog
+      <NutritionalPlanUserAssignmentDialog
         open={showUserAssignmentDialog}
         onOpenChange={setShowUserAssignmentDialog}
         nutritionalPlanId={nutritionalPlan.id}

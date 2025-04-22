@@ -14,11 +14,11 @@ import {
 } from "@/components/ui/dialog"
 import { useAllClients } from "@/hooks/useAllClients"
 import { useAssignedNutritionalPlanUsers } from "@/hooks/useAssignedNutritionalPlanUsers"
-import { SelectUsers } from "../ui/select-users"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { useAssignNutritionalPlanToUsersMutation, useUnassignNutritionalPlanFromUsersMutation } from "@/app/(main)/(authenticated)/(admin)/entrenamiento/planes-nutricionales/mutations"
+import { SelectUsers } from "../SelectUsers"
 
-interface UserAssignmentDialogProps {
+interface NutritionalPlanUserAssignmentDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   nutritionalPlanId: string
@@ -26,13 +26,13 @@ interface UserAssignmentDialogProps {
   facilityId: string
 }
 
-export function UserAssignmentDialog({
+export function NutritionalPlanUserAssignmentDialog({
   open,
   onOpenChange,
   nutritionalPlanId,
   nutritionalPlanName,
   facilityId,
-}: UserAssignmentDialogProps) {
+}: NutritionalPlanUserAssignmentDialogProps) {
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([])
   const [activeTab, setActiveTab] = useState<"assign" | "unassign">("assign")
 
