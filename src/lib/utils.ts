@@ -157,3 +157,43 @@ export function safeJsonParse<T>(json: unknown, fallback: T[]): T[] {
     return fallback
   }
 }
+
+export function calculateAverage(progressData: { value: number }[]): number {
+  if (!progressData.length) return 0
+
+  const sum = progressData.reduce((total, item) => total + item.value, 0)
+  return sum / progressData.length
+}
+
+export function getDayIndex(dayOfWeek: DayOfWeek): number {
+  const days: Record<DayOfWeek, number> = {
+    SUNDAY: 0,
+    MONDAY: 1,
+    TUESDAY: 2,
+    WEDNESDAY: 3,
+    THURSDAY: 4,
+    FRIDAY: 5,
+    SATURDAY: 6,
+  }
+
+  return days[dayOfWeek]
+}
+
+export function getDateForDayOfWeek(dayOfWeek: DayOfWeek): Date {
+  const today = new Date()
+  const currentDay = today.getDay() 
+
+  const targetDayIndex = getDayIndex(dayOfWeek)
+
+  let diff = targetDayIndex - currentDay
+
+  if (diff > 0) {
+    diff -= 7
+  }
+
+  const targetDate = new Date(today)
+  targetDate.setDate(today.getDate() + diff)
+  targetDate.setHours(0, 0, 0, 0)
+
+  return targetDate
+}
