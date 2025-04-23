@@ -8,9 +8,10 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 import noImage from "@/assets/no-image.png"
-import { useCompleteExerciseMutation } from "@/app/(main)/(authenticated)/(client)/[facilityId]/mi-progreso/mutations"
 import { isDayTodayOrPast } from "@/lib/utils"
-import { ExerciseData } from "@/types/routineClient"
+import type { ExerciseData } from "@/types/routineClient"
+import { useCompleteExerciseMutation } from "@/app/(main)/(authenticated)/(client)/[facilityId]/mi-rutina/mutations"
+import type { DayOfWeek } from "@prisma/client"
 
 interface ExerciseCardProps {
   exercise: ExerciseData
@@ -56,6 +57,7 @@ export function ExerciseCard({
       routineId,
       facilityId,
       completed: newCompletedState,
+      dayOfWeek: dayOfWeek as DayOfWeek,
     })
   }
 
@@ -162,4 +164,3 @@ export function ExerciseCard({
     </Card>
   )
 }
-

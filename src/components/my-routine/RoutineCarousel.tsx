@@ -8,8 +8,9 @@ import { ExerciseCard } from "./ExerciseCard"
 import EmptyState from "@/components/EmptyState"
 import LoadingButton from "@/components/LoadingButton"
 import { isDayTodayOrPast } from "@/lib/utils"
-import { useCompleteAllExercisesMutation } from "@/app/(main)/(authenticated)/(client)/[facilityId]/mi-progreso/mutations"
 import { ExerciseData } from "@/types/routineClient"
+import { useCompleteAllExercisesMutation } from "@/app/(main)/(authenticated)/(client)/[facilityId]/mi-rutina/mutations"
+import { DayOfWeek } from "@prisma/client"
 
 interface RoutineCarouselProps {
   exercises: ExerciseData[]
@@ -99,6 +100,7 @@ export function RoutineCarousel({
       routineId,
       facilityId,
       completed: newCompletionState,
+      dayOfWeek: dayOfWeek as DayOfWeek,
     })
   }
 

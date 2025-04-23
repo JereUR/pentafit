@@ -10,9 +10,13 @@ import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import type { ExerciseData } from "@/types/routine"
 import noImage from "@/assets/no-image.png"
-import { useCompleteExerciseMutation } from "@/app/(main)/(authenticated)/(client)/[facilityId]/mi-progreso/mutations"
-import { useCompleteAllExercisesMutation } from "@/app/(main)/(authenticated)/(client)/[facilityId]/mi-progreso/mutations"
 import LoadingButton from "@/components/LoadingButton"
+import {
+  useCompleteAllExercisesMutation,
+  useCompleteExerciseMutation,
+} from "@/app/(main)/(authenticated)/(client)/[facilityId]/mi-rutina/mutations"
+import { getCurrentDayOfWeek } from "@/lib/utils"
+import type { DayOfWeek } from "@prisma/client"
 
 interface ExerciseListProps {
   exercises: ExerciseData[]
@@ -34,6 +38,8 @@ export function ExerciseList({
   const [loadingExerciseId, setLoadingExerciseId] = useState<string | null>(null)
   const { mutate: completeExerciseMutation, isPending: isLoadingExercise } = useCompleteExerciseMutation()
   const { mutate: completeAllExercisesMutation, isPending: loadingAllExercise } = useCompleteAllExercisesMutation()
+
+  const today = getCurrentDayOfWeek() as DayOfWeek
 
   useEffect(() => {
     setLocalCompletedExercises(completedExercises)
@@ -80,6 +86,7 @@ export function ExerciseList({
       routineId,
       facilityId,
       completed: !isCompleted,
+      dayOfWeek: today, 
     })
   }
 
@@ -100,6 +107,7 @@ export function ExerciseList({
       routineId,
       facilityId,
       completed: newCompletionState,
+      dayOfWeek: today, 
     })
   }
 
