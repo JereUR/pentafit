@@ -2,9 +2,11 @@
 
 import { validateRequest } from "@/auth"
 import { revalidatePath } from "next/cache"
-
 import prisma from "@/lib/prisma"
-import { FoodItemCompletionResult } from "@/types/nutritionaPlansClient"
+import type { FoodItemCompletionResult } from "@/types/nutritionaPlansClient"
+import { getDateForDayOfWeek } from "@/lib/utils"
+import type { DayOfWeek } from "@prisma/client"
+import { updateDailyNutritionProgress } from "../mi-progreso/actions"
 
 export async function completeFoodItem({
   foodItemId,
@@ -12,12 +14,14 @@ export async function completeFoodItem({
   nutritionalPlanId,
   facilityId,
   completed,
+  dayOfWeek,
 }: {
   foodItemId: string
   mealId: string
   nutritionalPlanId: string
   facilityId: string
   completed: boolean
+  dayOfWeek: DayOfWeek
 }): Promise<FoodItemCompletionResult> {
   try {
     const { user } = await validateRequest()
@@ -66,32 +70,26 @@ export async function completeFoodItem({
       throw new Error("Elemento de comida no encontrado")
     }
 
-    if (
-      foodItem.mealId !== mealId ||
-      foodItem.meal.dailyMeal.nutritionalPlanId !== nutritionalPlanId
-    ) {
-      throw new Error(
-        "El elemento de comida no pertenece a este plan nutricional o comida",
-      )
+    if (foodItem.mealId !== mealId || foodItem.meal.dailyMeal.nutritionalPlanId !== nutritionalPlanId) {
+      throw new Error("El elemento de comida no pertenece a este plan nutricional o comida")
     }
 
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
+    const targetDate = getDateForDayOfWeek(dayOfWeek)
+    const nextDay = new Date(targetDate)
+    nextDay.setDate(nextDay.getDate() + 1)
 
-    // Buscar si ya existe un registro de FoodItem completado para hoy
     const existingCompletion = await prisma.foodItemCompletion.findFirst({
       where: {
         userId: user.id,
         foodItemId,
         mealId,
         date: {
-          gte: today,
-          lt: new Date(today.getTime() + 24 * 60 * 60 * 1000),
+          gte: targetDate,
+          lt: nextDay,
         },
       },
     })
 
-    // Actualizar o crear el registro de FoodItem completado
     if (existingCompletion) {
       await prisma.foodItemCompletion.update({
         where: {
@@ -110,18 +108,18 @@ export async function completeFoodItem({
           foodItemId,
           mealId,
           nutritionalPlanId,
-          date: today,
+          date: targetDate,
           completed,
           notes: `Elemento de comida ${completed ? "completado" : "no completado"}`,
         },
       })
     }
 
-    // Actualizar el progreso general del plan nutricional
-    await updateNutritionProgress(user.id, facilityId, nutritionalPlanId)
+    await updateDailyNutritionProgress(user.id, facilityId, nutritionalPlanId, targetDate)
 
     revalidatePath(`/${facilityId}/inicio`)
     revalidatePath(`/${facilityId}/mi-plan-nutricional`)
+    revalidatePath(`/${facilityId}/mi-progreso`)
 
     return {
       success: true,
@@ -131,10 +129,7 @@ export async function completeFoodItem({
     console.error("Error completing food item:", error)
     return {
       success: false,
-      error:
-        error instanceof Error
-          ? error.message
-          : "Error al registrar el elemento de comida completado",
+      error: error instanceof Error ? error.message : "Error al registrar el elemento de comida completado",
     }
   }
 }
@@ -144,11 +139,13 @@ export async function completeMeal({
   nutritionalPlanId,
   facilityId,
   completed,
+  dayOfWeek,
 }: {
   mealId: string
   nutritionalPlanId: string
   facilityId: string
   completed: boolean
+  dayOfWeek: DayOfWeek
 }): Promise<FoodItemCompletionResult> {
   try {
     const { user } = await validateRequest()
@@ -182,7 +179,6 @@ export async function completeMeal({
       throw new Error("El usuario no tiene asignado este plan nutricional")
     }
 
-    // Obtener información de la comida y sus FoodItems
     const mealInfo = await prisma.meal.findUnique({
       where: { id: mealId },
       include: {
@@ -199,10 +195,9 @@ export async function completeMeal({
       throw new Error("La comida no pertenece a este plan nutricional")
     }
 
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    const tomorrow = new Date(today)
-    tomorrow.setDate(tomorrow.getDate() + 1)
+    const targetDate = getDateForDayOfWeek(dayOfWeek)
+    const nextDay = new Date(targetDate)
+    nextDay.setDate(nextDay.getDate() + 1)
 
     await prisma.$transaction(async (tx) => {
       for (const foodItem of mealInfo.foodItems) {
@@ -212,8 +207,8 @@ export async function completeMeal({
             foodItemId: foodItem.id,
             mealId,
             date: {
-              gte: today,
-              lt: tomorrow,
+              gte: targetDate,
+              lt: nextDay,
             },
           },
         })
@@ -236,7 +231,7 @@ export async function completeMeal({
               foodItemId: foodItem.id,
               mealId,
               nutritionalPlanId,
-              date: today,
+              date: targetDate,
               completed,
               notes: `Elemento de comida ${completed ? "completado" : "no completado"}`,
             },
@@ -245,11 +240,11 @@ export async function completeMeal({
       }
     })
 
-    // Actualizar el progreso general del plan nutricional
-    await updateNutritionProgress(user.id, facilityId, nutritionalPlanId)
+    await updateDailyNutritionProgress(user.id, facilityId, nutritionalPlanId, targetDate)
 
     revalidatePath(`/${facilityId}/inicio`)
     revalidatePath(`/${facilityId}/mi-plan-nutricional`)
+    revalidatePath(`/${facilityId}/mi-progreso`)
 
     return {
       success: true,
@@ -259,10 +254,7 @@ export async function completeMeal({
     console.error("Error completing meal:", error)
     return {
       success: false,
-      error:
-        error instanceof Error
-          ? error.message
-          : "Error al registrar la comida completada",
+      error: error instanceof Error ? error.message : "Error al registrar la comida completada",
     }
   }
 }
@@ -272,11 +264,13 @@ export async function completeAllMeals({
   nutritionalPlanId,
   facilityId,
   completed,
+  dayOfWeek,
 }: {
   mealIds: string[]
   nutritionalPlanId: string
   facilityId: string
   completed: boolean
+  dayOfWeek: DayOfWeek
 }): Promise<FoodItemCompletionResult> {
   try {
     const { user } = await validateRequest()
@@ -310,7 +304,6 @@ export async function completeAllMeals({
       throw new Error("El usuario no tiene asignado este plan nutricional")
     }
 
-    // Verificar que todas las comidas pertenecen al plan nutricional
     const meals = await prisma.meal.findMany({
       where: {
         id: { in: mealIds },
@@ -318,7 +311,7 @@ export async function completeAllMeals({
           nutritionalPlanId,
         },
         foodItems: {
-          some: {}, // Asegurar que las comidas tengan FoodItems
+          some: {}, 
         },
       },
       include: {
@@ -327,17 +320,13 @@ export async function completeAllMeals({
     })
 
     if (meals.length !== mealIds.length) {
-      throw new Error(
-        "Algunas comidas no pertenecen a este plan nutricional o no tienen elementos de comida",
-      )
+      throw new Error("Algunas comidas no pertenecen a este plan nutricional o no tienen elementos de comida")
     }
 
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    const tomorrow = new Date(today)
-    tomorrow.setDate(tomorrow.getDate() + 1)
+    const targetDate = getDateForDayOfWeek(dayOfWeek)
+    const nextDay = new Date(targetDate)
+    nextDay.setDate(nextDay.getDate() + 1)
 
-    // Actualizar todos los FoodItems en una transacción
     await prisma.$transaction(async (tx) => {
       for (const meal of meals) {
         for (const foodItem of meal.foodItems) {
@@ -347,8 +336,8 @@ export async function completeAllMeals({
               foodItemId: foodItem.id,
               mealId: meal.id,
               date: {
-                gte: today,
-                lt: tomorrow,
+                gte: targetDate,
+                lt: nextDay,
               },
             },
           })
@@ -371,7 +360,7 @@ export async function completeAllMeals({
                 foodItemId: foodItem.id,
                 mealId: meal.id,
                 nutritionalPlanId,
-                date: today,
+                date: targetDate,
                 completed,
                 notes: `Elemento de comida ${completed ? "completado" : "no completado"}`,
               },
@@ -381,11 +370,11 @@ export async function completeAllMeals({
       }
     })
 
-    // Actualizar el progreso general del plan nutricional
-    await updateNutritionProgress(user.id, facilityId, nutritionalPlanId)
+    await updateDailyNutritionProgress(user.id, facilityId, nutritionalPlanId, targetDate)
 
     revalidatePath(`/${facilityId}/inicio`)
     revalidatePath(`/${facilityId}/mi-plan-nutricional`)
+    revalidatePath(`/${facilityId}/mi-progreso`)
 
     return {
       success: true,
@@ -395,125 +384,7 @@ export async function completeAllMeals({
     console.error("Error completing all meals:", error)
     return {
       success: false,
-      error:
-        error instanceof Error
-          ? error.message
-          : "Error al registrar las comidas completadas",
+      error: error instanceof Error ? error.message : "Error al registrar las comidas completadas",
     }
-  }
-}
-
-export async function updateNutritionProgress(
-  userId: string,
-  facilityId: string,
-  nutritionalPlanId: string,
-) {
-  try {
-    // Obtener el plan nutricional completo con todos sus FoodItems
-    const nutritionalPlan = await prisma.nutritionalPlan.findUnique({
-      where: { id: nutritionalPlanId },
-      select: {
-        id: true,
-        dailyMeals: {
-          select: {
-            id: true,
-            meals: {
-              select: {
-                id: true,
-                foodItems: {
-                  select: {
-                    id: true,
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-    })
-
-    if (!nutritionalPlan) {
-      throw new Error("Plan nutricional no encontrado")
-    }
-
-    // Contar el número total de FoodItems en el plan
-    let totalFoodItems = 0
-    nutritionalPlan.dailyMeals.forEach((dailyMeal) => {
-      dailyMeal.meals.forEach((meal) => {
-        totalFoodItems += meal.foodItems.length
-      })
-    })
-
-    if (totalFoodItems === 0) {
-      return {
-        success: false,
-        message: "No hay elementos de comida en el plan nutricional",
-      }
-    }
-
-    // Definir el rango de fechas para el cálculo del progreso (por ejemplo, última semana)
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    const oneWeekAgo = new Date(today)
-    oneWeekAgo.setDate(today.getDate() - 7)
-
-    // Obtener todos los FoodItems completados por el usuario para este plan en el período
-    const completedFoodItems = await prisma.foodItemCompletion.count({
-      where: {
-        userId,
-        nutritionalPlanId,
-        completed: true,
-        date: {
-          gte: oneWeekAgo,
-          lte: today,
-        },
-      },
-    })
-
-    // Calcular el porcentaje de progreso
-    const progressPercentage = (completedFoodItems / totalFoodItems) * 100
-
-    // Actualizar el registro de progreso general
-    const existingProgress = await prisma.userProgress.findFirst({
-      where: {
-        userId,
-        facilityId,
-        type: "NUTRITION_ADHERENCE",
-        date: today,
-      },
-    })
-
-    if (existingProgress) {
-      await prisma.userProgress.update({
-        where: { id: existingProgress.id },
-        data: {
-          value: progressPercentage,
-          nutritionalPlanId,
-          notes: `${completedFoodItems} de ${totalFoodItems} elementos de comida completados (${progressPercentage.toFixed(1)}%)`,
-        },
-      })
-    } else {
-      await prisma.userProgress.create({
-        data: {
-          userId,
-          facilityId,
-          type: "NUTRITION_ADHERENCE",
-          date: today,
-          value: progressPercentage,
-          nutritionalPlanId,
-          notes: `${completedFoodItems} de ${totalFoodItems} elementos de comida completados (${progressPercentage.toFixed(1)}%)`,
-        },
-      })
-    }
-
-    return {
-      success: true,
-      completedFoodItems,
-      totalFoodItems,
-      progressPercentage,
-    }
-  } catch (error) {
-    console.error("Error updating nutrition progress:", error)
-    throw new Error("Error al actualizar el progreso nutricional")
   }
 }
