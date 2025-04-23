@@ -21,7 +21,6 @@ interface ProgressChartProps {
   primaryColor: string
   showLegend?: boolean
   showTooltip?: boolean
-  chartType?: "line" | "bar"
   theme?: string
 }
 
@@ -43,7 +42,6 @@ export function ProgressChart({
   primaryColor,
   showLegend = true,
   showTooltip = true,
-  chartType = "bar",
   theme = "dark"
 }: ProgressChartProps) {
   if (!data) return null
@@ -127,26 +125,26 @@ export function ProgressChart({
         >
           <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" opacity={0.5} />
           <XAxis
-        dataKey="date"
-        tickFormatter={(date) => format(new Date(date), "d MMM", { locale: es })}
-        stroke={axisColor}
-        fontSize={12}
-        tickMargin={15}
-        axisLine={{ stroke: axisColor, strokeWidth: 1 }}
-        tick={{ fill: axisColor }}
-        angle={-45}
-        textAnchor="end"
-        height={70}
-      />
-      <YAxis
-        domain={[0, 100]}
-        stroke={axisColor}
-        fontSize={12}
-        tickFormatter={(value) => `${value}%`}
-        axisLine={{ stroke: axisColor, strokeWidth: 1 }}
-        tick={{ fill: axisColor }}
-        tickMargin={10}
-      />
+            dataKey="date"
+            tickFormatter={(date) => format(new Date(date), "d MMM", { locale: es })}
+            stroke={axisColor}
+            fontSize={12}
+            tickMargin={15}
+            axisLine={{ stroke: axisColor, strokeWidth: 1 }}
+            tick={{ fill: axisColor }}
+            angle={-45}
+            textAnchor="end"
+            height={70}
+          />
+          <YAxis
+            domain={[0, 100]}
+            stroke={axisColor}
+            fontSize={12}
+            tickFormatter={(value) => `${value}%`}
+            axisLine={{ stroke: axisColor, strokeWidth: 1 }}
+            tick={{ fill: axisColor }}
+            tickMargin={10}
+          />
           <ReferenceLine y={50} stroke="#e5e7eb" strokeDasharray="3 3" />
           {showTooltip && <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(0, 0, 0, 0.05)" }} />}
           {Object.keys(data).map((type) => (
