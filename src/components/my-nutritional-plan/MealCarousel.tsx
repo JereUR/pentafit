@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useMemo } from "react"
-import { ChevronLeft, ChevronRight, CheckSquare } from "lucide-react"
+import { ChevronLeft, ChevronRight, CheckSquare } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { MealCard } from "./MealCard"
 import EmptyState from "@/components/EmptyState"
@@ -9,6 +9,7 @@ import LoadingButton from "@/components/LoadingButton"
 import { isDayTodayOrPast } from "@/lib/utils"
 import { useCompleteAllMealsMutation } from "@/app/(main)/(authenticated)/(client)/[facilityId]/mi-plan-nutricional/mutations"
 import { MealData, sortMealsByType } from "@/types/nutritionaPlansClient"
+import type { DayOfWeek } from "@prisma/client"
 
 interface MealCarouselProps {
   meals: MealData[]
@@ -104,6 +105,7 @@ export function MealCarousel({
       nutritionalPlanId,
       facilityId,
       completed: newCompletionState,
+      dayOfWeek: dayOfWeek as DayOfWeek,
     })
 
     if (newCompletionState) {

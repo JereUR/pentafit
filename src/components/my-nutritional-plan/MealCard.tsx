@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Clock, Utensils, Loader2 } from "lucide-react"
+import { Clock, Utensils, Loader2 } from 'lucide-react'
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
@@ -12,6 +12,7 @@ import {
 } from "@/app/(main)/(authenticated)/(client)/[facilityId]/mi-plan-nutricional/mutations"
 import { CustomCheckbox } from "./CustomCheckbox"
 import { MealData, mealTypeNames } from "@/types/nutritionaPlansClient"
+import type { DayOfWeek } from "@prisma/client"
 
 interface MealCardProps {
   meal: MealData
@@ -59,6 +60,7 @@ export function MealCard({
       nutritionalPlanId,
       facilityId,
       completed: newCompletedState,
+      dayOfWeek: dayOfWeek as DayOfWeek,
     })
 
     setIsCompleted(newCompletedState)
@@ -87,6 +89,7 @@ export function MealCard({
       nutritionalPlanId,
       facilityId,
       completed: !isFoodCompleted,
+      dayOfWeek: dayOfWeek as DayOfWeek,
     })
 
     setCompletedFoodItems((prev) =>

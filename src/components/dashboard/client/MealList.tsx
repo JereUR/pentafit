@@ -1,14 +1,14 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Clock, CheckSquare } from "lucide-react"
-import { Loader2 } from "lucide-react"
+import { Clock, CheckSquare } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { Checkbox } from "@/components/ui/checkbox"
-import { MEAL_TYPE_DISPLAY_NAMES } from "@/lib/utils"
+import { MEAL_TYPE_DISPLAY_NAMES, getCurrentDayOfWeek } from "@/lib/utils"
 import LoadingButton from "@/components/LoadingButton"
 import {
   useCompleteFoodItemMutation,
@@ -16,6 +16,7 @@ import {
   useCompleteAllMealsMutation,
 } from "@/app/(main)/(authenticated)/(client)/[facilityId]/mi-plan-nutricional/mutations"
 import { MealData } from "@/types/nutritionaPlansClient"
+import type { DayOfWeek } from "@prisma/client"
 
 interface MealListProps {
   meals: MealData[]
@@ -40,6 +41,8 @@ export function MealList({ meals, nutritionalPlanId, facilityId, primaryColor = 
   const { mutate: completeFoodItemMutation, isPending: isLoadingFoodItem } = useCompleteFoodItemMutation()
   const { mutate: completeMealMutation, isPending: isLoadingMeal } = useCompleteMealMutation()
   const { mutate: completeAllMealsMutation, isPending: loadingAllMeals } = useCompleteAllMealsMutation()
+
+  const today = getCurrentDayOfWeek() as DayOfWeek
 
   useEffect(() => {
     setLocalCompletedFoodItems(
@@ -92,6 +95,7 @@ export function MealList({ meals, nutritionalPlanId, facilityId, primaryColor = 
       nutritionalPlanId,
       facilityId,
       completed: !isCompleted,
+      dayOfWeek: today,
     })
   }
 
@@ -113,6 +117,7 @@ export function MealList({ meals, nutritionalPlanId, facilityId, primaryColor = 
       nutritionalPlanId,
       facilityId,
       completed: !isCompleted,
+      dayOfWeek: today,
     })
   }
 
@@ -135,6 +140,7 @@ export function MealList({ meals, nutritionalPlanId, facilityId, primaryColor = 
       nutritionalPlanId,
       facilityId,
       completed: newCompletionState,
+      dayOfWeek: today,
     })
   }
 
