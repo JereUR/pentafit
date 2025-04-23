@@ -1,10 +1,13 @@
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
 import { Activity, Calendar, Dumbbell, Utensils } from "lucide-react"
+import { useState } from "react"
+import { useTheme } from "next-themes"
 
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { ProgressCard } from "./ProgressCard"
-import { ProgressData } from "@/types/progress"
+import type { ProgressData } from "@/types/progress"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ProgressChart } from "./ProgressChart"
 
 interface ProgressOverviewProps {
@@ -13,6 +16,9 @@ interface ProgressOverviewProps {
 }
 
 export function ProgressOverview({ progressData, primaryColor }: ProgressOverviewProps) {
+  const [chartType, setChartType] = useState<"bar" | "line">("bar")
+  const {theme} = useTheme()
+
   if (!progressData) return null
 
   const lastUpdated = progressData.lastUpdated
@@ -57,13 +63,50 @@ export function ProgressOverview({ progressData, primaryColor }: ProgressOvervie
       </div>
 
       <Card>
-        <CardHeader>
-          <CardTitle>Resumen de Actividad Reciente</CardTitle>
-          <CardDescription>Tu progreso en las últimas semanas</CardDescription>
+        <CardHeader className="pb-2">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <CardTitle>Resumen de Actividad Reciente</CardTitle>
+              <CardDescription>Tu progreso en las últimas semanas</CardDescription>
+            </div>
+            <Tabs
+              value={chartType}
+              onValueChange={(value) => setChartType(value as "bar" | "line")}
+              className="mt-2 sm:mt-0"
+            >
+              <TabsList className="grid w-[180px] grid-cols-2">
+                <TabsTrigger
+                  value="bar"
+                  style={{
+                    backgroundColor: chartType === "bar" ? primaryColor : "transparent",
+                    color: chartType === "bar" ? "#ffffff" : "inherit",
+                  }}
+                >
+                  Barras
+                </TabsTrigger>
+                <TabsTrigger
+                  value="line"
+                  style={{
+                    backgroundColor: chartType === "line" ? primaryColor : "transparent",
+                    color: chartType === "line" ? "#ffffff" : "inherit",
+                  }}
+                >
+                  Líneas
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
         </CardHeader>
         <CardContent>
-          <div className="h-[300px]">
-            <ProgressChart data={progressData.historical} primaryColor={primaryColor} />
+          <div className="h-[400px] overflow-visible">
+            <ProgressChart
+              data={progressData.historical}
+              primaryColor={primaryColor}
+              chartType={chartType}
+              showLegend={true}
+              showTooltip={true}
+              theme={theme} 
+            />
           </div>
         </CardContent>
         <CardFooter className="text-sm text-muted-foreground">Última actualización: {lastUpdated}</CardFooter>
@@ -71,3 +114,5 @@ export function ProgressOverview({ progressData, primaryColor }: ProgressOvervie
     </>
   )
 }
+
+export default ProgressOverview

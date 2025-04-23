@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button"
 import { ProgressSkeleton } from "../skeletons/ProgressSkeleton"
 import { MeasurementDialog } from "./MeasurementDialog"
 import { ProgressOverview } from "./ProgressOverview"
-import { ProgressCharts } from "./ProgressCarts"
+import { ProgressCharts } from "./ProgressCharts"
 import { ProgressData } from "@/types/progress"
 import { MeasurementsView } from "./MeasurementView"
 
