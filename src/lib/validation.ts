@@ -617,7 +617,7 @@ export type AllergyValues = z.infer<typeof allergySchema>
 // Payment
 
 export const PaymentValuesSchema = z.object({
-  userId: z.string().uuid(),
+  userId: z.string().min(1,"ID de usuario inválido"),
   planId: z.string().uuid(),
   amount: z.number().positive(),
   status: z.enum(["PENDING", "COMPLETED", "FAILED", "REFUNDED"]).optional().default("PENDING"),
@@ -631,11 +631,13 @@ export type PaymentValues = z.infer<typeof PaymentValuesSchema>
 // Invoice
 
 export const InvoiceValuesSchema = z.object({
-  userId: z.string().uuid(),
+  userId: z.string().min(1,"ID de usuario inválido"),
   planId: z.string().uuid(),
   amount: z.number().positive(),
   status: z.enum(["PENDING", "PAID", "CANCELED", "OVERDUE"]).optional().default("PENDING"),
-  dueDate: z.date(),
+  dueDate: z.string().refine((dateString) => !isNaN(Date.parse(dateString)), {
+    message: "Fecha de vencimiento inválida",
+  }),
   period: z.string().regex(/^\d{4}-\d{2}$/, "Invalid period format (YYYY-MM)"),
   notes: z.string().optional(),
 })
