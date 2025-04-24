@@ -220,3 +220,11 @@ export interface ClientUserProfileData {
   measurements?: UserMeasurement[]
   healthInfo?: UserHealthInfo
 }
+
+export interface UserClientWithPlan extends UserClient {
+  plan: {
+    id: string
+    name: string
+    price: number
+  }
+}
