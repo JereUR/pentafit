@@ -44,6 +44,12 @@ export function useCreateMemberMutation() {
         queryKey: ["team", newMember?.facilities.map((f) => f.facilityId)],
       })
       queryClient.invalidateQueries({
+        queryKey: ["clientsWithPlans", newMember?.facilities.map((f) => f.facilityId)],
+      })
+      queryClient.invalidateQueries({
+        queryKey: ["clients", newMember?.facilities.map((f) => f.facilityId)],
+      })
+      queryClient.invalidateQueries({
         queryKey: [
           "latestTransactions",
           newMember?.facilities.map((f) => f.facilityId),
@@ -108,6 +114,12 @@ export function useUpdateMemberMutation() {
         queryKey: ["team", updatedMember.facilities.map((f) => f.facilityId)],
       })
       queryClient.invalidateQueries({
+        queryKey: ["clientsWithPlans", updatedMember?.facilities.map((f) => f.facilityId)],
+      })
+      queryClient.invalidateQueries({
+        queryKey: ["clients", updatedMember?.facilities.map((f) => f.facilityId)],
+      })
+      queryClient.invalidateQueries({
         queryKey: [
           "latestTransactions",
           updatedMember?.facilities.map((f) => f.facilityId),
@@ -167,6 +179,12 @@ export function useDeleteMemberMutation() {
       })
       queryClient.invalidateQueries({
         queryKey: ["team", facilityId],
+      })
+      queryClient.invalidateQueries({
+        queryKey: ["clientsWithPlans", facilityId],
+      })
+      queryClient.invalidateQueries({
+        queryKey: ["clients", facilityId],
       })
       queryClient.invalidateQueries({
         queryKey: ["latestTransactions", facilityId],
