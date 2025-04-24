@@ -8,51 +8,37 @@ import prisma from "@/lib/prisma"
 import { InvoiceValues, InvoiceValuesSchema } from "@/lib/validation"
 import { InvoiceResponse, DeletedInvoiceResponse, ErrorResponse } from "@/types/invoice"
 
-export const getInvoiceById = async (id: string) => {
+export async function getInvoiceById(id: string): Promise<(InvoiceValues & { id: string }) | null> {
   try {
     const invoice = await prisma.invoice.findUnique({
       where: { id },
-      include: {
-        user: { select: { id: true, firstName: true, lastName: true, email: true } },
-        plan: { select: { id: true, name: true, price: true } },
-        payment: { select: { id: true, amount: true, status: true } },
+      select: {
+        id: true,
+        userId: true,
+        planId: true,
+        amount: true,
+        status: true,
+        dueDate: true,
+        period: true,
+        notes: true,
       },
-    })
+    });
 
-    if (!invoice) {
-      throw new Error("Factura no encontrada")
-    }
+    if (!invoice) return null;
 
     return {
       id: invoice.id,
       userId: invoice.userId,
-      user: {
-        id: invoice.user.id,
-        firstName: invoice.user.firstName,
-        lastName: invoice.user.lastName,
-        email: invoice.user.email,
-      },
       planId: invoice.planId,
-      plan: {
-        id: invoice.plan.id,
-        name: invoice.plan.name,
-        price: invoice.plan.price,
-      },
-      paymentId: invoice.paymentId || null,
-      payment: invoice.payment
-        ? { id: invoice.payment.id, amount: invoice.payment.amount, status: invoice.payment.status }
-        : null,
       amount: invoice.amount,
       status: invoice.status,
-      issueDate: invoice.issueDate,
-      dueDate: invoice.dueDate,
-      invoiceNumber: invoice.invoiceNumber,
+      dueDate: invoice.dueDate.toISOString(),
       period: invoice.period,
-      notes: invoice.notes,
-    }
+      notes: invoice.notes ?? undefined,
+    };
   } catch (error) {
-    console.error("Error fetching invoice:", error)
-    throw new Error("Failed to fetch invoice")
+    console.error("Error fetching invoice:", error);
+    return null;
   }
 }
 
