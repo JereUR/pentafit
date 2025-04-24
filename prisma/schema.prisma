@@ -60,6 +60,8 @@ model User {
   foodItemCompletions    FoodItemCompletion[]
   measurements           UserMeasurement[]
   healthInfo             UserHealthInfo?
+  payments               Payment[]
+  invoices               Invoice[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -402,6 +404,8 @@ model Plan {
   notifications    Notification[]
   transactions     Transaction[]
   userPlans        UserPlan[]
+  payments         Payment[]
+  invoices         Invoice[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -753,6 +757,8 @@ model UserNutritionalPlan {
   @@map("user_nutritional_plans")
 }
 
+// User Progress
+
 enum ProgressType {
   EXERCISE_COMPLETION
   NUTRITION_ADHERENCE
@@ -843,6 +849,8 @@ model FoodItemCompletion {
   @@map("food_item_completions")
 }
 
+// User Measurements
+
 model UserMeasurement {
   id         String   @id @default(uuid())
   userId     String
@@ -867,6 +875,8 @@ model UserMeasurement {
   @@index([userId, date])
   @@map("user_measurements")
 }
+
+// Health Info
 
 enum ConditionSeverity {
   MILD
@@ -907,4 +917,67 @@ model UserHealthInfo {
   updatedAt DateTime @updatedAt
 
   @@map("user_health_info")
+}
+
+// Payment
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+model Payment {
+  id            String        @id @default(uuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  planId        String
+  plan          Plan          @relation(fields: [planId], references: [id], onDelete: Cascade)
+  amount        Float
+  status        PaymentStatus @default(PENDING)
+  paymentDate   DateTime      @default(now())
+  paymentMonth  String
+  transactionId String?       @unique
+  notes         String?
+  invoice       Invoice?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, planId, paymentMonth])
+  @@index([userId, paymentMonth])
+  @@map("payments")
+}
+
+// Invoice
+
+enum InvoiceStatus {
+  PENDING
+  PAID
+  CANCELED
+  OVERDUE
+}
+
+model Invoice {
+  id            String        @id @default(uuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  planId        String
+  plan          Plan          @relation(fields: [planId], references: [id], onDelete: Cascade)
+  paymentId     String?       @unique
+  payment       Payment?      @relation(fields: [paymentId], references: [id], onDelete: SetNull)
+  amount        Float
+  status        InvoiceStatus @default(PENDING)
+  issueDate     DateTime      @default(now())
+  dueDate       DateTime
+  invoiceNumber String        @unique
+  period        String
+  notes         String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, period])
+  @@map("invoices")
 }
