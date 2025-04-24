@@ -510,6 +510,8 @@ export type UserNutritionalPlanValues = z.infer<
   typeof userNutritionalPlanSchema
 >
 
+// Measurement
+
 export const measurementFormSchema = z.object({
   weight: z
     .string()
@@ -551,6 +553,8 @@ export const measurementFormSchema = z.object({
 })
 
 export type MeasurementFormValues = z.infer<typeof measurementFormSchema>
+
+// Health Info
 
 export const chronicConditionSchema = z.object({
   name: z.string().min(1, "El nombre es requerido"),
@@ -609,3 +613,31 @@ export type ChronicConditionValues = z.infer<typeof chronicConditionSchema>
 export type MedicationValues = z.infer<typeof medicationSchema>
 export type InjuryValues = z.infer<typeof injurySchema>
 export type AllergyValues = z.infer<typeof allergySchema>
+
+// Payment
+
+export const PaymentValuesSchema = z.object({
+  userId: z.string().uuid(),
+  planId: z.string().uuid(),
+  amount: z.number().positive(),
+  status: z.enum(["PENDING", "COMPLETED", "FAILED", "REFUNDED"]).optional().default("PENDING"),
+  paymentMonth: z.string().regex(/^\d{4}-\d{2}$/, "Invalid payment month format (YYYY-MM)"),
+  transactionId: z.string().optional(),
+  notes: z.string().optional(),
+})
+
+export type PaymentValues = z.infer<typeof PaymentValuesSchema>
+
+// Invoice
+
+export const InvoiceValuesSchema = z.object({
+  userId: z.string().uuid(),
+  planId: z.string().uuid(),
+  amount: z.number().positive(),
+  status: z.enum(["PENDING", "PAID", "CANCELED", "OVERDUE"]).optional().default("PENDING"),
+  dueDate: z.date(),
+  period: z.string().regex(/^\d{4}-\d{2}$/, "Invalid period format (YYYY-MM)"),
+  notes: z.string().optional(),
+})
+
+export type InvoiceValues = z.infer<typeof InvoiceValuesSchema>
