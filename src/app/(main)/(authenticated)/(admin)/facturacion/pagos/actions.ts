@@ -8,48 +8,37 @@ import { PaymentStatus, InvoiceStatus } from "@prisma/client"
 import { PaymentValues, PaymentValuesSchema } from "@/lib/validation"
 import { PaymentActionResponse, DeletedPaymentResponse, ErrorResponse } from "@/types/payment"
 
-export const getPaymentById = async (id: string) => {
+export async function getPaymentById(id: string): Promise<(PaymentValues & { id: string }) | null> {
   try {
     const payment = await prisma.payment.findUnique({
       where: { id },
-      include: {
-        user: { select: { id: true, firstName: true, lastName: true, email: true } },
-        plan: { select: { id: true, name: true, price: true, generateInvoice: true } },
-        invoice: { select: { id: true, invoiceNumber: true, status: true } },
+      select: {
+        id: true,
+        userId: true,
+        planId: true,
+        amount: true,
+        status: true,
+        paymentMonth: true,
+        transactionId: true,
+        notes: true,
       },
-    })
+    });
 
-    if (!payment) {
-      throw new Error("Pago no encontrado")
-    }
+    if (!payment) return null;
 
     return {
       id: payment.id,
       userId: payment.userId,
-      user: {
-        id: payment.user.id,
-        firstName: payment.user.firstName,
-        lastName: payment.user.lastName,
-        email: payment.user.email,
-      },
       planId: payment.planId,
-      plan: {
-        id: payment.plan.id,
-        name: payment.plan.name,
-        price: payment.plan.price,
-      },
       amount: payment.amount,
       status: payment.status,
       paymentMonth: payment.paymentMonth,
-      transactionId: payment.transactionId,
-      notes: payment.notes,
-      invoice: payment.invoice
-        ? { id: payment.invoice.id, invoiceNumber: payment.invoice.invoiceNumber, status: payment.invoice.status }
-        : null,
-    }
+      transactionId: payment.transactionId ?? undefined,
+      notes: payment.notes ?? undefined,
+    };
   } catch (error) {
-    console.error("Error fetching payment:", error)
-    throw new Error("Failed to fetch payment")
+    console.error("Error fetching payment:", error);
+    return null;
   }
 }
 
