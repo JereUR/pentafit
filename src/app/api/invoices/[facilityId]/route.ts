@@ -1,8 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server"
+
 import prisma, { PAGE_SIZE } from "@/lib/prisma"
 import type { InvoiceData } from "@/types/invoice"
 import { validateRequest } from "@/auth"
-import { InvoiceStatus, PaymentStatus } from "@prisma/client"
 import type { Prisma } from "@prisma/client"
 
 export async function GET(
@@ -54,42 +54,86 @@ export async function GET(
     const [invoices, total] = await Promise.all([
       prisma.invoice.findMany({
         where,
-        include: {
-          user: { select: { firstName: true, lastName: true } },
-          plan: { select: { name: true } },
-          payment: { select: { id: true, amount: true, status: true } },
-        },
-        orderBy: { createdAt: "desc" },
         skip,
-        take: pageSize,
+        take: PAGE_SIZE,
+        orderBy: { issueDate: "desc" },
+        include: {
+          user: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+            },
+          },
+          plan: {
+            select: {
+              id: true,
+              name: true,
+              price: true,
+              
+          facility: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              address: true,
+              phone: true,
+              instagram: true,
+              facebook: true,
+              logoUrl: true,
+            },
+          },
+            },
+          },
+          payment: {
+            select: {
+              id: true,
+              status: true,
+            },
+          },
+        },
       }),
       prisma.invoice.count({ where }),
     ])
 
     const formattedInvoices: InvoiceData[] = invoices.map((invoice) => ({
       id: invoice.id,
-      invoiceNumber: invoice.invoiceNumber,
       user: {
+        id: invoice.user.id,
         firstName: invoice.user.firstName,
         lastName: invoice.user.lastName,
+        email: invoice.user.email,
       },
       plan: {
+        id: invoice.plan.id,
         name: invoice.plan.name,
+        price: invoice.plan.price,
       },
-      amount: invoice.amount,
-      status: invoice.status as InvoiceStatus,
-      issueDate: invoice.issueDate,
-      dueDate: invoice.dueDate,
-      period: invoice.period,
-      notes: invoice.notes,
       payment: invoice.payment
         ? {
             id: invoice.payment.id,
-            amount: invoice.payment.amount,
-            status: invoice.payment.status as PaymentStatus,
+            status: invoice.payment.status,
           }
         : null,
-    }))
+      facility: {
+        id: invoice.plan.facility.id,
+        name: invoice.plan.facility.name,
+        email: invoice.plan.facility.email,
+        address: invoice.plan.facility.address,
+        phone: invoice.plan.facility.phone,
+        instagram: invoice.plan.facility.instagram,
+        facebook: invoice.plan.facility.facebook,
+        logoUrl: invoice.plan.facility.logoUrl,
+      },
+      amount: invoice.amount,
+      status: invoice.status,
+      issueDate: invoice.issueDate,
+      dueDate: invoice.dueDate,
+      invoiceNumber: invoice.invoiceNumber,
+      period: invoice.period,
+      notes: invoice.notes,
+    }));
 
     return NextResponse.json({ invoices: formattedInvoices, total })
   } catch (error) {
