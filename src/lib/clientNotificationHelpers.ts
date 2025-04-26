@@ -148,31 +148,31 @@ function generatePersonalizedMessage(
     case "ACTIVITY_UPDATED":
       return `${greeting} ${issuerName} ha realizado cambios en la actividad "${entityName}" a la que estás inscrito. Por favor revisa los detalles en la sección de actividades.`
 
-    // Invoice notifications
-case "INVOICE_CREATED":
-  return `${greeting} ${issuerName} ha generado una nueva factura "${entityName}"${formattedStartDate ? ` con fecha de emisión ${formattedStartDate}` : ""}. Revisa los detalles en la sección de facturación.`
+    // Invoice notifications 
+    case "INVOICE_CREATED":
+      return `${greeting} ${issuerName} ha generado una nueva factura "${entityName}"${formattedStartDate ? ` con fecha de emisión ${formattedStartDate}` : ""}. Revisa los detalles en la sección de facturación.`
 
-case "INVOICE_UPDATED":
-  if (changeDetails.length > 0) {
-    return `${greeting} ${issuerName} ha actualizado la factura "${entityName}". Cambios: ${changeDetails.join(", ")}. Revisa los detalles en la sección de facturación.`
-  }
-  return `${greeting} ${issuerName} ha actualizado la factura "${entityName}". Revisa los detalles en la sección de facturación.`
+    case "INVOICE_UPDATED":
+      if (changeDetails.length > 0) {
+        return `${greeting} ${issuerName} ha actualizado la factura "${entityName}". Cambios: ${changeDetails.join(", ")}. Revisa los detalles en la sección de facturación.`
+      }
+      return `${greeting} ${issuerName} ha actualizado la factura "${entityName}". Revisa los detalles en la sección de facturación.`
 
-case "INVOICE_DELETED":
-  return `${greeting} ${issuerName} ha eliminado la factura "${entityName}"${formattedEndDate ? ` el ${formattedEndDate}` : ""}.`
+    case "INVOICE_DELETED":
+      return `${greeting} ${issuerName} ha eliminado la factura "${entityName}"${formattedEndDate ? ` el ${formattedEndDate}` : ""}.`
 
-// Payment notifications
-case "PAYMENT_CREATED":
-  return `${greeting} ${issuerName} ha registrado un nuevo pago "${entityName}"${formattedStartDate ? ` con fecha ${formattedStartDate}` : ""}. Revisa los detalles en la sección de facturación.`
+    // Payment notifications
+    case "PAYMENT_CREATED":
+      return `${greeting} ${issuerName} ha registrado un nuevo pago "${entityName}"${formattedStartDate ? ` con fecha ${formattedStartDate}` : ""}. Revisa los detalles en la sección de facturación.`
 
-case "PAYMENT_UPDATED":
-  if (changeDetails.length > 0) {
-    return `${greeting} ${issuerName} ha actualizado el pago "${entityName}". Cambios: ${changeDetails.join(", ")}. Revisa los detalles en la sección de facturación.`
-  }
-  return `${greeting} ${issuerName} ha actualizado el pago "${entityName}". Revisa los detalles en la sección de facturación.`
+    case "PAYMENT_UPDATED":
+      if (changeDetails.length > 0) {
+        return `${greeting} ${issuerName} ha actualizado el pago "${entityName}". Cambios: ${changeDetails.join(", ")}. Revisa los detalles en la sección de facturación.`
+      }
+      return `${greeting} ${issuerName} ha actualizado el pago "${entityName}". Revisa los detalles en la sección de facturación.`
 
-case "PAYMENT_DELETED":
-  return `${greeting} ${issuerName} ha eliminado el pago "${entityName}"${formattedEndDate ? ` el ${formattedEndDate}` : ""}.`
+    case "PAYMENT_DELETED":
+      return `${greeting} ${issuerName} ha eliminado el pago "${entityName}"${formattedEndDate ? ` el ${formattedEndDate}` : ""}.`
 
 
     // Default message for other notification types
