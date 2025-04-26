@@ -45,6 +45,12 @@ export enum TransactionType {
   PRESET_NUTRITIONAL_PLAN_UPDATED = "PRESET_NUTRITIONAL_PLAN_UPDATED",
   PRESET_NUTRITIONAL_PLAN_DELETED = "PRESET_NUTRITIONAL_PLAN_DELETED",
   PRESET_NUTRITIONAL_PLAN_REPLICATED = "PRESET_NUTRITIONAL_PLAN_REPLICATED",
+  INVOICE_CREATED = "INVOICE_CREATED",
+  INVOICE_UPDATED = "INVOICE_UPDATED",
+  INVOICE_DELETED = "INVOICE_DELETED",
+  PAYMENT_CREATED = "PAYMENT_CREATED",
+  PAYMENT_UPDATED = "PAYMENT_UPDATED",
+  PAYMENT_DELETED = "PAYMENT_DELETED",
 }
 
 export interface FacilityReference {
@@ -58,6 +64,14 @@ export interface UserReference {
   firstName: string
   lastName: string
   avatarUrl?: string
+}
+
+export interface EntityReferenceWithUser{
+  id:string,
+  user:{
+    firstName:string,
+    lastName:string,
+  }
 }
 
 export interface EntityReference {
@@ -127,6 +141,10 @@ export interface Transaction {
   nutritionalPlan?: EntityReference | null
   presetNutritionalPlanId?: string | null
   presetNutritionalPlan?: EntityReference | null
+  invoiceId?: string | null
+  invoice?: EntityReferenceWithUser | null
+  paymentId?: string | null
+  payment?: EntityReferenceWithUser | null
 
   createdAt: string
 }

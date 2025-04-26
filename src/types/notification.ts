@@ -56,6 +56,28 @@ export const notificationsInclude = {
       lastName: true,
     },
   },
+  invoice: {
+    select: {
+      id: true,
+      user:{
+        select: {
+          firstName: true,
+          lastName: true,
+        },
+      }
+    },
+  },
+  payment:{
+    select: {
+      id: true,
+      user:{
+        select: {
+          firstName: true,
+          lastName: true,
+        },
+      }
+    },
+  }
 } satisfies Prisma.NotificationInclude
 
 export type NotificationData = Prisma.NotificationGetPayload<{
