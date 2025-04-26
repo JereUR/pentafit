@@ -18,6 +18,8 @@ import {
   Salad,
   Copy,
   Calendar,
+  FileText,
+  DollarSign,
 } from "lucide-react"
 import Link from "next/link"
 import type { JSX } from "react"
@@ -280,6 +282,42 @@ export default function Notification({ notification }: NotificationProps) {
       href: `/planes`,
       color: "text-red-500",
     },
+    INVOICE_CREATED: {
+      message: "creó una factura",
+      icon: <FileText className="h-4 w-4" />,
+      href: `/facturacion/facturas`,
+      color: "text-green-500",
+    },
+    INVOICE_UPDATED: {
+      message: "editó una factura",
+      icon: <FileText className="h-4 w-4" />,
+      href: `/facturacion/facturas`,
+      color: "text-blue-500",
+    },
+    INVOICE_DELETED: {
+      message: "eliminó una factura",
+      icon: <FileText className="h-4 w-4" />,
+      href: `/facturacion/facturas`,
+      color: "text-red-500",
+    },
+    PAYMENT_CREATED: {
+      message: "registró un pago",
+      icon: <DollarSign className="h-4 w-4" />,
+      href: `/facturacion/pagos`,
+      color: "text-green-500",
+    },
+    PAYMENT_UPDATED: {
+      message: "editó un pago",
+      icon: <DollarSign className="h-4 w-4" />,
+      href: `/facturacion/pagos`,
+      color: "text-blue-500",
+    },
+    PAYMENT_DELETED: {
+      message: "eliminó un pago",
+      icon: <DollarSign className="h-4 w-4" />,
+      href: `/facturacion/pagos`,
+      color: "text-red-500",
+    },
   }
 
   const { icon, href, color } = notificationTypeMap[notification.type]
@@ -321,7 +359,9 @@ export default function Notification({ notification }: NotificationProps) {
             notification.routine ||
             notification.presetRoutine ||
             notification.nutritionalPlan ||
-            notification.presetNutritionalPlan) && (
+            notification.presetNutritionalPlan ||
+            notification.invoice ||
+            notification.payment) && (
               <p className="mt-1 text-xs text-muted-foreground">
                 {notification.activity?.name ||
                   notification.plan?.name ||
@@ -329,7 +369,10 @@ export default function Notification({ notification }: NotificationProps) {
                   notification.routine?.name ||
                   notification.presetRoutine?.name ||
                   notification.nutritionalPlan?.name ||
-                  notification.presetNutritionalPlan?.name}
+                  notification.presetNutritionalPlan?.name ||
+                  (notification.invoice && `Factura de ${notification.invoice?.user.firstName} ${notification.invoice?.user.lastName}`) ||
+                  (notification.payment && `Pago de ${notification.payment.user.firstName} ${notification.payment.user.lastName}`) ||
+                  "N/A"}
               </p>
             )}
         </div>
@@ -340,4 +383,3 @@ export default function Notification({ notification }: NotificationProps) {
     </Link>
   )
 }
-
