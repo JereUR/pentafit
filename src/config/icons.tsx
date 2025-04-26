@@ -26,7 +26,7 @@ interface ExcelIconProps {
   className?: string
 }
 
-const ExcelIcon: React.FC<ExcelIconProps> = ({ className }) => (
+export const ExcelIcon: React.FC<ExcelIconProps> = ({ className }) => (
   <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48px" height="48px">
     <path fill="#4CAF50" d="M41,10H25v28h16c0.553,0,1-0.447,1-1V11C42,10.447,41.553,10,41,10z" />
     <path
@@ -41,5 +41,11 @@ const ExcelIcon: React.FC<ExcelIconProps> = ({ className }) => (
   </svg>
 )
 
-export default ExcelIcon
+export const PdfIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
+    <path d="M6 2h6l6 6v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm6 1.5v5h5M8 10h2v4H9v-3H8v3H7v-4h2zm5 0h2a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1h-1v1h-1v-3zm5 0h-1v4h1a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1z"/>
+    <text x="8" y="17" font-size="5" font-family="Arial, sans-serif" fill="currentColor">PDF</text>
+  </svg>
+)
+
 
