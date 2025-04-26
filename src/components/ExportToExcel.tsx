@@ -5,8 +5,8 @@ import ExcelJS from "exceljs"
 import { saveAs } from "file-saver"
 
 import { useToast } from "@/hooks/use-toast"
-import ExcelIcon from "@/config/icons"
 import LoadingButton from "./LoadingButton"
+import { ExcelIcon } from "@/config/icons"
 
 interface ExportToExcelProps<T> {
   apiRoute: string
