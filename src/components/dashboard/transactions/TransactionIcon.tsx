@@ -1,4 +1,4 @@
-import { Calendar, ClipboardList, Copy, Users, SquareActivity, UserCheck, UserX, Utensils } from "lucide-react"
+import { Calendar, ClipboardList, Copy, Users, SquareActivity, UserCheck, UserX, Utensils, FileText, DollarSign } from "lucide-react"
 
 import { PlanIcon } from "@/config/icons"
 import { TransactionType } from "@/types/transactions"
@@ -15,7 +15,7 @@ export function TransactionIcon({ type, className = "h-4 w-4" }: TransactionIcon
   if (type.includes("STAFF") || type.includes("CLIENT")) {
     return <Users className={`${className} text-cyan-400`} />
   }
-  if (type.startsWith("PLAN")) {
+  if (type.includes("PLAN") && !type.includes("NUTRITIONAL")) {
     return <PlanIcon className={`${className} text-amber-400`} />
   }
   if (type.includes("DIARY")) {
@@ -50,10 +50,14 @@ export function TransactionIcon({ type, className = "h-4 w-4" }: TransactionIcon
   if (type.includes("NUTRITIONAL_PLAN") && !type.includes("PRESET")) {
     return <Utensils className={`${className} text-yellow-400`} />
   }
-
   if (type.includes("PRESET_NUTRITIONAL_PLAN")) {
     return <Utensils className={`${className} text-green-500`} />
   }
+  if (type.includes("INVOICE")) {
+    return <FileText className={`${className} text-teal-500`} />
+  }
+  if (type.includes("PAYMENT")) {
+    return <DollarSign className={`${className} text-pink-500`} />
+  }
   return null
 }
-

@@ -7,18 +7,20 @@ export function getTransactionType(type: TransactionType): string {
   if (type.includes("ACTIVITY")) return "Actividad"
   if (type.includes("STAFF")) return "Staff"
   if (type.includes("CLIENT")) return "Cliente"
-  if (type.startsWith("PLAN")) return "Plan"
+  if (type.includes("PLAN") && !type.includes("NUTRITIONAL")) return "Plan"
   if (type.includes("DIARY")) return "Diario"
   if (type === TransactionType.ASSIGN_ROUTINE_USER) return "Asignación de Rutina"
   if (type === TransactionType.UNASSIGN_ROUTINE_USER) return "Desasignación de Rutina"
   if (type === TransactionType.ROUTINE_CONVERTED_TO_PRESET) return "Conversión a Preestablecida"
-  if (type.startsWith("ROUTINE")) return "Rutina"
-  if (type.startsWith("PRESET_ROUTINE")) return "Rutina preestablecida"
+  if (type.includes("ROUTINE") && !type.includes("PRESET")) return "Rutina"
+  if (type.includes("PRESET_ROUTINE")) return "Rutina preestablecida"
   if (type === TransactionType.ASSIGN_NUTRITIONAL_PLAN_USER) return "Asignación de Plan Nutricional"
   if (type === TransactionType.UNASSIGN_NUTRITIONAL_PLAN_USER) return "Desasignación de Plan Nutricional"
   if (type === TransactionType.NUTRITIONAL_PLAN_CONVERTED_TO_PRESET) return "Conversión a Plan Preestablecido"
   if (type.includes("NUTRITIONAL_PLAN") && !type.includes("PRESET")) return "Plan Nutricional"
   if (type.includes("PRESET_NUTRITIONAL_PLAN")) return "Plan Nutricional preestablecido"
+  if (type.includes("INVOICE")) return "Factura"
+  if (type.includes("PAYMENT")) return "Pago"
   return "N/A"
 }
 
@@ -33,11 +35,11 @@ export function getTransactionName(transaction: Transaction): string {
   if (transaction.presetRoutine) return transaction.presetRoutine.name
   if (transaction.nutritionalPlan) return transaction.nutritionalPlan.name
   if (transaction.presetNutritionalPlan) return transaction.presetNutritionalPlan.name
-
+  if (transaction.invoice) return `Factura de ${transaction.invoice?.user.firstName} ${transaction.invoice?.user.lastName}`
+  if (transaction.payment) return `Pago ${transaction.payment.id}`
   if (transaction.details) {
     return transaction.details.attachmentName || transaction.details.replicatedName || "N/A"
   }
-
   return "N/A"
 }
 
@@ -102,7 +104,8 @@ export function getReplicationInfo(transaction: Transaction) {
 export function getAssignmentInfo(transaction: Transaction) {
   if (
     (transaction.type !== TransactionType.ASSIGN_ROUTINE_USER &&
-      transaction.type !== TransactionType.ASSIGN_NUTRITIONAL_PLAN_USER) ||
+      transaction.type !== TransactionType.ASSIGN_NUTRITIONAL_PLAN_USER &&
+      transaction.type !== TransactionType.ASSIGN_PLAN_USER) ||
     !transaction.details
   ) {
     return null
@@ -132,7 +135,8 @@ export function getAssignmentInfo(transaction: Transaction) {
 export function getUnassignmentInfo(transaction: Transaction) {
   if (
     (transaction.type !== TransactionType.UNASSIGN_ROUTINE_USER &&
-      transaction.type !== TransactionType.UNASSIGN_NUTRITIONAL_PLAN_USER) ||
+      transaction.type !== TransactionType.UNASSIGN_NUTRITIONAL_PLAN_USER &&
+      transaction.type !== TransactionType.UNASSIGN_PLAN_USER) ||
     !transaction.details
   ) {
     return null
@@ -198,4 +202,3 @@ export function getConversionInfo(transaction: Transaction) {
     }
   }
 }
-
