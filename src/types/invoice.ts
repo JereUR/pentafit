@@ -14,18 +14,42 @@ export const columnsInvoices: { key: keyof InvoiceData; label: string }[] = [
 ]
 
 export interface InvoiceData {
-  id: string
-  invoiceNumber: string
-  user: { firstName: string; lastName: string }
-  plan: { name: string }
-  amount: number
-  status: InvoiceStatus
-  issueDate: Date
-  dueDate: Date
-  period: string
-  notes: string | null
-  payment: { id: string; amount: number; status: string } | null
+  id: string;
+  user: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string | null;
+  };
+  plan: {
+    id: string;
+    name: string;
+    price: number;
+  };
+  payment: {
+    id: string;
+    status: string;
+  } | null;
+  facility: {
+    id: string;
+    name: string;
+    email: string | null;
+    address: string | null;
+    phone: string | null;
+    instagram: string | null;
+    facebook: string | null;
+    logoUrl: string | null;
+  };
+  amount: number;
+  status: string;
+  issueDate: Date;
+  dueDate: Date;
+  invoiceNumber: string;
+  period: string;
+  notes: string | null;
 }
+
+
 
 export interface InvoiceDataExport {
   invoiceNumber: string
@@ -79,4 +103,11 @@ export function isInvoiceResponse(result: InvoiceResponse | ErrorResponse): resu
 
 export function isDeletedInvoiceResponse(result: DeletedInvoiceResponse | ErrorResponse): result is DeletedInvoiceResponse {
   return "success" in result
+}
+
+export const statusTranslations: Record<string, string> = {
+  PENDING: "Pendiente",
+  PAID: "Pagada",
+  CANCELED: "Cancelada",
+  OVERDUE: "Vencida",
 }
