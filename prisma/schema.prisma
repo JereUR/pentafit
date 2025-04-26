@@ -192,6 +192,12 @@ enum NotificationType {
   PRESET_NUTRITIONAL_PLAN_UPDATED
   PRESET_NUTRITIONAL_PLAN_DELETED
   PRESET_NUTRITIONAL_PLAN_REPLICATED
+  INVOICE_CREATED
+  INVOICE_UPDATED
+  INVOICE_DELETED
+  PAYMENT_CREATED
+  PAYMENT_UPDATED
+  PAYMENT_DELETED
 }
 
 model Notification {
@@ -229,6 +235,12 @@ model Notification {
 
   presetNutritionalPlanId String?
   presetNutritionalPlan   PresetNutritionalPlan? @relation(fields: [presetNutritionalPlanId], references: [id], onDelete: Cascade)
+
+  invoiceId String?
+  invoice   Invoice? @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  paymentId String?
+  payment   Payment? @relation(fields: [paymentId], references: [id], onDelete: Cascade)
 
   message   String?
   read      Boolean          @default(false)
@@ -286,6 +298,12 @@ enum TransactionType {
   PRESET_NUTRITIONAL_PLAN_UPDATED
   PRESET_NUTRITIONAL_PLAN_DELETED
   PRESET_NUTRITIONAL_PLAN_REPLICATED
+  INVOICE_CREATED
+  INVOICE_UPDATED
+  INVOICE_DELETED
+  PAYMENT_CREATED
+  PAYMENT_UPDATED
+  PAYMENT_DELETED
 }
 
 model Transaction {
@@ -322,6 +340,12 @@ model Transaction {
 
   presetNutritionalPlanId String?
   presetNutritionalPlan   PresetNutritionalPlan? @relation(fields: [presetNutritionalPlanId], references: [id], onDelete: SetNull)
+
+  invoiceId String?
+  invoice   Invoice? @relation(fields: [invoiceId], references: [id], onDelete: SetNull)
+
+  paymentId String?
+  payment   Payment? @relation(fields: [paymentId], references: [id], onDelete: SetNull)
 
   createdAt DateTime @default(now())
 
@@ -929,18 +953,20 @@ enum PaymentStatus {
 }
 
 model Payment {
-  id            String        @id @default(uuid())
+  id            String         @id @default(uuid())
   userId        String
-  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   planId        String
-  plan          Plan          @relation(fields: [planId], references: [id], onDelete: Cascade)
+  plan          Plan           @relation(fields: [planId], references: [id], onDelete: Cascade)
   amount        Float
-  status        PaymentStatus @default(PENDING)
-  paymentDate   DateTime      @default(now())
+  status        PaymentStatus  @default(PENDING)
+  paymentDate   DateTime       @default(now())
   paymentMonth  String
-  transactionId String?       @unique
+  transactionId String?        @unique
   notes         String?
   invoice       Invoice?
+  transactions  Transaction[]
+  notifications Notification[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -960,20 +986,22 @@ enum InvoiceStatus {
 }
 
 model Invoice {
-  id            String        @id @default(uuid())
+  id            String         @id @default(uuid())
   userId        String
-  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   planId        String
-  plan          Plan          @relation(fields: [planId], references: [id], onDelete: Cascade)
-  paymentId     String?       @unique
-  payment       Payment?      @relation(fields: [paymentId], references: [id], onDelete: SetNull)
+  plan          Plan           @relation(fields: [planId], references: [id], onDelete: Cascade)
+  paymentId     String?        @unique
+  payment       Payment?       @relation(fields: [paymentId], references: [id], onDelete: SetNull)
   amount        Float
-  status        InvoiceStatus @default(PENDING)
-  issueDate     DateTime      @default(now())
+  status        InvoiceStatus  @default(PENDING)
+  issueDate     DateTime       @default(now())
   dueDate       DateTime
-  invoiceNumber String        @unique
+  invoiceNumber String         @unique
   period        String
   notes         String?
+  transactions  Transaction[]
+  notifications Notification[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
