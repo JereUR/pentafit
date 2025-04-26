@@ -103,6 +103,29 @@ export async function GET(req: NextRequest) {
             name: true,
           },
         },
+        
+        invoice: {
+          select: {
+            id: true,
+            user: {
+              select: {
+                firstName: true,
+                lastName: true,
+              },
+            },
+          },
+        },
+        payment: {
+          select: {
+            id: true,
+            user: {
+              select: {
+                firstName: true,
+                lastName: true,
+              },
+            },
+          },
+        }
       },
     })
 
