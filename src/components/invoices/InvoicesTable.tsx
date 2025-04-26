@@ -48,13 +48,14 @@ export default function InvoicesTable({
                   {column.label}
                 </TableHead>
               ))}
-            <TableHead className="font-medium text-center">Acciones</TableHead>
+            <TableHead className="font-medium text-center border-r">PDF</TableHead>
+            <TableHead className="font-medium text-center border-r">Acciones</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {isLoading ? (
             <TableRow>
-              <td colSpan={visibleColumns.size + 2} className="text-center text-foreground/70 italic font-medium py-4">
+              <td colSpan={visibleColumns.size + 3} className="text-center text-foreground/70 italic font-medium py-4">
                 <Loader2 className="animate-spin" />
               </td>
             </TableRow>
@@ -73,7 +74,7 @@ export default function InvoicesTable({
             ))
           ) : (
             <TableRow>
-              <td colSpan={visibleColumns.size + 2} className="text-center text-foreground/70 italic font-medium py-4">
+              <td colSpan={visibleColumns.size + 3} className="text-center text-foreground/70 italic font-medium py-4">
                 No hay facturas para mostrar.
               </td>
             </TableRow>
