@@ -14,6 +14,8 @@ export async function createTransaction({
   presetRoutineId,
   nutritionalPlanId,
   presetNutritionalPlanId,
+  invoiceId,
+  paymentId,
 }: {
   tx: Prisma.TransactionClient
   type: TransactionType
@@ -28,6 +30,8 @@ export async function createTransaction({
   presetRoutineId?: string
   nutritionalPlanId?: string
   presetNutritionalPlanId?: string
+  invoiceId?: string
+  paymentId?: string
 }) {
   try {
     const safeDetails = details && typeof details === "object" ? details : {}
@@ -45,6 +49,8 @@ export async function createTransaction({
       ...(presetRoutineId && { presetRoutineId }),
       ...(nutritionalPlanId && { nutritionalPlanId }),
       ...(presetNutritionalPlanId && { presetNutritionalPlanId }),
+      ...(invoiceId && { invoiceId }),
+      ...(paymentId && { paymentId }),
     }
 
     const transaction = await tx.transaction.create({
@@ -235,7 +241,7 @@ export async function createRoutineTransaction({
 }) {
   const safeDetails = details && typeof details === "object" ? details : {}
 
-  return await createTransaction({
+  return createTransaction({
     tx,
     type,
     details: safeDetails,
@@ -266,7 +272,7 @@ export async function createPresetRoutineTransaction({
 }) {
   const safeDetails = details && typeof details === "object" ? details : {}
 
-  return await createTransaction({
+  return createTransaction({
     tx,
     type,
     details: safeDetails,
@@ -300,7 +306,7 @@ export async function createNutritionalPlanTransaction({
 }) {
   const safeDetails = details && typeof details === "object" ? details : {}
 
-  return await createTransaction({
+  return createTransaction({
     tx,
     type,
     details: safeDetails,
@@ -331,12 +337,66 @@ export async function createPresetNutritionalPlanTransaction({
 }) {
   const safeDetails = details && typeof details === "object" ? details : {}
 
-  return await createTransaction({
+  return createTransaction({
     tx,
     type,
     details: safeDetails,
     performedById,
     facilityId,
     presetNutritionalPlanId,
+  })
+}
+
+export async function createInvoiceTransaction({
+  tx,
+  type,
+  invoiceId,
+  performedById,
+  facilityId,
+  details,
+}: {
+  tx: Prisma.TransactionClient
+  type: "INVOICE_CREATED" | "INVOICE_UPDATED" | "INVOICE_DELETED"
+  invoiceId: string
+  performedById: string
+  facilityId: string
+  details?: Prisma.JsonValue
+}) {
+  const safeDetails = details && typeof details === "object" ? details : {}
+
+  return createTransaction({
+    tx,
+    type,
+    details: safeDetails,
+    performedById,
+    facilityId,
+    invoiceId,
+  })
+}
+
+export async function createPaymentTransaction({
+  tx,
+  type,
+  paymentId,
+  performedById,
+  facilityId,
+  details,
+}: {
+  tx: Prisma.TransactionClient
+  type: "PAYMENT_CREATED" | "PAYMENT_UPDATED" | "PAYMENT_DELETED"
+  paymentId: string
+  performedById: string
+  facilityId: string
+  details?: Prisma.JsonValue
+}) {
+  const safeDetails = details && typeof details === "object" ? details : {}
+
+  return createTransaction({
+    tx,
+    type,
+    details: safeDetails,
+    performedById,
+    facilityId,
+    paymentId,
   })
 }
