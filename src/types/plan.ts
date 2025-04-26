@@ -9,7 +9,7 @@ export const columnsPlans: { key: keyof PlanData; label: string }[] = [
   { key: "startDate", label: "Fecha de inicio" },
   { key: "endDate", label: "Fecha de fin" },
   { key: "expirationPeriod", label: "Plazo de vencimiento" },
-  { key: "generateInvoice", label: "¿Permite generación de cuota?" },
+  { key: "generateInvoice", label: "¿Permite generación de factura?" },
   { key: "paymentTypes", label: "Modalidad de cobro" },
   { key: "planType", label: "Tipo" },
   { key: "freeTest", label: "Ofrece clase de prueba" },
