@@ -3,11 +3,11 @@
 import { revalidatePath } from "next/cache"
 import prisma from "@/lib/prisma"
 import { z } from "zod"
-import { PaymentStatus, InvoiceStatus, type Prisma } from "@prisma/client"
+import { PaymentStatus, InvoiceStatus, type Prisma, NotificationType } from "@prisma/client"
 import { validateRequest } from "@/auth"
 import { PaymentValues, PaymentValuesSchema } from "@/lib/validation"
-/* import { createNotification } from "@/lib/notificationHelpers"
-import { createPaymentTransaction } from "@/lib/transactionHelpers" */
+import { createNotification } from "@/lib/notificationHelpers"
+import { createPaymentTransaction } from "@/lib/transactionHelpers"
 import { PaymentActionResponse, DeletedPaymentResponse, ErrorResponse } from "@/types/payment"
 /* import { createClientNotification } from "@/lib/clientNotificationHelpers" */
 
@@ -57,7 +57,6 @@ export async function createPayment(values: PaymentValues): Promise<PaymentActio
 
   return await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     try {
-      console.log("createPayment input:", values)
       const validatedValues = PaymentValuesSchema.parse(values)
 
       const user = await tx.user.findUnique({ where: { id: validatedValues.userId } })
@@ -109,30 +108,9 @@ export async function createPayment(values: PaymentValues): Promise<PaymentActio
         })
       }
 
-     /*  console.log("createPaymentTransaction input:", {
-        type: "PAYMENT_CREATED",
-        paymentId: payment.id,
-        performedById: authUser.id,
-        facilityId: facility.facilityId,
-        details: {
-          action: "Pago creado",
-          paymentId: payment.id,
-          userId: payment.userId,
-          userName: `${payment.user.firstName} ${payment.user.lastName}`,
-          planId: payment.planId,
-          planName: payment.plan.name,
-          amount: payment.amount,
-          status: payment.status,
-          paymentMonth: payment.paymentMonth,
-          transactionId: payment.transactionId,
-          invoiceId: invoice?.id,
-          invoiceNumber: invoice?.invoiceNumber,
-        },
-      })
-
-      await createPaymentTransaction({
+      const transactionInput = {
         tx,
-        type: "PAYMENT_CREATED",
+        type: "PAYMENT_CREATED" as const,
         paymentId: payment.id,
         performedById: authUser.id,
         facilityId: facility.facilityId,
@@ -150,43 +128,32 @@ export async function createPayment(values: PaymentValues): Promise<PaymentActio
           invoiceId: invoice?.id ?? null,
           invoiceNumber: invoice?.invoiceNumber ?? null,
         },
-      })
+      }
 
-      console.log("createNotification input:", {
-        issuerId: authUser.id,
-        facilityId: facility.facilityId,
-        type: "PAYMENT_CREATED",
-        relatedId: payment.id,
-      })
+      await createPaymentTransaction(transactionInput)
 
-      await createNotification({
+      const notificationInput = {
         tx,
         issuerId: authUser.id,
         facilityId: facility.facilityId,
-        type: "PAYMENT_CREATED",
+        type: "PAYMENT_CREATED" as NotificationType,
         relatedId: payment.id,
-      })
+      }
+      
+      await createNotification(notificationInput)
 
-      console.log("createClientNotification input:", {
-        recipientId: payment.userId,
-        issuerId: authUser.id,
-        facilityId: facility.facilityId,
-        type: "PAYMENT_CREATED",
-        relatedId: payment.id,
-        entityName: `Pago para ${payment.plan.name}`,
-        startDate: payment.paymentDate,
-      })
-
-      await createClientNotification({
+      /* const clientNotificationInput = {
         tx,
         recipientId: payment.userId,
         issuerId: authUser.id,
         facilityId: facility.facilityId,
-        type: "PAYMENT_CREATED",
+        type: "PAYMENT_CREATED" as NotificationType,
         relatedId: payment.id,
         entityName: `Pago para ${payment.plan.name}`,
         startDate: payment.paymentDate,
-      }) */
+      }
+      
+      await createClientNotification(clientNotificationInput) */
 
       revalidatePath("/facturacion/pagos")
       revalidatePath("/facturacion/facturas")
@@ -237,7 +204,6 @@ export async function updatePayment(id: string, values: Partial<PaymentValues>):
 
   return await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     try {
-      console.log("updatePayment input:", { id, values })
       const validatedValues = PaymentValuesSchema.partial().parse(values)
 
       const existingPayment = await tx.payment.findUnique({
@@ -280,31 +246,9 @@ export async function updatePayment(id: string, values: Partial<PaymentValues>):
         })
       }
 
-      /* console.log("createPaymentTransaction input:", {
-        type: "PAYMENT_UPDATED",
-        paymentId: payment.id,
-        performedById: authUser.id,
-        facilityId: existingPayment.plan.facilityId,
-        details: {
-          action: "Pago actualizado",
-          paymentId: payment.id,
-          userId: payment.userId,
-          userName: `${payment.user.firstName} ${payment.user.lastName}`,
-          planId: payment.planId,
-          planName: payment.plan.name,
-          amount: payment.amount,
-          status: payment.status,
-          paymentMonth: payment.paymentMonth,
-          transactionId: payment.transactionId,
-          invoiceId: payment.invoice?.id,
-          invoiceNumber: payment.invoice?.invoiceNumber,
-          updatedFields: Object.keys(validatedValues),
-        },
-      })
-
-      await createPaymentTransaction({
+      const transactionInput = {
         tx,
-        type: "PAYMENT_UPDATED",
+        type: "PAYMENT_UPDATED" as const,
         paymentId: payment.id,
         performedById: authUser.id,
         facilityId: existingPayment.plan.facilityId,
@@ -323,47 +267,34 @@ export async function updatePayment(id: string, values: Partial<PaymentValues>):
           invoiceNumber: payment.invoice?.invoiceNumber ?? null,
           updatedFields: Object.keys(validatedValues),
         },
-      })
+      }
+      
+      await createPaymentTransaction(transactionInput)
 
-      console.log("createNotification input:", {
-        issuerId: authUser.id,
-        facilityId: existingPayment.plan.facilityId,
-        type: "PAYMENT_UPDATED",
-        relatedId: payment.id,
-      })
-
-      await createNotification({
+      const notificationInput = {
         tx,
         issuerId: authUser.id,
         facilityId: existingPayment.plan.facilityId,
-        type: "PAYMENT_UPDATED",
+        type: "PAYMENT_UPDATED" as NotificationType,
         relatedId: payment.id,
-      })
+      }
+      
+      await createNotification(notificationInput)
 
-      console.log("createClientNotification input:", {
+      /* const clientNotificationInput = {
+        tx,
         recipientId: payment.userId,
         issuerId: authUser.id,
         facilityId: existingPayment.plan.facilityId,
-        type: "PAYMENT_UPDATED",
+        type: "PAYMENT_UPDATED" as NotificationType,
         relatedId: payment.id,
         entityName: `Pago para ${payment.plan.name}`,
         changeDetails: Object.keys(validatedValues).map(
           (key) => `${key}: ${validatedValues[key as keyof typeof validatedValues]}`
         ),
-      })
-
-      await createClientNotification({
-        tx,
-        recipientId: payment.userId,
-        issuerId: authUser.id,
-        facilityId: existingPayment.plan.facilityId,
-        type: "PAYMENT_UPDATED",
-        relatedId: payment.id,
-        entityName: `Pago para ${payment.plan.name}`,
-        changeDetails: Object.keys(validatedValues).map(
-          (key) => `${key}: ${validatedValues[key as keyof typeof validatedValues]}`
-        ),
-      }) */
+      }
+      
+      await createClientNotification(clientNotificationInput) */
 
       revalidatePath("/facturacion/pagos")
       revalidatePath("/facturacion/facturas")
@@ -416,7 +347,6 @@ export async function deletePayment(ids: string | string[]): Promise<DeletedPaym
 
   return await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     try {
-      console.log("deletePayment input:", { paymentIds })
       const deletedPayments: DeletedPaymentResponse[] = []
 
       for (const id of paymentIds) {
@@ -449,26 +379,9 @@ export async function deletePayment(ids: string | string[]): Promise<DeletedPaym
           },
         })
 
-        /* console.log("createPaymentTransaction input:", {
-          type: "PAYMENT_DELETED",
-          paymentId: deletedPayment.id,
-          performedById: authUser.id,
-          facilityId: existingPayment.plan.facilityId,
-          details: {
-            action: "Pago eliminado",
-            paymentId: deletedPayment.id,
-            userId: deletedPayment.userId,
-            userName: `${deletedPayment.user.firstName} ${deletedPayment.user.lastName}`,
-            planId: deletedPayment.planId,
-            planName: deletedPayment.plan.name,
-            invoiceId: existingPayment.invoice?.id,
-            invoiceNumber: existingPayment.invoice?.invoiceNumber,
-          },
-        })
-
-        await createPaymentTransaction({
+        const transactionInput = {
           tx,
-          type: "PAYMENT_DELETED",
+          type: "PAYMENT_DELETED" as const,
           paymentId: deletedPayment.id,
           performedById: authUser.id,
           facilityId: existingPayment.plan.facilityId,
@@ -482,43 +395,32 @@ export async function deletePayment(ids: string | string[]): Promise<DeletedPaym
             invoiceId: existingPayment.invoice?.id ?? null,
             invoiceNumber: existingPayment.invoice?.invoiceNumber ?? null,
           },
-        })
+        }
+        
+        await createPaymentTransaction(transactionInput)
 
-        console.log("createNotification input:", {
-          issuerId: authUser.id,
-          facilityId: existingPayment.plan.facilityId,
-          type: "PAYMENT_DELETED",
-          relatedId: deletedPayment.id,
-        })
-
-        await createNotification({
+        const notificationInput = {
           tx,
           issuerId: authUser.id,
           facilityId: existingPayment.plan.facilityId,
-          type: "PAYMENT_DELETED",
+          type: "PAYMENT_DELETED" as NotificationType,
           relatedId: deletedPayment.id,
-        })
+        }
+        
+        await createNotification(notificationInput)
 
-        console.log("createClientNotification input:", {
-          recipientId: deletedPayment.userId,
-          issuerId: authUser.id,
-          facilityId: existingPayment.plan.facilityId,
-          type: "PAYMENT_DELETED",
-          relatedId: deletedPayment.id,
-          entityName: `Pago para ${deletedPayment.plan.name}`,
-          endDate: new Date(),
-        })
-
-        await createClientNotification({
+        /* const clientNotificationInput = {
           tx,
           recipientId: deletedPayment.userId,
           issuerId: authUser.id,
           facilityId: existingPayment.plan.facilityId,
-          type: "PAYMENT_DELETED",
+          type: "PAYMENT_DELETED" as NotificationType,
           relatedId: deletedPayment.id,
           entityName: `Pago para ${deletedPayment.plan.name}`,
           endDate: new Date(),
-        }) */
+        }
+        
+        await createClientNotification(clientNotificationInput) */
 
         deletedPayments.push({
           success: true,

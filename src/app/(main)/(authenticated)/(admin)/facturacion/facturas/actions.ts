@@ -2,13 +2,13 @@
 
 import { revalidatePath } from "next/cache"
 import { z } from "zod"
-import { InvoiceStatus, type Prisma } from "@prisma/client"
+import { InvoiceStatus, NotificationType, type Prisma } from "@prisma/client"
 import prisma from "@/lib/prisma"
 import { validateRequest } from "@/auth"
 import { InvoiceValues, InvoiceValuesSchema } from "@/lib/validation"
-/* import { createNotification } from "@/lib/notificationHelpers"
-import { createInvoiceTransaction } from "@/lib/transactionHelpers" */
 import { InvoiceResponse, DeletedInvoiceResponse, ErrorResponse } from "@/types/invoice"
+import { createInvoiceTransaction } from "@/lib/transactionHelpers"
+import { createNotification } from "@/lib/notificationHelpers"
 /* import { createClientNotification } from "@/lib/clientNotificationHelpers" */
 
 export async function getInvoiceById(id: string): Promise<(InvoiceValues & { id: string }) | null> {
@@ -57,7 +57,6 @@ export async function createInvoice(values: InvoiceValues): Promise<InvoiceRespo
 
   return await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     try {
-      console.log("createInvoice input:", values)
       const validatedValues = InvoiceValuesSchema.parse(values)
 
       const user = await tx.user.findUnique({ where: { id: validatedValues.userId } })
@@ -87,8 +86,9 @@ export async function createInvoice(values: InvoiceValues): Promise<InvoiceRespo
         },
       })
 
-      /* console.log("createInvoiceTransaction input:", {
-        type: "INVOICE_CREATED",
+      const transactionInput = {
+        tx,
+        type: "INVOICE_CREATED" as const,
         invoiceId: invoice.id,
         performedById: authUser.id,
         facilityId: facility.facilityId,
@@ -105,64 +105,32 @@ export async function createInvoice(values: InvoiceValues): Promise<InvoiceRespo
           dueDate: invoice.dueDate.toISOString(),
           period: invoice.period,
         },
-      })
+      }
 
-      await createInvoiceTransaction({
-        tx,
-        type: "INVOICE_CREATED",
-        invoiceId: invoice.id,
-        performedById: authUser.id,
-        facilityId: facility.facilityId,
-        details: {
-          action: "Factura creada",
-          invoiceId: invoice.id,
-          invoiceNumber: invoice.invoiceNumber,
-          userId: invoice.userId,
-          userName: `${invoice.user.firstName} ${invoice.user.lastName}`,
-          planId: invoice.planId,
-          planName: invoice.plan.name,
-          amount: invoice.amount,
-          status: invoice.status,
-          dueDate: invoice.dueDate.toISOString(),
-          period: invoice.period,
-        },
-      })
+      await createInvoiceTransaction(transactionInput)
 
-      console.log("createNotification input:", {
-        issuerId: authUser.id,
-        facilityId: facility.facilityId,
-        type: "INVOICE_CREATED",
-        relatedId: invoice.id,
-      })
-
-      await createNotification({
+      const notificationInput = {
         tx,
         issuerId: authUser.id,
         facilityId: facility.facilityId,
-        type: "INVOICE_CREATED",
+        type: "INVOICE_CREATED" as NotificationType,
         relatedId: invoice.id,
-      })
+      }
 
-      console.log("createClientNotification input:", {
-        recipientId: invoice.userId,
-        issuerId: authUser.id,
-        facilityId: facility.facilityId,
-        type: "INVOICE_CREATED",
-        relatedId: invoice.id,
-        entityName: `Factura ${invoice.invoiceNumber}`,
-        startDate: invoice.issueDate,
-      })
+      await createNotification(notificationInput)
 
-      await createClientNotification({
+      /* const clientNotificationInput = {
         tx,
         recipientId: invoice.userId,
         issuerId: authUser.id,
         facilityId: facility.facilityId,
-        type: "INVOICE_CREATED",
+        type: "INVOICE_CREATED" as NotificationType,
         relatedId: invoice.id,
         entityName: `Factura ${invoice.invoiceNumber}`,
         startDate: invoice.issueDate,
-      }) */
+      }
+
+      await createClientNotification(clientNotificationInput) */
 
       revalidatePath("/facturacion/facturas")
       return {
@@ -199,7 +167,6 @@ export async function updateInvoice(id: string, values: Partial<InvoiceValues>):
 
   return await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     try {
-      console.log("updateInvoice input:", { id, values })
       const validatedValues = InvoiceValuesSchema.partial().parse(values)
 
       const existingInvoice = await tx.invoice.findUnique({
@@ -232,8 +199,9 @@ export async function updateInvoice(id: string, values: Partial<InvoiceValues>):
         },
       })
 
-      /* console.log("createInvoiceTransaction input:", {
-        type: "INVOICE_UPDATED",
+      const transactionInput = {
+        tx,
+        type: "INVOICE_UPDATED" as const,
         invoiceId: invoice.id,
         performedById: authUser.id,
         facilityId: existingInvoice.plan.facilityId,
@@ -251,69 +219,34 @@ export async function updateInvoice(id: string, values: Partial<InvoiceValues>):
           period: invoice.period,
           updatedFields: Object.keys(validatedValues),
         },
-      })
+      }
+      
+      await createInvoiceTransaction(transactionInput)
 
-      await createInvoiceTransaction({
-        tx,
-        type: "INVOICE_UPDATED",
-        invoiceId: invoice.id,
-        performedById: authUser.id,
-        facilityId: existingInvoice.plan.facilityId,
-        details: {
-          action: "Factura actualizada",
-          invoiceId: invoice.id,
-          invoiceNumber: invoice.invoiceNumber,
-          userId: invoice.userId,
-          userName: `${invoice.user.firstName} ${invoice.user.lastName}`,
-          planId: invoice.planId,
-          planName: invoice.plan.name,
-          amount: invoice.amount,
-          status: invoice.status,
-          dueDate: invoice.dueDate.toISOString(),
-          period: invoice.period,
-          updatedFields: Object.keys(validatedValues),
-        },
-      })
-
-      console.log("createNotification input:", {
-        issuerId: authUser.id,
-        facilityId: existingInvoice.plan.facilityId,
-        type: "INVOICE_UPDATED",
-        relatedId: invoice.id,
-      })
-
-      await createNotification({
+      const notificationInput = {
         tx,
         issuerId: authUser.id,
         facilityId: existingInvoice.plan.facilityId,
-        type: "INVOICE_UPDATED",
+        type: "INVOICE_UPDATED" as NotificationType,
         relatedId: invoice.id,
-      })
+      }
+      
+      await createNotification(notificationInput)
 
-      console.log("createClientNotification input:", {
+      /* const clientNotificationInput = {
+        tx,
         recipientId: invoice.userId,
         issuerId: authUser.id,
         facilityId: existingInvoice.plan.facilityId,
-        type: "INVOICE_UPDATED",
+        type: "INVOICE_UPDATED" as NotificationType,
         relatedId: invoice.id,
         entityName: `Factura ${invoice.invoiceNumber}`,
         changeDetails: Object.keys(validatedValues).map(
           (key) => `${key}: ${validatedValues[key as keyof typeof validatedValues]}`
         ),
-      })
-
-      await createClientNotification({
-        tx,
-        recipientId: invoice.userId,
-        issuerId: authUser.id,
-        facilityId: existingInvoice.plan.facilityId,
-        type: "INVOICE_UPDATED",
-        relatedId: invoice.id,
-        entityName: `Factura ${invoice.invoiceNumber}`,
-        changeDetails: Object.keys(validatedValues).map(
-          (key) => `${key}: ${validatedValues[key as keyof typeof validatedValues]}`
-        ),
-      }) */
+      }
+      
+      await createClientNotification(clientNotificationInput) */
 
       revalidatePath("/facturacion/facturas")
       return {
@@ -352,7 +285,6 @@ export async function deleteInvoice(ids: string | string[]): Promise<DeletedInvo
 
   return await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     try {
-      console.log("deleteInvoice input:", { invoiceIds })
       const deletedInvoices: DeletedInvoiceResponse[] = []
 
       for (const id of invoiceIds) {
@@ -380,8 +312,9 @@ export async function deleteInvoice(ids: string | string[]): Promise<DeletedInvo
           },
         })
 
-        /* console.log("createInvoiceTransaction input:", {
-          type: "INVOICE_DELETED",
+        const transactionInput = {
+          tx,
+          type: "INVOICE_DELETED" as const,
           invoiceId: deletedInvoice.id,
           performedById: authUser.id,
           facilityId: existingInvoice.plan.facilityId,
@@ -394,60 +327,32 @@ export async function deleteInvoice(ids: string | string[]): Promise<DeletedInvo
             planId: deletedInvoice.planId,
             planName: deletedInvoice.plan.name,
           },
-        })
+        }
+        
+        await createInvoiceTransaction(transactionInput)
 
-        await createInvoiceTransaction({
-          tx,
-          type: "INVOICE_DELETED",
-          invoiceId: deletedInvoice.id,
-          performedById: authUser.id,
-          facilityId: existingInvoice.plan.facilityId,
-          details: {
-            action: "Factura eliminada",
-            invoiceId: deletedInvoice.id,
-            invoiceNumber: deletedInvoice.invoiceNumber,
-            userId: deletedInvoice.userId,
-            userName: `${deletedInvoice.user.firstName} ${deletedInvoice.user.lastName}`,
-            planId: deletedInvoice.planId,
-            planName: deletedInvoice.plan.name,
-          },
-        })
-
-        console.log("createNotification input:", {
-          issuerId: authUser.id,
-          facilityId: existingInvoice.plan.facilityId,
-          type: "INVOICE_DELETED",
-          relatedId: deletedInvoice.id,
-        })
-
-        await createNotification({
+        const notificationInput = {
           tx,
           issuerId: authUser.id,
           facilityId: existingInvoice.plan.facilityId,
-          type: "INVOICE_DELETED",
+          type: "INVOICE_DELETED" as NotificationType,
           relatedId: deletedInvoice.id,
-        })
+        }
+        
+        await createNotification(notificationInput)
 
-        console.log("createClientNotification input:", {
-          recipientId: deletedInvoice.userId,
-          issuerId: authUser.id,
-          facilityId: existingInvoice.plan.facilityId,
-          type: "INVOICE_DELETED",
-          relatedId: deletedInvoice.id,
-          entityName: `Factura ${deletedInvoice.invoiceNumber}`,
-          endDate: new Date(),
-        })
-
-        await createClientNotification({
+        /* const clientNotificationInput = {
           tx,
           recipientId: deletedInvoice.userId,
           issuerId: authUser.id,
           facilityId: existingInvoice.plan.facilityId,
-          type: "INVOICE_DELETED",
+          type: "INVOICE_DELETED" as NotificationType,
           relatedId: deletedInvoice.id,
           entityName: `Factura ${deletedInvoice.invoiceNumber}`,
           endDate: new Date(),
-        }) */
+        }
+
+        await createClientNotification(clientNotificationInput) */
 
         deletedInvoices.push({
           success: true,
