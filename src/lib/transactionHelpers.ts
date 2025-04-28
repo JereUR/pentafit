@@ -352,33 +352,6 @@ export async function createPresetNutritionalPlanTransaction({
   })
 }
 
-export async function createInvoiceTransaction({
-  tx,
-  type,
-  invoiceId,
-  performedById,
-  facilityId,
-  details,
-}: {
-  tx: Prisma.TransactionClient
-  type: "INVOICE_CREATED" | "INVOICE_UPDATED" | "INVOICE_DELETED"
-  invoiceId: string
-  performedById: string
-  facilityId: string
-  details?: Prisma.JsonValue
-}) {
-  const safeDetails = details && typeof details === "object" ? details : {}
-
-  return createTransaction({
-    tx,
-    type,
-    details: safeDetails,
-    performedById,
-    facilityId,
-    invoiceId,
-  })
-}
-
 export async function createPaymentTransaction({
   tx,
   type,
@@ -394,14 +367,51 @@ export async function createPaymentTransaction({
   facilityId: string
   details?: Prisma.JsonValue
 }) {
-  const safeDetails = details && typeof details === "object" ? details : {}
-
-  return createTransaction({
-    tx,
-    type,
-    details: safeDetails,
-    performedById,
-    facilityId,
-    paymentId,
+  if (!details) {
+    console.warn("Details is null or undefined, using empty object")
+    details = {}
+  }
+  const transaction = await tx.transaction.create({
+    data: {
+      type,
+      paymentId,
+      performedById,
+      facilityId,
+      details,
+    },
   })
+  
+  return transaction
+}
+
+export async function createInvoiceTransaction({
+  tx,
+  type,
+  invoiceId,
+  performedById,
+  facilityId,
+  details,
+}: {
+  tx: Prisma.TransactionClient
+  type: "INVOICE_CREATED" | "INVOICE_UPDATED" | "INVOICE_DELETED"
+  invoiceId: string
+  performedById: string
+  facilityId: string
+  details?: Prisma.JsonValue
+}) {
+  if (!details) {
+    console.warn("Details is null or undefined, using empty object")
+    details = {}
+  }
+  const transaction = await tx.transaction.create({
+    data: {
+      type,
+      invoiceId,
+      performedById,
+      facilityId,
+      details,
+    },
+  })
+  
+  return transaction
 }

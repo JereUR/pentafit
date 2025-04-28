@@ -6,10 +6,8 @@ export async function createClientNotification({
   tx,
   ...details
 }: ClientNotificationDetails & {
-  tx: Prisma.TransactionClient;
+  tx: Prisma.TransactionClient
 }) {
-  console.log("createClientNotification input:", details); // Log de entrada
-
   const recipient = await tx.user.findUnique({
     where: { id: details.recipientId },
     select: {
@@ -17,11 +15,10 @@ export async function createClientNotification({
       lastName: true,
       role: true,
     },
-  });
+  })
 
   if (!recipient || recipient.role !== Role.CLIENT) {
-    console.log("Recipient not found or not a client:", details.recipientId);
-    return;
+    return
   }
 
   const issuer = await tx.user.findUnique({
@@ -30,17 +27,17 @@ export async function createClientNotification({
       firstName: true,
       lastName: true,
     },
-  });
+  })
 
   const issuerName = issuer
     ? `${issuer.firstName} ${issuer.lastName}`
-    : "Un miembro del staff";
+    : "Un miembro del staff"
 
-  const message = generatePersonalizedMessage(details, recipient, issuerName);
+  const message = generatePersonalizedMessage(details, recipient, issuerName)
 
   if (!message) {
-    console.error("Failed to generate notification message:", { details, recipient, issuerName });
-    throw new Error("Failed to generate notification message");
+    console.error("Failed to generate notification message:", { details, recipient, issuerName })
+    throw new Error("Failed to generate notification message")
   }
 
   const notificationData: NotificationInputData = {
@@ -50,22 +47,21 @@ export async function createClientNotification({
     type: details.type,
     message,
     read: false,
-  };
-
-  if (details.relatedId && typeof details.relatedId === "string") {
-    const relatedField = getRelatedIdField(details.type);
-    notificationData[relatedField] = details.relatedId;
   }
 
-  console.log("notificationData:", notificationData); // Log antes de crear la notificación
+  if (details.relatedId && typeof details.relatedId === "string") {
+    const relatedField = getRelatedIdField(details.type)
+    notificationData[relatedField] = details.relatedId
+  }
+
 
   try {
     await tx.notification.create({
       data: notificationData,
-    });
+    })
   } catch (error) {
-    console.error("Error in tx.notification.create:", error, { notificationData });
-    throw error;
+    console.error("Error in tx.notification.create:", error, { notificationData })
+    throw error
   }
 }
 

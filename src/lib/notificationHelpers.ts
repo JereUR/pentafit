@@ -17,8 +17,6 @@ export async function createNotification({
   relatedId?: string
   assignedUsers?: string[]
 }) {
-  console.log("createNotification input:", { issuerId, facilityId, type, relatedId, assignedUsers })
-
   const facility = await tx.facility.findUnique({
     where: { id: facilityId },
     include: {
@@ -89,8 +87,6 @@ export async function createNotification({
       return notificationData
     },
   )
-
-  console.log("notifications for createMany:", notifications) // Log antes de crear las notificaciones
 
   if (notifications.length > 0) {
     try {
