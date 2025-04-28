@@ -34,7 +34,12 @@ export async function createTransaction({
   paymentId?: string
 }) {
   try {
-    const safeDetails = details && typeof details === "object" ? details : {}
+    const safeDetails = details && typeof details === "object" ? details : {};
+
+    // Validar que los campos requeridos no sean null
+    if (!performedById || !facilityId) {
+      throw new Error("performedById and facilityId are required");
+    }
 
     const data = {
       type,
@@ -51,16 +56,16 @@ export async function createTransaction({
       ...(presetNutritionalPlanId && { presetNutritionalPlanId }),
       ...(invoiceId && { invoiceId }),
       ...(paymentId && { paymentId }),
-    }
+    };
 
     const transaction = await tx.transaction.create({
       data,
-    })
+    });
 
-    return transaction
+    return transaction;
   } catch (error) {
-    console.error("Error creating transaction:", error)
-    throw error
+    console.error("Error creating transaction:", error);
+    throw error;
   }
 }
 

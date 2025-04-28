@@ -1,4 +1,6 @@
 import { type Prisma, Role, type NotificationType } from "@prisma/client"
+import { getRelatedIdField } from "./utils"
+import { NotificationInputData } from "@/types/notification"
 
 export async function createNotification({
   tx,
@@ -15,6 +17,8 @@ export async function createNotification({
   relatedId?: string
   assignedUsers?: string[]
 }) {
+  console.log("createNotification input:", { issuerId, facilityId, type, relatedId, assignedUsers })
+
   const facility = await tx.facility.findUnique({
     where: { id: facilityId },
     include: {
@@ -31,7 +35,10 @@ export async function createNotification({
     },
   })
 
-  if (!facility) throw new Error("Facility not found")
+  if (!facility) {
+    console.error("Facility not found:", facilityId)
+    throw new Error("Facility not found")
+  }
 
   let recipientUsers = facility.users.filter(
     (userFacility) =>
@@ -64,36 +71,33 @@ export async function createNotification({
     recipientUsers = [...recipientUsers, ...assignedFacilityUsers]
   }
 
-  const notifications = recipientUsers.map((userFacility) => ({
-    recipientId: userFacility.userId,
-    issuerId,
-    facilityId,
-    type,
-    ...(relatedId && {
-      [type.toLowerCase().includes("activity")
-        ? "activityId"
-        : type.toLowerCase().includes("plan") &&
-            !type.toLowerCase().includes("nutritional")
-          ? "planId"
-          : type.toLowerCase().includes("diary")
-            ? "diaryId"
-            : type.toLowerCase().startsWith("routine") ||
-                type.toLowerCase().startsWith("assign_routine") ||
-                type.toLowerCase().startsWith("unassign_routine")
-              ? "routineId"
-              : type.toLowerCase().startsWith("preset_routine")
-                ? "presetRoutineId"
-                : type.toLowerCase().startsWith("nutritional_plan") ||
-                    type.toLowerCase().startsWith("assign_nutritional_plan") ||
-                    type.toLowerCase().startsWith("unassign_nutritional_plan")
-                  ? "nutritionalPlanId"
-                  : type.toLowerCase().startsWith("preset_nutritional_plan")
-                    ? "presetNutritionalPlanId"
-                    : "userId"]: relatedId,
-    }),
-  }))
+  const notifications: NotificationInputData[] = recipientUsers.map(
+    (userFacility) => {
+      const notificationData: NotificationInputData = {
+        recipientId: userFacility.userId,
+        issuerId,
+        facilityId,
+        type,
+        read: false,
+      }
+
+      if (relatedId && typeof relatedId === "string") {
+        const relatedField = getRelatedIdField(type)
+        notificationData[relatedField] = relatedId
+      }
+
+      return notificationData
+    },
+  )
+
+  console.log("notifications for createMany:", notifications) // Log antes de crear las notificaciones
 
   if (notifications.length > 0) {
-    await tx.notification.createMany({ data: notifications })
+    try {
+      await tx.notification.createMany({ data: notifications })
+    } catch (error) {
+      console.error("Error in tx.notification.createMany:", error, { notifications })
+      throw error
+    }
   }
 }

@@ -1,25 +1,15 @@
-import { type Prisma, type NotificationType, Role } from "@prisma/client"
-import { formatDate } from "./utils"
-
-type ClientNotificationDetails = {
-  recipientId: string
-  issuerId: string
-  facilityId: string
-  type: NotificationType
-  relatedId?: string
-  entityName?: string
-  startDate?: Date
-  endDate?: Date
-  changeDetails?: string[]
-  replacedEntityName?: string
-}
+import { type Prisma, Role } from "@prisma/client"
+import { formatDate, getRelatedIdField} from "./utils"
+import { ClientNotificationDetails, NotificationInputData } from "@/types/notification"
 
 export async function createClientNotification({
   tx,
   ...details
 }: ClientNotificationDetails & {
-  tx: Prisma.TransactionClient
+  tx: Prisma.TransactionClient;
 }) {
+  console.log("createClientNotification input:", details); // Log de entrada
+
   const recipient = await tx.user.findUnique({
     where: { id: details.recipientId },
     select: {
@@ -27,9 +17,12 @@ export async function createClientNotification({
       lastName: true,
       role: true,
     },
-  })
+  });
 
-  if (!recipient || recipient.role !== Role.CLIENT) return
+  if (!recipient || recipient.role !== Role.CLIENT) {
+    console.log("Recipient not found or not a client:", details.recipientId);
+    return;
+  }
 
   const issuer = await tx.user.findUnique({
     where: { id: details.issuerId },
@@ -37,55 +30,43 @@ export async function createClientNotification({
       firstName: true,
       lastName: true,
     },
-  })
+  });
 
   const issuerName = issuer
     ? `${issuer.firstName} ${issuer.lastName}`
-    : "Un miembro del staff"
+    : "Un miembro del staff";
 
-  const message = generatePersonalizedMessage(details, recipient, issuerName)
+  const message = generatePersonalizedMessage(details, recipient, issuerName);
 
-  await tx.notification.create({
-    data: {
-      recipientId: details.recipientId,
-      issuerId: details.issuerId,
-      facilityId: details.facilityId,
-      type: details.type,
-      message,
-      read: false,
-      ...(details.relatedId && {
-        [getRelatedIdField(details.type)]: details.relatedId,
-      }),
-    },
-  })
-}
+  if (!message) {
+    console.error("Failed to generate notification message:", { details, recipient, issuerName });
+    throw new Error("Failed to generate notification message");
+  }
 
-function getRelatedIdField(type: NotificationType): string {
-  if (type.toLowerCase().includes("activity")) return "activityId"
-  if (
-    type.toLowerCase().includes("plan") &&
-    !type.toLowerCase().includes("nutritional")
-  )
-    return "planId"
-  if (type.toLowerCase().includes("diary")) return "diaryId"
-  if (
-    type.toLowerCase().startsWith("routine") ||
-    type.toLowerCase().startsWith("assign_routine") ||
-    type.toLowerCase().startsWith("unassign_routine")
-  )
-    return "routineId"
-  if (type.toLowerCase().startsWith("preset_routine")) return "presetRoutineId"
-  if (
-    type.toLowerCase().startsWith("nutritional_plan") ||
-    type.toLowerCase().startsWith("assign_nutritional_plan") ||
-    type.toLowerCase().startsWith("unassign_nutritional_plan")
-  )
-    return "nutritionalPlanId"
-  if (type.toLowerCase().startsWith("preset_nutritional_plan"))
-    return "presetNutritionalPlanId"
-  if(type.toLowerCase().startsWith("invoice")) return "invoiceId"
-  if (type.toLowerCase().startsWith("payment")) return "paymentId"
-  return "userId"
+  const notificationData: NotificationInputData = {
+    recipientId: details.recipientId,
+    issuerId: details.issuerId,
+    facilityId: details.facilityId,
+    type: details.type,
+    message,
+    read: false,
+  };
+
+  if (details.relatedId && typeof details.relatedId === "string") {
+    const relatedField = getRelatedIdField(details.type);
+    notificationData[relatedField] = details.relatedId;
+  }
+
+  console.log("notificationData:", notificationData); // Log antes de crear la notificación
+
+  try {
+    await tx.notification.create({
+      data: notificationData,
+    });
+  } catch (error) {
+    console.error("Error in tx.notification.create:", error, { notificationData });
+    throw error;
+  }
 }
 
 function generatePersonalizedMessage(
