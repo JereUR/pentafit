@@ -3,13 +3,10 @@
 import { revalidatePath } from "next/cache"
 import prisma from "@/lib/prisma"
 import { z } from "zod"
-import { PaymentStatus, InvoiceStatus, type Prisma, NotificationType } from "@prisma/client"
+import { PaymentStatus, InvoiceStatus, type Prisma} from "@prisma/client"
 import { validateRequest } from "@/auth"
 import { PaymentValues, PaymentValuesSchema } from "@/lib/validation"
-import { createNotification } from "@/lib/notificationHelpers"
-import { createPaymentTransaction } from "@/lib/transactionHelpers"
 import { PaymentActionResponse, DeletedPaymentResponse, ErrorResponse } from "@/types/payment"
-/* import { createClientNotification } from "@/lib/clientNotificationHelpers" */
 
 export async function getPaymentById(id: string): Promise<(PaymentValues & { id: string }) | null> {
   try {
@@ -108,7 +105,7 @@ export async function createPayment(values: PaymentValues): Promise<PaymentActio
         })
       }
 
-      const transactionInput = {
+     /*  const transactionInput = {
         tx,
         type: "PAYMENT_CREATED" as const,
         paymentId: payment.id,
@@ -142,7 +139,7 @@ export async function createPayment(values: PaymentValues): Promise<PaymentActio
       
       await createNotification(notificationInput)
 
-      /* const clientNotificationInput = {
+      const clientNotificationInput = {
         tx,
         recipientId: payment.userId,
         issuerId: authUser.id,
@@ -246,7 +243,7 @@ export async function updatePayment(id: string, values: Partial<PaymentValues>):
         })
       }
 
-      const transactionInput = {
+      /* const transactionInput = {
         tx,
         type: "PAYMENT_UPDATED" as const,
         paymentId: payment.id,
@@ -281,7 +278,7 @@ export async function updatePayment(id: string, values: Partial<PaymentValues>):
       
       await createNotification(notificationInput)
 
-      /* const clientNotificationInput = {
+      const clientNotificationInput = {
         tx,
         recipientId: payment.userId,
         issuerId: authUser.id,
@@ -379,7 +376,7 @@ export async function deletePayment(ids: string | string[]): Promise<DeletedPaym
           },
         })
 
-        const transactionInput = {
+        /* const transactionInput = {
           tx,
           type: "PAYMENT_DELETED" as const,
           paymentId: deletedPayment.id,
@@ -409,7 +406,7 @@ export async function deletePayment(ids: string | string[]): Promise<DeletedPaym
         
         await createNotification(notificationInput)
 
-        /* const clientNotificationInput = {
+        const clientNotificationInput = {
           tx,
           recipientId: deletedPayment.userId,
           issuerId: authUser.id,

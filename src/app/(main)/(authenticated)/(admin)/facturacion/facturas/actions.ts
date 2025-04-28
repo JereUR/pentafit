@@ -2,14 +2,11 @@
 
 import { revalidatePath } from "next/cache"
 import { z } from "zod"
-import { InvoiceStatus, NotificationType, type Prisma } from "@prisma/client"
+import { InvoiceStatus, type Prisma } from "@prisma/client"
 import prisma from "@/lib/prisma"
 import { validateRequest } from "@/auth"
 import { InvoiceValues, InvoiceValuesSchema } from "@/lib/validation"
 import { InvoiceResponse, DeletedInvoiceResponse, ErrorResponse } from "@/types/invoice"
-import { createInvoiceTransaction } from "@/lib/transactionHelpers"
-import { createNotification } from "@/lib/notificationHelpers"
-/* import { createClientNotification } from "@/lib/clientNotificationHelpers" */
 
 export async function getInvoiceById(id: string): Promise<(InvoiceValues & { id: string }) | null> {
   try {
@@ -86,7 +83,7 @@ export async function createInvoice(values: InvoiceValues): Promise<InvoiceRespo
         },
       })
 
-      const transactionInput = {
+      /* const transactionInput = {
         tx,
         type: "INVOICE_CREATED" as const,
         invoiceId: invoice.id,
@@ -119,7 +116,7 @@ export async function createInvoice(values: InvoiceValues): Promise<InvoiceRespo
 
       await createNotification(notificationInput)
 
-      /* const clientNotificationInput = {
+      const clientNotificationInput = {
         tx,
         recipientId: invoice.userId,
         issuerId: authUser.id,
@@ -199,7 +196,7 @@ export async function updateInvoice(id: string, values: Partial<InvoiceValues>):
         },
       })
 
-      const transactionInput = {
+      /* const transactionInput = {
         tx,
         type: "INVOICE_UPDATED" as const,
         invoiceId: invoice.id,
@@ -233,7 +230,7 @@ export async function updateInvoice(id: string, values: Partial<InvoiceValues>):
       
       await createNotification(notificationInput)
 
-      /* const clientNotificationInput = {
+      const clientNotificationInput = {
         tx,
         recipientId: invoice.userId,
         issuerId: authUser.id,
@@ -312,7 +309,7 @@ export async function deleteInvoice(ids: string | string[]): Promise<DeletedInvo
           },
         })
 
-        const transactionInput = {
+        /* const transactionInput = {
           tx,
           type: "INVOICE_DELETED" as const,
           invoiceId: deletedInvoice.id,
@@ -341,7 +338,7 @@ export async function deleteInvoice(ids: string | string[]): Promise<DeletedInvo
         
         await createNotification(notificationInput)
 
-        /* const clientNotificationInput = {
+        const clientNotificationInput = {
           tx,
           recipientId: deletedInvoice.userId,
           issuerId: authUser.id,
