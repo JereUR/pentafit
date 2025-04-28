@@ -6,8 +6,8 @@ import { z } from "zod"
 import { PaymentStatus, InvoiceStatus, type Prisma } from "@prisma/client"
 import { validateRequest } from "@/auth"
 import { PaymentValues, PaymentValuesSchema } from "@/lib/validation"
-import { createNotification} from "@/lib/notificationHelpers"
-import { createPaymentTransaction } from "@/lib/transactionHelpers"
+/* import { createNotification } from "@/lib/notificationHelpers"
+import { createPaymentTransaction } from "@/lib/transactionHelpers" */
 import { PaymentActionResponse, DeletedPaymentResponse, ErrorResponse } from "@/types/payment"
 /* import { createClientNotification } from "@/lib/clientNotificationHelpers" */
 
@@ -57,6 +57,7 @@ export async function createPayment(values: PaymentValues): Promise<PaymentActio
 
   return await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     try {
+      console.log("createPayment input:", values)
       const validatedValues = PaymentValuesSchema.parse(values)
 
       const user = await tx.user.findUnique({ where: { id: validatedValues.userId } })
@@ -64,7 +65,10 @@ export async function createPayment(values: PaymentValues): Promise<PaymentActio
       const plan = await tx.plan.findUnique({ where: { id: validatedValues.planId } })
       if (!plan) throw new Error("Plan not found")
       const facility = await tx.plan.findUnique({ where: { id: validatedValues.planId }, select: { facilityId: true } })
-      if (!facility) throw new Error("Facility not found")
+      if (!facility || !facility.facilityId) {
+        console.error("Facility not found or invalid facilityId:", validatedValues.planId)
+        throw new Error("Facility not found")
+      }
 
       const payment = await tx.payment.create({
         data: {
@@ -105,8 +109,7 @@ export async function createPayment(values: PaymentValues): Promise<PaymentActio
         })
       }
 
-      await createPaymentTransaction({
-        tx,
+     /*  console.log("createPaymentTransaction input:", {
         type: "PAYMENT_CREATED",
         paymentId: payment.id,
         performedById: authUser.id,
@@ -127,6 +130,35 @@ export async function createPayment(values: PaymentValues): Promise<PaymentActio
         },
       })
 
+      await createPaymentTransaction({
+        tx,
+        type: "PAYMENT_CREATED",
+        paymentId: payment.id,
+        performedById: authUser.id,
+        facilityId: facility.facilityId,
+        details: {
+          action: "Pago creado",
+          paymentId: payment.id,
+          userId: payment.userId,
+          userName: `${payment.user.firstName} ${payment.user.lastName}`,
+          planId: payment.planId,
+          planName: payment.plan.name,
+          amount: payment.amount,
+          status: payment.status,
+          paymentMonth: payment.paymentMonth,
+          transactionId: payment.transactionId ?? null,
+          invoiceId: invoice?.id ?? null,
+          invoiceNumber: invoice?.invoiceNumber ?? null,
+        },
+      })
+
+      console.log("createNotification input:", {
+        issuerId: authUser.id,
+        facilityId: facility.facilityId,
+        type: "PAYMENT_CREATED",
+        relatedId: payment.id,
+      })
+
       await createNotification({
         tx,
         issuerId: authUser.id,
@@ -135,7 +167,17 @@ export async function createPayment(values: PaymentValues): Promise<PaymentActio
         relatedId: payment.id,
       })
 
-      /* await createClientNotification({
+      console.log("createClientNotification input:", {
+        recipientId: payment.userId,
+        issuerId: authUser.id,
+        facilityId: facility.facilityId,
+        type: "PAYMENT_CREATED",
+        relatedId: payment.id,
+        entityName: `Pago para ${payment.plan.name}`,
+        startDate: payment.paymentDate,
+      })
+
+      await createClientNotification({
         tx,
         recipientId: payment.userId,
         issuerId: authUser.id,
@@ -144,7 +186,7 @@ export async function createPayment(values: PaymentValues): Promise<PaymentActio
         relatedId: payment.id,
         entityName: `Pago para ${payment.plan.name}`,
         startDate: payment.paymentDate,
-      }) */ 
+      }) */
 
       revalidatePath("/facturacion/pagos")
       revalidatePath("/facturacion/facturas")
@@ -180,7 +222,7 @@ export async function createPayment(values: PaymentValues): Promise<PaymentActio
           : null,
       } satisfies PaymentActionResponse
     } catch (error) {
-      console.error("Error creating payment:", error)
+      console.error("Transaction error in createPayment:", error, { input: values })
       if (error instanceof z.ZodError) {
         return { error: "Invalid input data" }
       }
@@ -195,6 +237,7 @@ export async function updatePayment(id: string, values: Partial<PaymentValues>):
 
   return await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     try {
+      console.log("updatePayment input:", { id, values })
       const validatedValues = PaymentValuesSchema.partial().parse(values)
 
       const existingPayment = await tx.payment.findUnique({
@@ -205,6 +248,10 @@ export async function updatePayment(id: string, values: Partial<PaymentValues>):
         },
       })
       if (!existingPayment) throw new Error("Payment not found")
+      if (!existingPayment.plan.facilityId) {
+        console.error("Invalid facilityId in existingPayment:", existingPayment)
+        throw new Error("Facility not found")
+      }
 
       const payment = await tx.payment.update({
         where: { id },
@@ -233,8 +280,7 @@ export async function updatePayment(id: string, values: Partial<PaymentValues>):
         })
       }
 
-      await createPaymentTransaction({
-        tx,
+      /* console.log("createPaymentTransaction input:", {
         type: "PAYMENT_UPDATED",
         paymentId: payment.id,
         performedById: authUser.id,
@@ -256,6 +302,36 @@ export async function updatePayment(id: string, values: Partial<PaymentValues>):
         },
       })
 
+      await createPaymentTransaction({
+        tx,
+        type: "PAYMENT_UPDATED",
+        paymentId: payment.id,
+        performedById: authUser.id,
+        facilityId: existingPayment.plan.facilityId,
+        details: {
+          action: "Pago actualizado",
+          paymentId: payment.id,
+          userId: payment.userId,
+          userName: `${payment.user.firstName} ${payment.user.lastName}`,
+          planId: payment.planId,
+          planName: payment.plan.name,
+          amount: payment.amount,
+          status: payment.status,
+          paymentMonth: payment.paymentMonth,
+          transactionId: payment.transactionId ?? null,
+          invoiceId: payment.invoice?.id ?? null,
+          invoiceNumber: payment.invoice?.invoiceNumber ?? null,
+          updatedFields: Object.keys(validatedValues),
+        },
+      })
+
+      console.log("createNotification input:", {
+        issuerId: authUser.id,
+        facilityId: existingPayment.plan.facilityId,
+        type: "PAYMENT_UPDATED",
+        relatedId: payment.id,
+      })
+
       await createNotification({
         tx,
         issuerId: authUser.id,
@@ -264,7 +340,19 @@ export async function updatePayment(id: string, values: Partial<PaymentValues>):
         relatedId: payment.id,
       })
 
-      /* await createClientNotification({
+      console.log("createClientNotification input:", {
+        recipientId: payment.userId,
+        issuerId: authUser.id,
+        facilityId: existingPayment.plan.facilityId,
+        type: "PAYMENT_UPDATED",
+        relatedId: payment.id,
+        entityName: `Pago para ${payment.plan.name}`,
+        changeDetails: Object.keys(validatedValues).map(
+          (key) => `${key}: ${validatedValues[key as keyof typeof validatedValues]}`
+        ),
+      })
+
+      await createClientNotification({
         tx,
         recipientId: payment.userId,
         issuerId: authUser.id,
@@ -311,7 +399,7 @@ export async function updatePayment(id: string, values: Partial<PaymentValues>):
           : null,
       } satisfies PaymentActionResponse
     } catch (error) {
-      console.error("Error updating payment:", error)
+      console.error("Transaction error in updatePayment:", error, { input: { id, values } })
       if (error instanceof z.ZodError) {
         return { error: "Invalid input data" }
       }
@@ -320,87 +408,137 @@ export async function updatePayment(id: string, values: Partial<PaymentValues>):
   })
 }
 
-export async function deletePayment(id: string): Promise<DeletedPaymentResponse | ErrorResponse> {
+export async function deletePayment(ids: string | string[]): Promise<DeletedPaymentResponse[] | ErrorResponse> {
   const { user: authUser } = await validateRequest()
   if (!authUser) throw new Error("Usuario no autenticado")
 
+  const paymentIds = Array.isArray(ids) ? ids : [ids]
+
   return await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     try {
-      const existingPayment = await tx.payment.findUnique({
-        where: { id },
-        include: {
-          user: { select: { firstName: true, lastName: true } },
-          plan: { select: { name: true, facilityId: true } },
-          invoice: { select: { id: true, invoiceNumber: true } },
-        },
-      })
-      if (!existingPayment) throw new Error("Pago no encontrado")
+      console.log("deletePayment input:", { paymentIds })
+      const deletedPayments: DeletedPaymentResponse[] = []
 
-      await tx.invoice.deleteMany({
-        where: { paymentId: id },
-      })
+      for (const id of paymentIds) {
+        const existingPayment = await tx.payment.findUnique({
+          where: { id },
+          include: {
+            user: { select: { firstName: true, lastName: true } },
+            plan: { select: { name: true, facilityId: true } },
+            invoice: { select: { id: true, invoiceNumber: true } },
+          },
+        })
 
-      const deletedPayment = await tx.payment.delete({
-        where: { id },
-        include: {
-          user: { select: { firstName: true, lastName: true } },
-          plan: { select: { name: true } },
-        },
-      })
+        if (!existingPayment) {
+          throw new Error(`Pago con ID ${id} no encontrado`)
+        }
+        if (!existingPayment.plan.facilityId) {
+          console.error("Invalid facilityId in existingPayment:", existingPayment)
+          throw new Error("Facility not found")
+        }
 
-      await createPaymentTransaction({
-        tx,
-        type: "PAYMENT_DELETED",
-        paymentId: deletedPayment.id,
-        performedById: authUser.id,
-        facilityId: existingPayment.plan.facilityId,
-        details: {
-          action: "Pago eliminado",
+        await tx.invoice.deleteMany({
+          where: { paymentId: id },
+        })
+
+        const deletedPayment = await tx.payment.delete({
+          where: { id },
+          include: {
+            user: { select: { firstName: true, lastName: true } },
+            plan: { select: { name: true } },
+          },
+        })
+
+        /* console.log("createPaymentTransaction input:", {
+          type: "PAYMENT_DELETED",
           paymentId: deletedPayment.id,
-          userId: deletedPayment.userId,
-          userName: `${deletedPayment.user.firstName} ${deletedPayment.user.lastName}`,
-          planId: deletedPayment.planId,
-          planName: deletedPayment.plan.name,
-          invoiceId: existingPayment.invoice?.id,
-          invoiceNumber: existingPayment.invoice?.invoiceNumber,
-        },
-      })
+          performedById: authUser.id,
+          facilityId: existingPayment.plan.facilityId,
+          details: {
+            action: "Pago eliminado",
+            paymentId: deletedPayment.id,
+            userId: deletedPayment.userId,
+            userName: `${deletedPayment.user.firstName} ${deletedPayment.user.lastName}`,
+            planId: deletedPayment.planId,
+            planName: deletedPayment.plan.name,
+            invoiceId: existingPayment.invoice?.id,
+            invoiceNumber: existingPayment.invoice?.invoiceNumber,
+          },
+        })
 
-      await createNotification({
-        tx,
-        issuerId: authUser.id,
-        facilityId: existingPayment.plan.facilityId,
-        type: "PAYMENT_DELETED",
-        relatedId: deletedPayment.id,
-      })
+        await createPaymentTransaction({
+          tx,
+          type: "PAYMENT_DELETED",
+          paymentId: deletedPayment.id,
+          performedById: authUser.id,
+          facilityId: existingPayment.plan.facilityId,
+          details: {
+            action: "Pago eliminado",
+            paymentId: deletedPayment.id,
+            userId: deletedPayment.userId,
+            userName: `${deletedPayment.user.firstName} ${deletedPayment.user.lastName}`,
+            planId: deletedPayment.planId,
+            planName: deletedPayment.plan.name,
+            invoiceId: existingPayment.invoice?.id ?? null,
+            invoiceNumber: existingPayment.invoice?.invoiceNumber ?? null,
+          },
+        })
 
-      /* await createClientNotification({
-        tx,
-        recipientId: deletedPayment.userId,
-        issuerId: authUser.id,
-        facilityId: existingPayment.plan.facilityId,
-        type: "PAYMENT_DELETED",
-        relatedId: deletedPayment.id,
-        entityName: `Pago para ${deletedPayment.plan.name}`,
-        endDate: new Date(),
-      }) */
+        console.log("createNotification input:", {
+          issuerId: authUser.id,
+          facilityId: existingPayment.plan.facilityId,
+          type: "PAYMENT_DELETED",
+          relatedId: deletedPayment.id,
+        })
+
+        await createNotification({
+          tx,
+          issuerId: authUser.id,
+          facilityId: existingPayment.plan.facilityId,
+          type: "PAYMENT_DELETED",
+          relatedId: deletedPayment.id,
+        })
+
+        console.log("createClientNotification input:", {
+          recipientId: deletedPayment.userId,
+          issuerId: authUser.id,
+          facilityId: existingPayment.plan.facilityId,
+          type: "PAYMENT_DELETED",
+          relatedId: deletedPayment.id,
+          entityName: `Pago para ${deletedPayment.plan.name}`,
+          endDate: new Date(),
+        })
+
+        await createClientNotification({
+          tx,
+          recipientId: deletedPayment.userId,
+          issuerId: authUser.id,
+          facilityId: existingPayment.plan.facilityId,
+          type: "PAYMENT_DELETED",
+          relatedId: deletedPayment.id,
+          entityName: `Pago para ${deletedPayment.plan.name}`,
+          endDate: new Date(),
+        }) */
+
+        deletedPayments.push({
+          success: true,
+          deletedPayment: {
+            id: deletedPayment.id,
+            user: deletedPayment.user,
+            plan: deletedPayment.plan,
+          },
+        })
+      }
 
       revalidatePath("/facturacion/pagos")
       revalidatePath("/facturacion/facturas")
-      return {
-        success: true as const,
-        deletedPayment: {
-          id: deletedPayment.id,
-          user: deletedPayment.user,
-          plan: deletedPayment.plan,
-        },
-      } satisfies DeletedPaymentResponse
+      return deletedPayments
     } catch (error) {
-      console.error("Error deleting payment:", error)
+      console.error("Transaction error in deletePayment:", error, { input: { paymentIds } })
       if (error instanceof Error) {
         return { error: error.message }
       }
-      return { error: "Error al eliminar el pago" }
+      return { error: "Error al eliminar los pagos" }
     }
   })
 }

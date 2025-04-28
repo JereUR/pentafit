@@ -6,8 +6,8 @@ import { InvoiceStatus, type Prisma } from "@prisma/client"
 import prisma from "@/lib/prisma"
 import { validateRequest } from "@/auth"
 import { InvoiceValues, InvoiceValuesSchema } from "@/lib/validation"
-import { createNotification} from "@/lib/notificationHelpers"
-import { createInvoiceTransaction } from "@/lib/transactionHelpers"
+/* import { createNotification } from "@/lib/notificationHelpers"
+import { createInvoiceTransaction } from "@/lib/transactionHelpers" */
 import { InvoiceResponse, DeletedInvoiceResponse, ErrorResponse } from "@/types/invoice"
 /* import { createClientNotification } from "@/lib/clientNotificationHelpers" */
 
@@ -57,6 +57,7 @@ export async function createInvoice(values: InvoiceValues): Promise<InvoiceRespo
 
   return await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     try {
+      console.log("createInvoice input:", values)
       const validatedValues = InvoiceValuesSchema.parse(values)
 
       const user = await tx.user.findUnique({ where: { id: validatedValues.userId } })
@@ -64,7 +65,10 @@ export async function createInvoice(values: InvoiceValues): Promise<InvoiceRespo
       const plan = await tx.plan.findUnique({ where: { id: validatedValues.planId } })
       if (!plan) throw new Error("Plan not found")
       const facility = await tx.plan.findUnique({ where: { id: validatedValues.planId }, select: { facilityId: true } })
-      if (!facility) throw new Error("Facility not found")
+      if (!facility || !facility.facilityId) {
+        console.error("Facility not found or invalid facilityId:", validatedValues.planId)
+        throw new Error("Facility not found")
+      }
 
       const invoice = await tx.invoice.create({
         data: {
@@ -80,6 +84,26 @@ export async function createInvoice(values: InvoiceValues): Promise<InvoiceRespo
         include: {
           user: { select: { firstName: true, lastName: true } },
           plan: { select: { name: true } },
+        },
+      })
+
+      /* console.log("createInvoiceTransaction input:", {
+        type: "INVOICE_CREATED",
+        invoiceId: invoice.id,
+        performedById: authUser.id,
+        facilityId: facility.facilityId,
+        details: {
+          action: "Factura creada",
+          invoiceId: invoice.id,
+          invoiceNumber: invoice.invoiceNumber,
+          userId: invoice.userId,
+          userName: `${invoice.user.firstName} ${invoice.user.lastName}`,
+          planId: invoice.planId,
+          planName: invoice.plan.name,
+          amount: invoice.amount,
+          status: invoice.status,
+          dueDate: invoice.dueDate.toISOString(),
+          period: invoice.period,
         },
       })
 
@@ -104,6 +128,13 @@ export async function createInvoice(values: InvoiceValues): Promise<InvoiceRespo
         },
       })
 
+      console.log("createNotification input:", {
+        issuerId: authUser.id,
+        facilityId: facility.facilityId,
+        type: "INVOICE_CREATED",
+        relatedId: invoice.id,
+      })
+
       await createNotification({
         tx,
         issuerId: authUser.id,
@@ -112,7 +143,17 @@ export async function createInvoice(values: InvoiceValues): Promise<InvoiceRespo
         relatedId: invoice.id,
       })
 
-     /*  await createClientNotification({
+      console.log("createClientNotification input:", {
+        recipientId: invoice.userId,
+        issuerId: authUser.id,
+        facilityId: facility.facilityId,
+        type: "INVOICE_CREATED",
+        relatedId: invoice.id,
+        entityName: `Factura ${invoice.invoiceNumber}`,
+        startDate: invoice.issueDate,
+      })
+
+      await createClientNotification({
         tx,
         recipientId: invoice.userId,
         issuerId: authUser.id,
@@ -143,7 +184,7 @@ export async function createInvoice(values: InvoiceValues): Promise<InvoiceRespo
         },
       } satisfies InvoiceResponse
     } catch (error) {
-      console.error("Error creating invoice:", error)
+      console.error("Transaction error in createInvoice:", error, { input: values })
       if (error instanceof z.ZodError) {
         return { error: "Invalid input data" }
       }
@@ -158,6 +199,7 @@ export async function updateInvoice(id: string, values: Partial<InvoiceValues>):
 
   return await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     try {
+      console.log("updateInvoice input:", { id, values })
       const validatedValues = InvoiceValuesSchema.partial().parse(values)
 
       const existingInvoice = await tx.invoice.findUnique({
@@ -168,6 +210,10 @@ export async function updateInvoice(id: string, values: Partial<InvoiceValues>):
         },
       })
       if (!existingInvoice) throw new Error("Invoice not found")
+      if (!existingInvoice.plan.facilityId) {
+        console.error("Invalid facilityId in existingInvoice:", existingInvoice)
+        throw new Error("Facility not found")
+      }
 
       const invoice = await tx.invoice.update({
         where: { id },
@@ -183,6 +229,27 @@ export async function updateInvoice(id: string, values: Partial<InvoiceValues>):
         include: {
           user: { select: { firstName: true, lastName: true } },
           plan: { select: { name: true } },
+        },
+      })
+
+      /* console.log("createInvoiceTransaction input:", {
+        type: "INVOICE_UPDATED",
+        invoiceId: invoice.id,
+        performedById: authUser.id,
+        facilityId: existingInvoice.plan.facilityId,
+        details: {
+          action: "Factura actualizada",
+          invoiceId: invoice.id,
+          invoiceNumber: invoice.invoiceNumber,
+          userId: invoice.userId,
+          userName: `${invoice.user.firstName} ${invoice.user.lastName}`,
+          planId: invoice.planId,
+          planName: invoice.plan.name,
+          amount: invoice.amount,
+          status: invoice.status,
+          dueDate: invoice.dueDate.toISOString(),
+          period: invoice.period,
+          updatedFields: Object.keys(validatedValues),
         },
       })
 
@@ -208,6 +275,13 @@ export async function updateInvoice(id: string, values: Partial<InvoiceValues>):
         },
       })
 
+      console.log("createNotification input:", {
+        issuerId: authUser.id,
+        facilityId: existingInvoice.plan.facilityId,
+        type: "INVOICE_UPDATED",
+        relatedId: invoice.id,
+      })
+
       await createNotification({
         tx,
         issuerId: authUser.id,
@@ -216,7 +290,19 @@ export async function updateInvoice(id: string, values: Partial<InvoiceValues>):
         relatedId: invoice.id,
       })
 
-      /* await createClientNotification({
+      console.log("createClientNotification input:", {
+        recipientId: invoice.userId,
+        issuerId: authUser.id,
+        facilityId: existingInvoice.plan.facilityId,
+        type: "INVOICE_UPDATED",
+        relatedId: invoice.id,
+        entityName: `Factura ${invoice.invoiceNumber}`,
+        changeDetails: Object.keys(validatedValues).map(
+          (key) => `${key}: ${validatedValues[key as keyof typeof validatedValues]}`
+        ),
+      })
+
+      await createClientNotification({
         tx,
         recipientId: invoice.userId,
         issuerId: authUser.id,
@@ -249,7 +335,7 @@ export async function updateInvoice(id: string, values: Partial<InvoiceValues>):
         },
       } satisfies InvoiceResponse
     } catch (error) {
-      console.error("Error updating invoice:", error)
+      console.error("Transaction error in updateInvoice:", error, { input: { id, values } })
       if (error instanceof z.ZodError) {
         return { error: "Invalid input data" }
       }
@@ -258,81 +344,130 @@ export async function updateInvoice(id: string, values: Partial<InvoiceValues>):
   })
 }
 
-export async function deleteInvoice(id: string): Promise<DeletedInvoiceResponse | ErrorResponse> {
+export async function deleteInvoice(ids: string | string[]): Promise<DeletedInvoiceResponse[] | ErrorResponse> {
   const { user: authUser } = await validateRequest()
   if (!authUser) throw new Error("Usuario no autenticado")
 
+  const invoiceIds = Array.isArray(ids) ? ids : [ids]
+
   return await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     try {
-      const existingInvoice = await tx.invoice.findUnique({
-        where: { id },
-        include: {
-          user: { select: { firstName: true, lastName: true } },
-          plan: { select: { name: true, facilityId: true } },
-        },
-      })
-      if (!existingInvoice) throw new Error("Factura no encontrada")
+      console.log("deleteInvoice input:", { invoiceIds })
+      const deletedInvoices: DeletedInvoiceResponse[] = []
 
-      const deletedInvoice = await tx.invoice.delete({
-        where: { id },
-        include: {
-          user: { select: { firstName: true, lastName: true } },
-          plan: { select: { name: true } },
-        },
-      })
+      for (const id of invoiceIds) {
+        const existingInvoice = await tx.invoice.findUnique({
+          where: { id },
+          include: {
+            user: { select: { firstName: true, lastName: true } },
+            plan: { select: { name: true, facilityId: true } },
+          },
+        })
 
-      await createInvoiceTransaction({
-        tx,
-        type: "INVOICE_DELETED",
-        invoiceId: deletedInvoice.id,
-        performedById: authUser.id,
-        facilityId: existingInvoice.plan.facilityId,
-        details: {
-          action: "Factura eliminada",
+        if (!existingInvoice) {
+          throw new Error(`Factura con ID ${id} no encontrada`)
+        }
+        if (!existingInvoice.plan.facilityId) {
+          console.error("Invalid facilityId in existingInvoice:", existingInvoice)
+          throw new Error("Facility not found")
+        }
+
+        const deletedInvoice = await tx.invoice.delete({
+          where: { id },
+          include: {
+            user: { select: { firstName: true, lastName: true } },
+            plan: { select: { name: true } },
+          },
+        })
+
+        /* console.log("createInvoiceTransaction input:", {
+          type: "INVOICE_DELETED",
           invoiceId: deletedInvoice.id,
-          invoiceNumber: deletedInvoice.invoiceNumber,
-          userId: deletedInvoice.userId,
-          userName: `${deletedInvoice.user.firstName} ${deletedInvoice.user.lastName}`,
-          planId: deletedInvoice.planId,
-          planName: deletedInvoice.plan.name,
-        },
-      })
+          performedById: authUser.id,
+          facilityId: existingInvoice.plan.facilityId,
+          details: {
+            action: "Factura eliminada",
+            invoiceId: deletedInvoice.id,
+            invoiceNumber: deletedInvoice.invoiceNumber,
+            userId: deletedInvoice.userId,
+            userName: `${deletedInvoice.user.firstName} ${deletedInvoice.user.lastName}`,
+            planId: deletedInvoice.planId,
+            planName: deletedInvoice.plan.name,
+          },
+        })
 
-      await createNotification({
-        tx,
-        issuerId: authUser.id,
-        facilityId: existingInvoice.plan.facilityId,
-        type: "INVOICE_DELETED",
-        relatedId: deletedInvoice.id,
-      })
+        await createInvoiceTransaction({
+          tx,
+          type: "INVOICE_DELETED",
+          invoiceId: deletedInvoice.id,
+          performedById: authUser.id,
+          facilityId: existingInvoice.plan.facilityId,
+          details: {
+            action: "Factura eliminada",
+            invoiceId: deletedInvoice.id,
+            invoiceNumber: deletedInvoice.invoiceNumber,
+            userId: deletedInvoice.userId,
+            userName: `${deletedInvoice.user.firstName} ${deletedInvoice.user.lastName}`,
+            planId: deletedInvoice.planId,
+            planName: deletedInvoice.plan.name,
+          },
+        })
 
-      /* await createClientNotification({
-        tx,
-        recipientId: deletedInvoice.userId,
-        issuerId: authUser.id,
-        facilityId: existingInvoice.plan.facilityId,
-        type: "INVOICE_DELETED",
-        relatedId: deletedInvoice.id,
-        entityName: `Factura ${deletedInvoice.invoiceNumber}`,
-        endDate: new Date(),
-      }) */
+        console.log("createNotification input:", {
+          issuerId: authUser.id,
+          facilityId: existingInvoice.plan.facilityId,
+          type: "INVOICE_DELETED",
+          relatedId: deletedInvoice.id,
+        })
+
+        await createNotification({
+          tx,
+          issuerId: authUser.id,
+          facilityId: existingInvoice.plan.facilityId,
+          type: "INVOICE_DELETED",
+          relatedId: deletedInvoice.id,
+        })
+
+        console.log("createClientNotification input:", {
+          recipientId: deletedInvoice.userId,
+          issuerId: authUser.id,
+          facilityId: existingInvoice.plan.facilityId,
+          type: "INVOICE_DELETED",
+          relatedId: deletedInvoice.id,
+          entityName: `Factura ${deletedInvoice.invoiceNumber}`,
+          endDate: new Date(),
+        })
+
+        await createClientNotification({
+          tx,
+          recipientId: deletedInvoice.userId,
+          issuerId: authUser.id,
+          facilityId: existingInvoice.plan.facilityId,
+          type: "INVOICE_DELETED",
+          relatedId: deletedInvoice.id,
+          entityName: `Factura ${deletedInvoice.invoiceNumber}`,
+          endDate: new Date(),
+        }) */
+
+        deletedInvoices.push({
+          success: true,
+          deletedInvoice: {
+            id: deletedInvoice.id,
+            user: deletedInvoice.user,
+            plan: deletedInvoice.plan,
+            invoiceNumber: deletedInvoice.invoiceNumber,
+          },
+        })
+      }
 
       revalidatePath("/facturacion/facturas")
-      return {
-        success: true as const,
-        deletedInvoice: {
-          id: deletedInvoice.id,
-          user: deletedInvoice.user,
-          plan: deletedInvoice.plan,
-          invoiceNumber: deletedInvoice.invoiceNumber,
-        },
-      } satisfies DeletedInvoiceResponse
+      return deletedInvoices
     } catch (error) {
-      console.error("Error deleting invoice:", error)
+      console.error("Transaction error in deleteInvoice:", error, { input: { invoiceIds } })
       if (error instanceof Error) {
         return { error: error.message }
       }
-      return { error: "Error al eliminar la factura" }
+      return { error: "Error al eliminar las facturas" }
     }
   })
 }
