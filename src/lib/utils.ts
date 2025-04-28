@@ -2,7 +2,8 @@ import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 import { format, differenceInYears } from "date-fns"
 import { ZodError } from "zod"
-import { DayOfWeek, MealType } from "@prisma/client"
+import { DayOfWeek, MealType, NotificationType } from "@prisma/client"
+import { NotificationRelatedField } from "@/types/notification"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -196,4 +197,32 @@ export function getDateForDayOfWeek(dayOfWeek: DayOfWeek): Date {
   targetDate.setHours(0, 0, 0, 0)
 
   return targetDate
+}
+
+export function getRelatedIdField(type: NotificationType): NotificationRelatedField {
+  if (type.toLowerCase().includes("activity")) return "activityId"
+  if (
+    type.toLowerCase().includes("plan") &&
+    !type.toLowerCase().includes("nutritional")
+  )
+    return "planId"
+  if (type.toLowerCase().includes("diary")) return "diaryId"
+  if (
+    type.toLowerCase().startsWith("routine") ||
+    type.toLowerCase().startsWith("assign_routine") ||
+    type.toLowerCase().startsWith("unassign_routine")
+  )
+    return "routineId"
+  if (type.toLowerCase().startsWith("preset_routine")) return "presetRoutineId"
+  if (
+    type.toLowerCase().startsWith("nutritional_plan") ||
+    type.toLowerCase().startsWith("assign_nutritional_plan") ||
+    type.toLowerCase().startsWith("unassign_nutritional_plan")
+  )
+    return "nutritionalPlanId"
+  if (type.toLowerCase().startsWith("preset_nutritional_plan"))
+    return "presetNutritionalPlanId"
+  if (type.toLowerCase().startsWith("invoice")) return "invoiceId"
+  if (type.toLowerCase().startsWith("payment")) return "paymentId"
+  return "userId"
 }
