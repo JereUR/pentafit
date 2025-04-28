@@ -27,7 +27,7 @@ interface InvoiceRowProps {
   visibleColumns: Set<keyof InvoiceData>
   isSelected: boolean
   onToggleRow: (id: string) => void
-  deleteInvoice: UseMutateFunction<DeletedInvoiceResponse, Error, string, unknown>
+  deleteInvoice: UseMutateFunction<DeletedInvoiceResponse[], Error, string | string[], unknown>
   isDeleting: boolean
 }
 

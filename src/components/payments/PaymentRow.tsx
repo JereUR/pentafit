@@ -19,7 +19,7 @@ interface PaymentRowProps {
   visibleColumns: Set<keyof PaymentData>
   isSelected: boolean
   onToggleRow: (id: string) => void
-  deletePayment: UseMutateFunction<DeletedPaymentResponse, Error, string, unknown>
+  deletePayment: UseMutateFunction<DeletedPaymentResponse[], Error, string | string[], unknown>
   isDeleting: boolean
 }
 

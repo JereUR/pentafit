@@ -15,7 +15,7 @@ interface InvoicesTableProps {
   selectedRows: string[]
   onToggleRow: (id: string) => void
   onToggleAllRows: () => void
-  deleteInvoice: UseMutateFunction<DeletedInvoiceResponse, Error, string, unknown>
+  deleteInvoice: UseMutateFunction<DeletedInvoiceResponse[], Error, string | string[], unknown>
   isDeleting: boolean
   isLoading: boolean
 }

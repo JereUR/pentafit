@@ -15,7 +15,7 @@ interface PaymentsTableProps {
   selectedRows: string[]
   onToggleRow: (id: string) => void
   onToggleAllRows: () => void
-  deletePayment: UseMutateFunction<DeletedPaymentResponse, Error, string, unknown>
+  deletePayment: UseMutateFunction<DeletedPaymentResponse[], Error, string | string[], unknown>
   isDeleting: boolean
   isLoading: boolean
 }
