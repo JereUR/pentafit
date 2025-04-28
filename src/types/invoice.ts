@@ -97,12 +97,31 @@ export interface ErrorResponse {
   error: string
 }
 
+export interface InvoiceResponse {
+  success: true
+  invoice: {
+    id: string
+    userId: string
+    user: { firstName: string; lastName: string }
+    planId: string
+    plan: { name: string }
+    paymentId: string | null
+    amount: number
+    status: InvoiceStatus
+    issueDate: Date
+    dueDate: Date
+    invoiceNumber: string
+    period: string
+    notes: string | null
+  }
+}
+
 export function isInvoiceResponse(result: InvoiceResponse | ErrorResponse): result is InvoiceResponse {
   return "success" in result
 }
 
-export function isDeletedInvoiceResponse(result: DeletedInvoiceResponse | ErrorResponse): result is DeletedInvoiceResponse {
-  return "success" in result
+export function isDeletedInvoiceResponse(result: DeletedInvoiceResponse[] | ErrorResponse): result is DeletedInvoiceResponse[] {
+  return Array.isArray(result) && result.every(item => "success" in item && item.success === true)
 }
 
 export const statusTranslations: Record<string, string> = {

@@ -77,10 +77,40 @@ export interface ErrorResponse {
   error: string
 }
 
+export interface PaymentActionResponse {
+  success: true
+  payment: {
+    id: string
+    userId: string
+    user: { firstName: string; lastName: string }
+    planId: string
+    plan: { name: string; generateInvoice: boolean }
+    amount: number
+    status: PaymentStatus
+    paymentMonth: string
+    transactionId: string | null
+    notes: string | null
+    invoice: { id: string; invoiceNumber: string; status: InvoiceStatus } | null
+  }
+  invoice: {
+    id: string
+    userId: string
+    user: { firstName: string; lastName: string }
+    planId: string
+    plan: { name: string }
+    paymentId: string
+    amount: number
+    status: InvoiceStatus
+    invoiceNumber: string
+    period: string
+    notes: string | null
+  } | null
+}
+
 export function isPaymentActionResponse(result: PaymentActionResponse | ErrorResponse): result is PaymentActionResponse {
   return "success" in result
 }
 
-export function isDeletedPaymentResponse(result: DeletedPaymentResponse | ErrorResponse): result is DeletedPaymentResponse {
-  return "success" in result
+export function isDeletedPaymentResponse(result: DeletedPaymentResponse[] | ErrorResponse): result is DeletedPaymentResponse[] {
+  return Array.isArray(result) && result.every(item => "success" in item && item.success === true)
 }
