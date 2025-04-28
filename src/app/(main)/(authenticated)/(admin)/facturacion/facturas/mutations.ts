@@ -72,18 +72,22 @@ export function useDeleteInvoiceMutation() {
   const queryClient = useQueryClient()
   const router = useRouter()
 
-  return useMutation<DeletedInvoiceResponse, Error, string>({
-    mutationFn: async (id: string) => {
-      const result = await deleteInvoice(id)
+  return useMutation<DeletedInvoiceResponse[], Error, string | string[]>({
+    mutationFn: async (ids: string | string[]) => {
+      const result = await deleteInvoice(ids)
       if (!isDeletedInvoiceResponse(result)) {
         throw new Error(result.error)
       }
       return result
     },
-    onSuccess: ({ deletedInvoice }) => {
+    onSuccess: (deletedInvoices) => {
+      const message = deletedInvoices.length > 1
+        ? `Se eliminaron ${deletedInvoices.length} facturas correctamente.`
+        : `Factura ${deletedInvoices[0].deletedInvoice.invoiceNumber} eliminada.`
+
       toast({
-        title: "Factura eliminada correctamente",
-        description: `Factura ${deletedInvoice.invoiceNumber} eliminada.`,
+        title: deletedInvoices.length > 1 ? "Facturas eliminadas correctamente" : "Factura eliminada correctamente",
+        description: message,
       })
       queryClient.invalidateQueries({ queryKey: ["invoices"] })
       router.push("/facturacion/facturas")
@@ -91,7 +95,7 @@ export function useDeleteInvoiceMutation() {
     onError: (error: Error) => {
       toast({
         variant: "destructive",
-        title: "Error al eliminar la factura",
+        title: "Error al eliminar la(s) factura(s)",
         description: error.message,
       })
     },

@@ -75,18 +75,22 @@ export function useDeletePaymentMutation() {
   const queryClient = useQueryClient()
   const router = useRouter()
 
-  return useMutation<DeletedPaymentResponse, Error, string>({
-    mutationFn: async (id: string) => {
-      const result = await deletePayment(id)
+  return useMutation<DeletedPaymentResponse[], Error, string | string[]>({
+    mutationFn: async (ids: string | string[]) => {
+      const result = await deletePayment(ids)
       if (!isDeletedPaymentResponse(result)) {
         throw new Error(result.error)
       }
       return result
     },
-    onSuccess: ({ deletedPayment }) => {
+    onSuccess: (deletedPayments) => {
+      const message = deletedPayments.length > 1
+        ? `Se eliminaron ${deletedPayments.length} pagos correctamente.`
+        : `Pago para ${deletedPayments[0].deletedPayment.user.firstName} ${deletedPayments[0].deletedPayment.user.lastName} eliminado.`
+
       toast({
-        title: "Pago eliminado correctamente",
-        description: `Pago para ${deletedPayment.user.firstName} ${deletedPayment.user.lastName} eliminado.`,
+        title: deletedPayments.length > 1 ? "Pagos eliminados correctamente" : "Pago eliminado correctamente",
+        description: message,
       })
       queryClient.invalidateQueries({ queryKey: ["payments"] })
       router.push("/facturacion/pagos")
@@ -94,7 +98,7 @@ export function useDeletePaymentMutation() {
     onError: (error: Error) => {
       toast({
         variant: "destructive",
-        title: "Error al eliminar el pago",
+        title: "Error al eliminar el/los pago(s)",
         description: error.message,
       })
     },
