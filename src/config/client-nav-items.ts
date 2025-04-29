@@ -6,7 +6,7 @@ import {
   MessageSquare,
   FileText,
   Utensils,
-  ContactRound,
+  Info,
 } from "lucide-react"
 
 import type { NavItem } from "@/types/sidebar"
@@ -20,6 +20,7 @@ export const clientNavItems: NavItem[] = [
     icon: Utensils,
     href: "/mi-plan-nutricional",
   },
+  { title: "Pagos", icon: FileText, href: "/mis-pagos" },
   { title: "Mi Progreso", icon: LineChart, href: "/mi-progreso" },
   {
     title: "Comunicación",
@@ -29,6 +30,5 @@ export const clientNavItems: NavItem[] = [
       { title: "Notificaciones", href: "/comunicacion/notificaciones" },
     ],
   },
-  { title: "Pagos", icon: FileText, href: "/mis-pagos" },
-  { title: "Contacto", icon: ContactRound, href: "/contacto" },
+  { title: "Información", icon: Info, href: "/informacion" },
 ]
