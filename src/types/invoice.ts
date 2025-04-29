@@ -14,42 +14,40 @@ export const columnsInvoices: { key: keyof InvoiceData; label: string }[] = [
 ]
 
 export interface InvoiceData {
-  id: string;
+  id: string
   user: {
-    id: string;
-    firstName: string;
-    lastName: string;
-    email: string | null;
-  };
+    id: string
+    firstName: string
+    lastName: string
+    email: string | null
+  }
   plan: {
-    id: string;
-    name: string;
-    price: number;
-  };
+    id: string
+    name: string
+    price: number
+  }
   payment: {
-    id: string;
-    status: string;
-  } | null;
+    id: string
+    status: string
+  } | null
   facility: {
-    id: string;
-    name: string;
-    email: string | null;
-    address: string | null;
-    phone: string | null;
-    instagram: string | null;
-    facebook: string | null;
-    logoUrl: string | null;
-  };
-  amount: number;
-  status: string;
-  issueDate: Date;
-  dueDate: Date;
-  invoiceNumber: string;
-  period: string;
-  notes: string | null;
+    id: string
+    name: string
+    email: string | null
+    address: string | null
+    phone: string | null
+    instagram: string | null
+    facebook: string | null
+    logoUrl: string | null
+  }
+  amount: number
+  status: string
+  issueDate: Date
+  dueDate: Date
+  invoiceNumber: string
+  period: string
+  notes: string | null
 }
-
-
 
 export interface InvoiceDataExport {
   invoiceNumber: string
