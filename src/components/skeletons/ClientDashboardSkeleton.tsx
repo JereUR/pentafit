@@ -1,31 +1,44 @@
 "use client"
 
-import { Calendar, CalendarCheck, Utensils } from "lucide-react"
+import { Calendar, CalendarCheck, Utensils, CreditCard, FileText } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useMediaQuery } from "@/hooks/useMediaQuery"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 interface DashboardSkeletonProps {
-  type?: "routine" | "nutrition" | "diary" | "full"
+  type?: "routine" | "nutrition" | "diary" | "payment" | "invoice" | "full"
 }
 
 export function ClientDashboardSkeleton({ type = "full" }: DashboardSkeletonProps) {
   const isMobile = useMediaQuery("(max-width: 767px)")
 
-  const renderCardSkeleton = (cardType: "routine" | "nutrition" | "diary") => {
+  const renderCardSkeleton = (cardType: "routine" | "nutrition" | "diary" | "payment" | "invoice") => {
     let icon = <CalendarCheck className="h-6 w-6 text-muted-foreground" />
     let title = "Rutina de Hoy"
     let description = "Tu plan de entrenamiento para hoy"
 
-    if (cardType === "nutrition") {
-      icon = <Utensils className="h-6 w-6 text-muted-foreground" />
-      title = "Nutrición de Hoy"
-      description = "Tu plan de alimentación para hoy"
-    } else if (cardType === "diary") {
-      icon = <Calendar className="h-6 w-6 text-muted-foreground" />
-      title = "Clases de Hoy"
-      description = "Tus clases programadas para hoy"
+    switch (cardType) {
+      case "nutrition":
+        icon = <Utensils className="h-6 w-6 text-muted-foreground" />
+        title = "Nutrición de Hoy"
+        description = "Tu plan de alimentación para hoy"
+        break
+      case "diary":
+        icon = <Calendar className="h-6 w-6 text-muted-foreground" />
+        title = "Clases de Hoy"
+        description = "Tus clases programadas para hoy"
+        break
+      case "payment":
+        icon = <CreditCard className="h-6 w-6 text-muted-foreground" />
+        title = "Mis Pagos"
+        description = "Tus pagos realizados"
+        break
+      case "invoice":
+        icon = <FileText className="h-6 w-6 text-muted-foreground" />
+        title = "Mis Facturas"
+        description = "Tus facturas generadas"
+        break
     }
 
     return (
