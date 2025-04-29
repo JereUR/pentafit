@@ -1,12 +1,14 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
-import prisma from "@/lib/prisma"
 import { z } from "zod"
+
+import prisma from "@/lib/prisma"
 import { PaymentStatus, InvoiceStatus, type Prisma} from "@prisma/client"
 import { validateRequest } from "@/auth"
 import { PaymentValues, PaymentValuesSchema } from "@/lib/validation"
 import { PaymentActionResponse, DeletedPaymentResponse, ErrorResponse } from "@/types/payment"
+import { createPaymentTransaction } from "@/lib/transactionHelpers"
 
 export async function getPaymentById(id: string): Promise<(PaymentValues & { id: string }) | null> {
   try {
@@ -105,7 +107,7 @@ export async function createPayment(values: PaymentValues): Promise<PaymentActio
         })
       }
 
-     /*  const transactionInput = {
+     const transactionInput = {
         tx,
         type: "PAYMENT_CREATED" as const,
         paymentId: payment.id,
@@ -129,7 +131,7 @@ export async function createPayment(values: PaymentValues): Promise<PaymentActio
 
       await createPaymentTransaction(transactionInput)
 
-      const notificationInput = {
+      /*  const notificationInput = {
         tx,
         issuerId: authUser.id,
         facilityId: facility.facilityId,
@@ -243,7 +245,7 @@ export async function updatePayment(id: string, values: Partial<PaymentValues>):
         })
       }
 
-      /* const transactionInput = {
+      const transactionInput = {
         tx,
         type: "PAYMENT_UPDATED" as const,
         paymentId: payment.id,
@@ -268,7 +270,7 @@ export async function updatePayment(id: string, values: Partial<PaymentValues>):
       
       await createPaymentTransaction(transactionInput)
 
-      const notificationInput = {
+      /* const notificationInput = {
         tx,
         issuerId: authUser.id,
         facilityId: existingPayment.plan.facilityId,
@@ -376,7 +378,7 @@ export async function deletePayment(ids: string | string[]): Promise<DeletedPaym
           },
         })
 
-        /* const transactionInput = {
+        const transactionInput = {
           tx,
           type: "PAYMENT_DELETED" as const,
           paymentId: deletedPayment.id,
@@ -396,7 +398,7 @@ export async function deletePayment(ids: string | string[]): Promise<DeletedPaym
         
         await createPaymentTransaction(transactionInput)
 
-        const notificationInput = {
+        /* const notificationInput = {
           tx,
           issuerId: authUser.id,
           facilityId: existingPayment.plan.facilityId,
