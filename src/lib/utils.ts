@@ -29,13 +29,13 @@ export const daysOfWeekFull = [
 ]
 
 export const daysOfWeekMap = [
+  { value: "SUNDAY", label: "Domingo" },
   { value: "MONDAY", label: "Lunes" },
   { value: "TUESDAY", label: "Martes" },
   { value: "WEDNESDAY", label: "Miércoles" },
   { value: "THURSDAY", label: "Jueves" },
   { value: "FRIDAY", label: "Viernes" },
   { value: "SATURDAY", label: "Sábado" },
-  { value: "SUNDAY", label: "Domingo" },
 ]
 
 export interface SelectOption {
@@ -92,13 +92,13 @@ export function getCurrentDayOfWeek(): DayOfWeek {
 }
 
 export const DAY_DISPLAY_NAMES = {
+  [DayOfWeek.SUNDAY]: "Domingo",
   [DayOfWeek.MONDAY]: "Lunes",
   [DayOfWeek.TUESDAY]: "Martes",
   [DayOfWeek.WEDNESDAY]: "Miércoles",
   [DayOfWeek.THURSDAY]: "Jueves",
   [DayOfWeek.FRIDAY]: "Viernes",
   [DayOfWeek.SATURDAY]: "Sábado",
-  [DayOfWeek.SUNDAY]: "Domingo",
 }
 
 export const MEAL_TYPE_DISPLAY_NAMES = {
@@ -124,13 +124,13 @@ export function formatDate(date: Date): string {
 }
 
 export const DAY_OF_WEEK_VALUES = {
-  MONDAY: 0,
-  TUESDAY: 1,
-  WEDNESDAY: 2,
-  THURSDAY: 3,
-  FRIDAY: 4,
-  SATURDAY: 5,
-  SUNDAY: 6,
+  SUNDAY: 0,
+  MONDAY: 1,
+  TUESDAY: 2,
+  WEDNESDAY: 3,
+  THURSDAY: 4,
+  FRIDAY: 5,
+  SATURDAY: 6,
 }
 
 export function isDayTodayOrPast(dayOfWeek: string): boolean {
