@@ -92,29 +92,23 @@ export function DiaryDaySelector({
   const getAvailableDaysWithInfo = (): DayWithInfo[] => {
     return daysAvailable
       .filter(day => {
-        const dayIndex = day.dayOfWeek !== null ? day.dayOfWeek :
-          daysAvailable.findIndex(d => d.id === day.id);
+        if (day.dayOfWeek === null || day.dayOfWeek < 0 || day.dayOfWeek > 6) {
+          return false;
+        }
 
         return (
           day.available &&
-          dayIndex >= 0 &&
-          dayIndex < diaryPlanDaysOfWeek.length &&
-          diaryPlanDaysOfWeek[dayIndex]
+          diaryPlanDaysOfWeek[day.dayOfWeek]
         );
       })
-      .map(day => {
-        const dayIndex = day.dayOfWeek !== null ? day.dayOfWeek :
-          daysAvailable.findIndex(d => d.id === day.id);
-
-        return {
-          id: day.id,
-          timeStart: day.timeStart,
-          timeEnd: day.timeEnd,
-          dayOfWeek: dayIndex,
-          dayName: daysOfWeekFull[dayIndex] || `Día ${dayIndex + 1}`,
-          available: day.available
-        };
-      })
+      .map(day => ({
+        id: day.id,
+        timeStart: day.timeStart,
+        timeEnd: day.timeEnd,
+        dayOfWeek: day.dayOfWeek as number,
+        dayName: daysOfWeekFull[day.dayOfWeek] || `Día ${day.dayOfWeek + 1}`,
+        available: day.available
+      }));
   }
 
   const availableDaysWithInfo = getAvailableDaysWithInfo()
