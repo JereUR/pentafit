@@ -58,6 +58,7 @@ model User {
   progress               UserProgress[]
   completions            ExerciseCompletion[]
   foodItemCompletions    FoodItemCompletion[]
+  diaryAttendance        DiaryAttendance[]
   measurements           UserMeasurement[]
   healthInfo             UserHealthInfo?
   payments               Payment[]
@@ -117,6 +118,7 @@ model Facility {
   exerciseCompletions    ExerciseCompletion[]
   foodItemCompletions    FoodItemCompletion[]
   userMeasurements       UserMeasurement[]
+  diaryAttendance        DiaryAttendance[]
 
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
@@ -474,11 +476,13 @@ model UserPlan {
 model DayAvailable {
   id                   String                @id @default(uuid())
   diaryId              String
+  dayOfWeek            Int
   available            Boolean
   timeStart            String
   timeEnd              String
   diary                Diary                 @relation(fields: [diaryId], references: [id], onDelete: Cascade)
   userDiaryAttachments UserDiaryAttachment[]
+  diaryAttendance      DiaryAttendance[]
 
   @@map("days_available")
 }
@@ -506,20 +510,21 @@ enum genreExclusive {
 }
 
 model Diary {
-  id             String         @id @default(uuid())
-  facilityId     String
-  activityId     String
-  name           String
-  typeSchedule   typeSchedule
-  dateFrom       DateTime
-  dateUntil      DateTime
-  repeatFor      Int?
-  termDuration   Int
-  amountOfPeople Int
-  isActive       Boolean
-  genreExclusive genreExclusive
-  worksHolidays  Boolean
-  observations   String?
+  id              String            @id @default(uuid())
+  facilityId      String
+  activityId      String
+  name            String
+  typeSchedule    typeSchedule
+  dateFrom        DateTime
+  dateUntil       DateTime
+  repeatFor       Int?
+  termDuration    Int
+  amountOfPeople  Int
+  isActive        Boolean
+  genreExclusive  genreExclusive
+  worksHolidays   Boolean
+  observations    String?
+  diaryAttendance DiaryAttendance[]
 
   facility      Facility       @relation(fields: [facilityId], references: [id])
   activity      Activity       @relation(fields: [activityId], references: [id], onDelete: Cascade)
@@ -547,15 +552,16 @@ model UserDiaryAttachment {
 }
 
 model UserDiary {
-  id          String                @id @default(uuid())
-  userId      String
-  user        User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  diaryPlanId String
-  diaryPlan   DiaryPlan             @relation(fields: [diaryPlanId], references: [id], onDelete: Cascade)
-  isActive    Boolean               @default(true)
-  startDate   DateTime              @default(now())
-  endDate     DateTime?
-  attachments UserDiaryAttachment[]
+  id              String                @id @default(uuid())
+  userId          String
+  user            User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  diaryPlanId     String
+  diaryPlan       DiaryPlan             @relation(fields: [diaryPlanId], references: [id], onDelete: Cascade)
+  isActive        Boolean               @default(true)
+  startDate       DateTime              @default(now())
+  endDate         DateTime?
+  attachments     UserDiaryAttachment[]
+  diaryAttendance DiaryAttendance[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -871,6 +877,30 @@ model FoodItemCompletion {
   @@unique([userId, foodItemId, mealId, date])
   @@index([userId, nutritionalPlanId, date])
   @@map("food_item_completions")
+}
+
+model DiaryAttendance {
+  id             String       @id @default(uuid())
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  facilityId     String
+  facility       Facility     @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  diaryId        String
+  diary          Diary        @relation(fields: [diaryId], references: [id], onDelete: Cascade)
+  userDiaryId    String
+  userDiary      UserDiary    @relation(fields: [userDiaryId], references: [id], onDelete: Cascade)
+  dayAvailableId String
+  dayAvailable   DayAvailable @relation(fields: [dayAvailableId], references: [id], onDelete: Cascade)
+  date           DateTime     @default(now())
+  attended       Boolean      @default(false)
+  notes          String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, diaryId, dayAvailableId, date])
+  @@index([userId, facilityId, date])
+  @@map("diary_attendances")
 }
 
 // User Measurements
