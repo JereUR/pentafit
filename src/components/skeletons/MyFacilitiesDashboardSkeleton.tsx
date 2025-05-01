@@ -3,8 +3,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 
 export default function MyFacilitiesDashboardSkeleton() {
   return (
-    <div className="w-full max-w-7xl mx-auto space-y-8">
-      <Skeleton className="h-8 w-48 rounded-md" />
+    <div className="w-full max-w-7xl mx-8 space-y-8">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {[...Array(4)].map((_, i) => (
           <Card key={i} className="h-full overflow-hidden border border-primary/10 rounded-xl">
