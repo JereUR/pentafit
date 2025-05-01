@@ -3,9 +3,9 @@ import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { validateRequest } from '@/auth'
 
-export async function POST(
+export async function GET(
   request: Request,
-  { params }: { params: { facilityId: string } }
+  { params }: { params: Promise<{ facilityId: string }> }
 ) {
   try {
     const { dayAvailableIds } = await request.json()
@@ -23,7 +23,7 @@ export async function POST(
     const attendances = await prisma.diaryAttendance.findMany({
       where: {
         userId: user.id,
-        facilityId: params.facilityId,
+        facilityId: (await params).facilityId,
         dayAvailableId: {
           in: dayAvailableIds
         },

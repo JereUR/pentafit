@@ -41,7 +41,7 @@ async function fetchDiaryData(
     );
 
     const attendanceResponse = await fetch(`/api/user/today-attendances/${facilityId}`, {
-      method: 'POST',
+      method: 'GET',
       headers: {
         'Content-Type': 'application/json',
       },
