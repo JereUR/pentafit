@@ -82,13 +82,13 @@ export async function GET(
           const filteredDaysAvailable = diary.daysAvailable.map(
             (day, index) => ({
               id: day.id,
-              available:
-                day.available &&
+              available: day.available &&
                 (index < diaryPlan.daysOfWeek.length
                   ? diaryPlan.daysOfWeek[index]
                   : false),
               timeStart: day.timeStart,
               timeEnd: day.timeEnd,
+              dayOfWeek: day.dayOfWeek ?? index
             }),
           )
 

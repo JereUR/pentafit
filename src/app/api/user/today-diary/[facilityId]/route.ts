@@ -46,18 +46,18 @@ export async function GET(
       if (!userDiary.diary?.daysAvailable || !userDiary.selectedDays) {
         return false
       }
-
+    
       return userDiary.selectedDays.some((selectedDay) => {
         const dayAvailable = userDiary.diary.daysAvailable.find(
           (day) => day.id === selectedDay.id,
         )
-
-        if (dayAvailable) {
-          const dayIndex = userDiary.diary.daysAvailable.indexOf(dayAvailable)
-          return dayIndex === currentDayIndex
-        }
-
-        return false
+    
+        if (!dayAvailable) return false
+    
+        const dayIndex = userDiary.diary.daysAvailable.findIndex(
+          d => d.id === selectedDay.id
+        )
+        return dayIndex === currentDayIndex
       })
     })
 
@@ -84,14 +84,15 @@ export async function GET(
           return aTime[0] * 60 + aTime[1] - (bTime[0] * 60 + bTime[1])
         })
 
-      return {
-        id: diary.id,
-        diaryPlanId: diary.diaryPlan?.id || "",
-        activityName: diary.diary?.activity?.name || "",
-        activityDescription: diary.diary?.activity?.description || "",
-        planName: diary.diaryPlan?.name || "",
-        schedule: todaySchedule,
-      }
+        return {
+          id: diary.diary?.id || "",
+          userDiaryId: diary.id, 
+          diaryPlanId: diary.diaryPlan?.id || "",
+          activityName: diary.diary?.activity?.name || "",
+          activityDescription: diary.diary?.activity?.description || "",
+          planName: diary.diaryPlan?.name || "",
+          schedule: todaySchedule,
+        }
     })
 
     const filteredData = data.filter((item) => item.schedule.length > 0)
