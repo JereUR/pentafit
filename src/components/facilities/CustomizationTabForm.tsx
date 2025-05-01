@@ -101,7 +101,7 @@ export function CustomizationTabForm({ control, webLogoFile, setWebLogoFile, noL
             </FormItem>
           )}
         />
-        <FormField
+        {/* <FormField
           control={control}
           name="metadata.secondaryColor"
           render={({ field }) => (
@@ -126,7 +126,7 @@ export function CustomizationTabForm({ control, webLogoFile, setWebLogoFile, noL
               <FormMessage />
             </FormItem>
           )}
-        />
+        /> */}
       </div>
     </div>
   )
