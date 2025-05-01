@@ -4,7 +4,7 @@ import { Clock, Calendar, Users, X } from "lucide-react"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { daysOfWeek, formatDate } from "@/lib/utils"
+import { daysOfWeekFull, formatDate } from "@/lib/utils"
 import type { UserDiaryData } from "@/types/user"
 import { useUnsubscribeFromDiaryMutation } from "@/app/(main)/(authenticated)/(client)/[facilityId]/mi-agenda/mutations"
 import LoadingButton from "../LoadingButton"
@@ -22,10 +22,9 @@ export function UserDiaryCard({ userDiary, facilityId, primaryColor }: UserDiary
     unsubscribe({ userDiaryId: userDiary.id, facilityId })
   }
 
-  const daysToDisplay =
-    userDiary.selectedDays && userDiary.selectedDays.length > 0
-      ? userDiary.selectedDays
-      : userDiary.diary.daysAvailable.filter((day) => day.available)
+  const daysToDisplay = userDiary.selectedDays && userDiary.selectedDays.length > 0
+    ? userDiary.selectedDays
+    : userDiary.diary.daysAvailable.filter((day) => day.available)
 
   return (
     <Card className="overflow-hidden">
@@ -40,7 +39,9 @@ export function UserDiaryCard({ userDiary, facilityId, primaryColor }: UserDiary
             </div>
             <div className="min-w-0">
               <CardTitle className="text-sm sm:text-base truncate">{userDiary.diary.name}</CardTitle>
-              <p className="text-xs sm:text-sm text-muted-foreground truncate">{userDiary.diary.activity.name}</p>
+              <p className="text-xs sm:text-sm text-muted-foreground truncate">
+                {userDiary.diary.activity.name}
+              </p>
             </div>
           </div>
           <LoadingButton
@@ -59,28 +60,32 @@ export function UserDiaryCard({ userDiary, facilityId, primaryColor }: UserDiary
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs sm:text-sm mb-2">
           <div className="flex items-center gap-1">
             <Calendar className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-muted-foreground flex-shrink-0" />
-            <span className="text-muted-foreground truncate">Desde: {formatDate(new Date(userDiary.startDate))}</span>
+            <span className="text-muted-foreground truncate">
+              Desde: {formatDate(new Date(userDiary.startDate))}
+            </span>
           </div>
           <div className="flex items-center gap-1">
             <Users className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-muted-foreground flex-shrink-0" />
-            <span className="text-muted-foreground truncate">{userDiary.diary.amountOfPeople} personas max.</span>
+            <span className="text-muted-foreground truncate">
+              {userDiary.diary.amountOfPeople} personas max.
+            </span>
           </div>
         </div>
 
         <div className="mt-2">
           <p className="text-xs font-medium mb-1">Tus horarios:</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {daysToDisplay.map((day, index) => (
+            {daysToDisplay.map((day) => (
               <div
-                key={day.id || index}
+                key={day.id}
                 className="text-[10px] sm:text-xs p-1 border rounded flex items-center justify-between"
               >
                 <span className="truncate">
                   {day.timeStart} - {day.timeEnd}
                 </span>
-                {userDiary.diary.daysAvailable[index] && (
+                {day.dayOfWeek !== undefined && (
                   <Badge variant="outline" className="text-[8px] sm:text-[10px] px-1 py-0 ml-1 flex-shrink-0">
-                    {daysOfWeek[index]}
+                    {daysOfWeekFull[day.dayOfWeek]}
                   </Badge>
                 )}
               </div>
@@ -91,4 +96,3 @@ export function UserDiaryCard({ userDiary, facilityId, primaryColor }: UserDiary
     </Card>
   )
 }
-
