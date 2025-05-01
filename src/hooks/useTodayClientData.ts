@@ -3,7 +3,7 @@
 import { useQuery } from "@tanstack/react-query"
 import { getCurrentDayOfWeek, DAY_DISPLAY_NAMES } from "@/lib/utils"
 import type { TodayRoutineData } from "@/types/routine"
-import { TodayDiaryData } from "@/types/diaryClient"
+import { DiaryAttendanceResponse, TodayDiaryItem, TodayDiaryResponseItem } from "@/types/diaryClient"
 import { TodayNutritionalPlanData } from "@/types/nutritionaPlansClient"
 
 async function fetchRoutineData(
@@ -24,10 +24,46 @@ async function fetchNutritionData(
 
 async function fetchDiaryData(
   facilityId: string,
-): Promise<TodayDiaryData | null> {
-  const response = await fetch(`/api/user/today-diary/${facilityId}`)
-  const result = await response.json()
-  return result.data || null
+): Promise<TodayDiaryItem[] | null> {
+  try {
+    const diaryResponse = await fetch(`/api/user/today-diary/${facilityId}`);
+    if (!diaryResponse.ok) throw new Error("Failed to fetch diary data");
+    
+    const diaryResult = await diaryResponse.json();
+    const diaries: TodayDiaryResponseItem[] = diaryResult.data || [];
+    
+    if (diaries.length === 0) {
+      return null;
+    }
+
+    const scheduleIds = diaries.flatMap(diary => 
+      diary.schedule.map(schedule => schedule.id)
+    );
+
+    const attendanceResponse = await fetch(`/api/user/today-attendances/${facilityId}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ scheduleIds })
+    });
+    
+    if (!attendanceResponse.ok) throw new Error("Failed to fetch attendance data");
+    
+    const attendanceResult = await attendanceResponse.json();
+    const attendances: DiaryAttendanceResponse[] = attendanceResult.data || [];
+
+    return diaries.map(diary => ({
+      ...diary,
+      schedule: diary.schedule.map(schedule => ({
+        ...schedule,
+        attended: attendances.some(a => a.diaryId === diary.id)
+      }))
+    }));
+  } catch (error) {
+    console.error("Error fetching diary data:", error);
+    return null;
+  }
 }
 
 export function useTodayClientData(facilityId: string) {
@@ -46,7 +82,7 @@ export function useTodayClientData(facilityId: string) {
     enabled: !!facilityId,
   })
 
-  const diaryQuery = useQuery({
+  const diaryQuery = useQuery<TodayDiaryItem[] | null>({
     queryKey: ["todayDiary", facilityId],
     queryFn: () => fetchDiaryData(facilityId),
     enabled: !!facilityId,
