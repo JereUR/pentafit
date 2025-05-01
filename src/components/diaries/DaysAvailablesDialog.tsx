@@ -44,8 +44,10 @@ export default function DaysAvailablesDialog({ name, daysAvailables }: DaysAvail
                     {daysAvailables.map((day, index) => (
                       <TableRow key={index}>
                         <TableCell>
-                          <div key={index} className="flex flex-col items-center">
-                            <span className="text-xs font-medium">{daysOfWeekFull[index]}</span>
+                          <div className="flex flex-col items-center">
+                            <span className="text-xs font-medium">
+                              {daysOfWeekFull[day.dayOfWeek]}
+                            </span>
                             <Checkbox checked={day.available} disabled className="mt-1" />
                           </div>
                         </TableCell>
