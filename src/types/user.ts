@@ -98,7 +98,7 @@ export interface SimpleDiaryData {
     available: boolean
     timeStart: string
     timeEnd: string
-    dayOfWeek: number | null
+    dayOfWeek: number
   }[]
 }
 
@@ -136,6 +136,7 @@ export interface UserDiaryData {
   }
   selectedDays?: {
     id: string
+    dayOfWeek?: number
     timeStart: string
     timeEnd: string
     attended?: boolean

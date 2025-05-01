@@ -9,7 +9,7 @@ export interface FilteredDayAvailable {
 
 export interface DayAvailable {
   id: string
-  dayOfWeek: number | null  
+  dayOfWeek: number
   available: boolean
   timeStart: string
   timeEnd: string
