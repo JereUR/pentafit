@@ -47,7 +47,6 @@ export function ProgressChart({
   if (!data) return null
 
   const chartData = prepareChartData(data)
-  console.log(theme)
 
   const colors: Record<ProgressType, string> = {
     EXERCISE_COMPLETION: primaryColor,

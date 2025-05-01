@@ -1052,8 +1052,6 @@ export async function convertToPresetRoutine(
         relatedId: presetRoutine.id,
       }) */
 
-      console.log("test")
-
       revalidatePath("/entrenamiento/rutinas")
       revalidatePath("/entrenamiento/rutinas-preestablecidas")
 

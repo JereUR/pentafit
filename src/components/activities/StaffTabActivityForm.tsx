@@ -20,7 +20,6 @@ export function StaffTabActivityForm({ control, facilityId }: StaffTabActivityFo
         control={control}
         name="staffIds"
         render={({ field }) => {
-          console.log("StaffTabActivityForm - field value:", field.value)
           return (
             <FormItem>
               <FormLabel>Personal asignado</FormLabel>
@@ -33,7 +32,6 @@ export function StaffTabActivityForm({ control, facilityId }: StaffTabActivityFo
                   users={staffMembers || []}
                   selectedUserIds={Array.isArray(field.value) ? field.value : []}
                   onChange={(ids) => {
-                    console.log("SelectUsers onChange called with:", ids)
                     field.onChange(ids)
                   }}
                   showHealthWarnings={false}

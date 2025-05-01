@@ -69,8 +69,6 @@ export function EditUserForm({ user, onClose, primaryColor }: EditUserFormProps)
     )
   }
 
-  console.log('primaryColor:', primaryColor)
-
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="h-full flex flex-col p-8 max-w-md w-full">
