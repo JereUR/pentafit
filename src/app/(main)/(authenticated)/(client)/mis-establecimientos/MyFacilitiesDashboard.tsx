@@ -18,11 +18,9 @@ interface MyFacilitiesDashboardProps {
 export default function MyFacilitiesDashboard({ user }: MyFacilitiesDashboardProps) {
   const { data: facilities, isLoading: isLoadingFacilities } = useUserFacilities(user.id)
 
-  console.log({ facilities })
-
   if (isLoadingFacilities) return <MyFacilitiesDashboardSkeleton />
 
-  if (!facilities) {
+  if (!facilities || facilities.length === 0) {
     return (
       <div className="w-full mx-auto space-y-8">
         <Card className="p-8 text-center">
