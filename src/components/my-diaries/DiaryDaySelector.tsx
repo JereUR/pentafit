@@ -82,24 +82,39 @@ export function DiaryDaySelector({
       return
     }
 
-    onSubscribe(diaryId, selectedDayIds)
+    const selectedDays = availableDaysWithInfo.filter(day =>
+      selectedDayIds.includes(day.id)
+    )
+
+    onSubscribe(diaryId, selectedDays.map(day => day.id))
   }
 
   const getAvailableDaysWithInfo = (): DayWithInfo[] => {
-    const daysMap = new Map<number, DayWithInfo>()
+    return daysAvailable
+      .filter(day => {
+        const dayIndex = day.dayOfWeek !== null ? day.dayOfWeek :
+          daysAvailable.findIndex(d => d.id === day.id);
 
-    daysAvailable.forEach((day, index) => {
-      if (day.available && index < diaryPlanDaysOfWeek.length && diaryPlanDaysOfWeek[index]) {
-        daysMap.set(index, {
-          id: day.id || `day-${index}`,
+        return (
+          day.available &&
+          dayIndex >= 0 &&
+          dayIndex < diaryPlanDaysOfWeek.length &&
+          diaryPlanDaysOfWeek[dayIndex]
+        );
+      })
+      .map(day => {
+        const dayIndex = day.dayOfWeek !== null ? day.dayOfWeek :
+          daysAvailable.findIndex(d => d.id === day.id);
+
+        return {
+          id: day.id,
           timeStart: day.timeStart,
           timeEnd: day.timeEnd,
-          dayName: daysOfWeekFull[index],
-        })
-      }
-    })
-
-    return Array.from(daysMap.values())
+          dayOfWeek: dayIndex,
+          dayName: daysOfWeekFull[dayIndex] || `Día ${dayIndex + 1}`,
+          available: day.available
+        };
+      })
   }
 
   const availableDaysWithInfo = getAvailableDaysWithInfo()

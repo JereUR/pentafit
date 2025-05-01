@@ -33,21 +33,20 @@ export function DiaryPlanCard({ diaryPlan, facilityId, primaryColor }: DiaryPlan
 
   useEffect(() => {
     if (diaryPlan.diaries.length > 0) {
-      const availableDayIndices = new Set<number>()
+      const availableDays = new Set<string>()
 
       diaryPlan.diaries.forEach((diary) => {
-        diary.daysAvailable.forEach((day, index) => {
-          if (day.available && index < diaryPlan.daysOfWeek.length && diaryPlan.daysOfWeek[index]) {
-            availableDayIndices.add(index)
+        diary.daysAvailable.forEach((day) => {
+          if (day.available && day.dayOfWeek !== null) {
+            const dayName = daysOfWeekFull[day.dayOfWeek]
+            if (dayName) {
+              availableDays.add(`${dayName}: ${day.timeStart} - ${day.timeEnd}`)
+            }
           }
         })
       })
 
-      const daysWithSchedules = Array.from(availableDayIndices)
-        .map((index) => daysOfWeekFull[index])
-        .filter(Boolean)
-
-      setActualAvailableDays(daysWithSchedules)
+      setActualAvailableDays(Array.from(availableDays))
     }
   }, [diaryPlan])
 
@@ -56,6 +55,15 @@ export function DiaryPlanCard({ diaryPlan, facilityId, primaryColor }: DiaryPlan
   }
 
   const handleSubscribe = (diaryId: string, selectedDayIds: string[]) => {
+    const selectedDaysCount = selectedDayIds.length
+    if (selectedDaysCount > diaryPlan.sessionsPerWeek) {
+      toast({
+        title: "Límite excedido",
+        description: `Solo puedes seleccionar ${diaryPlan.sessionsPerWeek} días`,
+        variant: "destructive",
+      })
+      return
+    }
     subscribeToDiary(
       {
         diaryId,
@@ -86,13 +94,18 @@ export function DiaryPlanCard({ diaryPlan, facilityId, primaryColor }: DiaryPlan
   ): Array<FilteredDayAvailable & { dayOfWeek: number }> => {
     if (!diary) return []
 
-    return diary.daysAvailable.map((day, index) => {
-      return {
-        ...day,
-        available: day.available && (index < diaryPlan.daysOfWeek.length ? diaryPlan.daysOfWeek[index] : false),
-        dayOfWeek: index,
-      }
-    })
+    return diary.daysAvailable
+      .filter(day => day.available && day.dayOfWeek !== null)
+      .map((day) => {
+        const dayOfWeek = day.dayOfWeek ?? 0
+        return {
+          ...day,
+          available: dayOfWeek < diaryPlan.daysOfWeek.length
+            ? diaryPlan.daysOfWeek[dayOfWeek]
+            : false,
+          dayOfWeek: dayOfWeek
+        }
+      })
   }
 
   const getSelectedDiary = (): SimpleDiaryData | undefined => {
