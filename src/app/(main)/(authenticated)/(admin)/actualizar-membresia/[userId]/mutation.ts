@@ -19,7 +19,7 @@ export function useMembershipUpdateMutation() {
         title: "Membresía actualizada correctamente",
       })
       queryClient.invalidateQueries({ queryKey: ["user", data.id] })
-      router.push(`/usuarios/${data.id}`)
+      router.push(`/usuario/${data.id}`)
     },
     onError: (error: Error) => {
       toast({
