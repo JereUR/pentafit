@@ -474,3 +474,108 @@ function getDayOfWeekEnum(date: Date): DayOfWeek {
 
   return days[dayIndex]
 }
+
+export async function calculateDailyClassAttendanceProgress(
+  userId: string,
+  facilityId: string,
+  userDiaryId: string,
+  date: Date,
+): Promise<number> {
+  const userDiary = await prisma.userDiary.findUnique({
+    where: { id: userDiaryId },
+    include: {
+      diaryPlan: {
+        select: {
+          sessionsPerWeek: true
+        }
+      },
+      attachments: {
+        include: {
+          dayAvailable: true
+        }
+      }
+    }
+  })
+
+  if (!userDiary) {
+    return 0
+  }
+
+  const startOfWeek = new Date(date)
+  startOfWeek.setDate(startOfWeek.getDate() - (startOfWeek.getDay() || 7) + 1) 
+  startOfWeek.setHours(0, 0, 0, 0)
+
+  const endOfWeek = new Date(startOfWeek)
+  endOfWeek.setDate(endOfWeek.getDate() + 6) 
+  endOfWeek.setHours(23, 59, 59, 999)
+
+  const attendances = await prisma.diaryAttendance.findMany({
+    where: {
+      userId,
+      userDiaryId,
+      date: {
+        gte: startOfWeek,
+        lte: endOfWeek
+      },
+      attended: true
+    },
+    select: {
+      dayAvailableId: true
+    }
+  })
+
+  const uniqueAttendedDays = new Set(
+    attendances.map(a => a.dayAvailableId)
+  ).size
+
+  const progress = (uniqueAttendedDays / userDiary.diaryPlan.sessionsPerWeek) * 100
+
+  return Math.min(progress, 100) 
+}
+
+export async function updateDailyClassAttendanceProgress(
+  userId: string,
+  facilityId: string,
+  userDiaryId: string,
+  date = new Date(),
+): Promise<void> {
+  const progressValue = await calculateDailyClassAttendanceProgress(userId, facilityId, userDiaryId, date)
+
+  const startOfDay = new Date(date)
+  startOfDay.setHours(0, 0, 0, 0)
+
+  const existingProgress = await prisma.userProgress.findUnique({
+    where: {
+      userId_facilityId_type_date: {
+        userId,
+        facilityId,
+        type: "CLASS_ATTENDANCE",
+        date: startOfDay,
+      },
+    },
+  })
+
+  if (existingProgress) {
+    await prisma.userProgress.update({
+      where: {
+        id: existingProgress.id,
+      },
+      data: {
+        value: progressValue,
+        diaryId: userDiaryId,
+        updatedAt: new Date(),
+      },
+    })
+  } else {
+    await prisma.userProgress.create({
+      data: {
+        userId,
+        facilityId,
+        type: "CLASS_ATTENDANCE",
+        date: startOfDay,
+        value: progressValue,
+        diaryId: userDiaryId,
+      },
+    })
+  }
+}

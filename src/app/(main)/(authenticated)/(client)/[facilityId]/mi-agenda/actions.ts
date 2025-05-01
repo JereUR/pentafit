@@ -4,6 +4,9 @@ import { validateRequest } from "@/auth"
 import { revalidatePath } from "next/cache"
 import type { DiaryPlanData, UserDiaryData } from "@/types/user"
 import prisma from "@/lib/prisma"
+import { DayOfWeek } from "@prisma/client"
+import { getDateForDayOfWeek } from "@/lib/utils"
+import { updateDailyClassAttendanceProgress } from "../mi-progreso/actions"
 
 export async function subscribeToDiary({
   diaryId,
@@ -58,22 +61,20 @@ export async function subscribeToDiary({
       }
 
       if (selectedDayIds && selectedDayIds.length > 0) {
-        const validDayIds = diary.daysAvailable
-          .filter((day) => day.available)
-          .map((day) => day.id)
-
-        const allDaysValid = selectedDayIds.every((dayId) =>
-          validDayIds.includes(dayId),
-        )
-
-        if (!allDaysValid) {
+        const validDays = diary.daysAvailable.filter(day => {
+          if (!day.available || !selectedDayIds.includes(day.id)) {
+            return false
+          }
+          
+          if (day.dayOfWeek === null) {
+            return true
+          }
+          
+          return diaryPlan.daysOfWeek[day.dayOfWeek]
+        })
+      
+        if (validDays.length !== selectedDayIds.length) {
           throw new Error("Algunos días seleccionados no son válidos")
-        }
-
-        if (selectedDayIds.length > diaryPlan.sessionsPerWeek) {
-          throw new Error(
-            `Solo puedes seleccionar ${diaryPlan.sessionsPerWeek} días por semana`,
-          )
         }
       }
 
@@ -139,14 +140,18 @@ export async function subscribeToDiary({
 
       if (selectedDayIds && selectedDayIds.length > 0) {
         await Promise.all(
-          selectedDayIds.map((dayId) =>
-            tx.userDiaryAttachment.create({
+          selectedDayIds.map(dayId => {
+            const day = diary.daysAvailable.find(d => d.id === dayId)
+            if (!day || !day.available) {
+              throw new Error(`Día no disponible: ${dayId}`)
+            }
+            return tx.userDiaryAttachment.create({
               data: {
                 userDiaryId: userDiary.id,
                 dayAvailableId: dayId,
               },
-            }),
-          ),
+            })
+          })
         )
       }
 
@@ -270,7 +275,7 @@ export async function getUserDiaries(
                     isActive: true,
                   },
                   include: {
-                    daysAvailable: true,
+                    daysAvailable: true, 
                   },
                 },
               },
@@ -312,6 +317,7 @@ export async function getUserDiaries(
           available: day.available,
           timeStart: day.timeStart,
           timeEnd: day.timeEnd,
+          dayOfWeek: day.dayOfWeek 
         }))
 
       formattedUserDiaries.push({
@@ -412,7 +418,7 @@ export async function getDiaryPlans(
                 },
               },
               include: {
-                daysAvailable: true,
+                daysAvailable: true, 
               },
             },
           },
@@ -456,6 +462,7 @@ export async function getDiaryPlans(
             available: day.available,
             timeStart: day.timeStart,
             timeEnd: day.timeEnd,
+            dayOfWeek: day.dayOfWeek 
           })),
         })),
       }),
@@ -469,5 +476,160 @@ export async function getDiaryPlans(
         ? error.message
         : "Error al cargar los planes de agenda",
     )
+  }
+}
+
+export async function recordDiaryAttendance({
+  diaryId,
+  userDiaryId,
+  facilityId,
+  attended,
+  dayOfWeek,
+  dayAvailableId
+}: {
+  diaryId: string
+  userDiaryId: string
+  facilityId: string
+  attended: boolean
+  dayOfWeek: DayOfWeek
+  dayAvailableId: string
+}) {
+  try {
+    const { user } = await validateRequest()
+
+    if (!user) {
+      throw new Error("No autorizado.")
+    }
+
+    const userFacility = await prisma.userFacility.findUnique({
+      where: {
+        userId_facilityId: {
+          userId: user.id,
+          facilityId,
+        },
+      },
+    })
+
+    if (!userFacility) {
+      throw new Error("El usuario no pertenece a este establecimiento")
+    }
+
+    const userDiary = await prisma.userDiary.findFirst({
+      where: {
+        id: userDiaryId,
+        userId: user.id,
+        isActive: true,
+      },
+      include: {
+        attachments: {
+          where: { dayAvailableId }
+        }
+      }
+    })
+
+    if (!userDiary) {
+      throw new Error("El usuario no tiene esta suscripción activa")
+    }
+
+    const dayAvailable = await prisma.dayAvailable.findUnique({
+      where: {
+        id: dayAvailableId,
+        diaryId
+      }
+    })
+
+    if (!dayAvailable) {
+      throw new Error("El día no pertenece a esta agenda")
+    }
+
+    const targetDate = getDateForDayOfWeek(dayOfWeek)
+    const nextDay = new Date(targetDate)
+    nextDay.setDate(nextDay.getDate() + 1)
+
+    const existingAttendance = await prisma.diaryAttendance.findFirst({
+      where: {
+        userId: user.id,
+        diaryId,
+        dayAvailableId,
+        date: {
+          gte: targetDate,
+          lt: nextDay,
+        },
+      },
+    })
+
+    if (existingAttendance) {
+      await prisma.diaryAttendance.update({
+        where: {
+          id: existingAttendance.id,
+        },
+        data: {
+          attended,
+          updatedAt: new Date(),
+        },
+      })
+    } else {
+      await prisma.diaryAttendance.create({
+        data: {
+          userId: user.id,
+          facilityId,
+          diaryId,
+          userDiaryId,
+          dayAvailableId,
+          date: targetDate,
+          attended,
+        },
+      })
+    }
+
+    await updateDailyClassAttendanceProgress(user.id, facilityId, userDiaryId, targetDate)
+
+    revalidatePath(`/${facilityId}/mi-agenda`)
+    revalidatePath(`/${facilityId}/mi-progreso`)
+
+    return {
+      success: true,
+      userId: user.id,
+    }
+  } catch (error) {
+    console.error("Error recording diary attendance:", error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Error al registrar la asistencia",
+    }
+  }
+}
+
+export async function getTodayDiaryAttendances(facilityId: string) {
+  try {
+    const { user } = await validateRequest()
+
+    if (!user) {
+      throw new Error("No autorizado.")
+    }
+
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const tomorrow = new Date(today)
+    tomorrow.setDate(tomorrow.getDate() + 1)
+
+    return await prisma.diaryAttendance.findMany({
+      where: {
+        userId: user.id,
+        facilityId,
+        date: {
+          gte: today,
+          lt: tomorrow,
+        },
+      },
+      select: {
+        id: true,
+        diaryId: true,
+        attended: true,
+      },
+    })
+  } catch (error) {
+    console.error("Error fetching today's diary attendances:", error)
+    throw error
   }
 }
