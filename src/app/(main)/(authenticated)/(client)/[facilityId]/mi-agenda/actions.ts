@@ -61,20 +61,28 @@ export async function subscribeToDiary({
       }
 
       if (selectedDayIds && selectedDayIds.length > 0) {
-        const validDays = diary.daysAvailable.filter(day => {
-          if (!day.available || !selectedDayIds.includes(day.id)) {
-            return false
+        const validDays = await tx.dayAvailable.findMany({
+          where: {
+            id: { in: selectedDayIds },
+            diaryId: diaryId,
+            available: true,
+          },
+          select: {
+            id: true,
+            dayOfWeek: true
           }
-          
-          if (day.dayOfWeek === null) {
-            return true
-          }
-          
-          return diaryPlan.daysOfWeek[day.dayOfWeek]
         })
-      
+
         if (validDays.length !== selectedDayIds.length) {
           throw new Error("Algunos días seleccionados no son válidos")
+        }
+
+        const invalidPlanDays = validDays.some(
+          day => !diaryPlan.daysOfWeek[day.dayOfWeek as number]
+        )
+        
+        if (invalidPlanDays) {
+          throw new Error("Algunos días seleccionados no están permitidos en tu plan")
         }
       }
 
@@ -139,22 +147,15 @@ export async function subscribeToDiary({
       })
 
       if (selectedDayIds && selectedDayIds.length > 0) {
-        await Promise.all(
-          selectedDayIds.map(dayId => {
-            const day = diary.daysAvailable.find(d => d.id === dayId)
-            if (!day || !day.available) {
-              throw new Error(`Día no disponible: ${dayId}`)
-            }
-            return tx.userDiaryAttachment.create({
-              data: {
-                userDiaryId: userDiary.id,
-                dayAvailableId: dayId,
-              },
-            })
-          })
-        )
+        await tx.userDiaryAttachment.createMany({
+          data: selectedDayIds.map(dayId => ({
+            userDiaryId: userDiary.id,
+            dayAvailableId: dayId
+          }))
+        })
       }
 
+      revalidatePath(`/${facilityId}/mi-agenda`)
       return { success: true, userDiary }
     })
   } catch (error) {
@@ -275,7 +276,11 @@ export async function getUserDiaries(
                     isActive: true,
                   },
                   include: {
-                    daysAvailable: true, 
+                    daysAvailable: {
+                      orderBy: {
+                        dayOfWeek: 'asc'
+                      }
+                    }, 
                   },
                 },
               },
@@ -286,6 +291,11 @@ export async function getUserDiaries(
           include: {
             dayAvailable: true,
           },
+          orderBy: {
+            dayAvailable: {
+              dayOfWeek: 'asc'
+            }
+          }
         },
       },
     })
@@ -303,21 +313,21 @@ export async function getUserDiaries(
         continue
       }
 
-      const subscribedDayIds = userDiary.attachments.map(
-        (attachment) => attachment.dayAvailableId,
-      )
+      const selectedDays = userDiary.attachments.map((attachment) => ({
+        id: attachment.dayAvailableId,
+        timeStart: attachment.dayAvailable.timeStart,
+        timeEnd: attachment.dayAvailable.timeEnd,
+        dayOfWeek: attachment.dayAvailable.dayOfWeek as number
+      }))
 
       const filteredDaysAvailable = diary.daysAvailable
-        .filter(
-          (day) =>
-            subscribedDayIds.length === 0 || subscribedDayIds.includes(day.id),
-        )
-        .map((day) => ({
+        .filter(day => day.available)
+        .map(day => ({
           id: day.id,
           available: day.available,
           timeStart: day.timeStart,
           timeEnd: day.timeEnd,
-          dayOfWeek: day.dayOfWeek 
+          dayOfWeek: day.dayOfWeek as number
         }))
 
       formattedUserDiaries.push({
@@ -347,11 +357,7 @@ export async function getUserDiaries(
           },
           daysAvailable: filteredDaysAvailable,
         },
-        selectedDays: userDiary.attachments.map((attachment) => ({
-          id: attachment.dayAvailableId,
-          timeStart: attachment.dayAvailable.timeStart,
-          timeEnd: attachment.dayAvailable.timeEnd,
-        })),
+        selectedDays: selectedDays.filter(day => day.dayOfWeek !== null),
         diaryPlan: {
           id: userDiary.diaryPlan.id,
           name: userDiary.diaryPlan.name,
