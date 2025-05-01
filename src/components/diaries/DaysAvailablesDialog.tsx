@@ -18,7 +18,7 @@ export default function DaysAvailablesDialog({ name, daysAvailables }: DaysAvail
 
   return (
     <div className="flex items-center justify-center">
-      <span>{daysAvailables.length}</span>
+      <span>{daysAvailables.filter(d => d.available).length}</span>
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogTrigger asChild>
           <Button variant="ghost" size="sm" className="ml-2">
