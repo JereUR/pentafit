@@ -94,16 +94,11 @@ export interface SimpleDiaryData {
   worksHolidays: boolean
   observations: string | null
   daysAvailable: {
-    id?: string
+    id: string
     available: boolean
     timeStart: string
     timeEnd: string
-  }[]
-  repeatFor?: number | null
-  facilityId?: string
-  offerDays?: {
-    isOffer: boolean
-    discountPercentage: number | null
+    dayOfWeek: number | null
   }[]
 }
 
@@ -143,6 +138,7 @@ export interface UserDiaryData {
     id: string
     timeStart: string
     timeEnd: string
+    attended?: boolean
   }[]
   diaryPlan?: {
     id: string
