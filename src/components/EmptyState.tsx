@@ -53,7 +53,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({
   }
 
   return (
-    <div className="flex flex-col items-center justify-center h-full w-full">
+    <div className="flex flex-col items-center justify-center h-full w-full max-h-[90vh]">
       {getIcon()}
       <h2 className="text-2xl font-semibold mt-4">{title}</h2>
       <p className="text-muted-foreground text-sm mt-2">{description}</p>
