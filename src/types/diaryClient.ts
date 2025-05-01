@@ -1,3 +1,5 @@
+import { DayOfWeek } from "@prisma/client"
+
 export interface FilteredDayAvailable {
   id?: string
   available: boolean
@@ -6,7 +8,8 @@ export interface FilteredDayAvailable {
 }
 
 export interface DayAvailable {
-  id?: string
+  id: string
+  dayOfWeek: number | null  
   available: boolean
   timeStart: string
   timeEnd: string
@@ -17,6 +20,8 @@ export interface DayWithInfo {
   timeStart: string
   timeEnd: string
   dayName: string
+  dayOfWeek: number  
+  available: boolean
 }
 
 export interface CalendarEvent {
@@ -35,9 +40,10 @@ export interface DayEvents {
 }
 
 export interface DiarySchedule {
-  id: string
-  timeStart: string
-  timeEnd: string
+  id: string;
+  timeStart: string;
+  timeEnd: string;
+  attended?: boolean;
 }
 
 export interface TodayDiaryItem {
@@ -47,6 +53,36 @@ export interface TodayDiaryItem {
   activityDescription: string | null
   planName: string
   schedule: DiarySchedule[]
+  attended?: boolean
 }
 
 export type TodayDiaryData = TodayDiaryItem[] | null
+
+export interface DiaryAttendanceResponse {
+  diaryId: string
+  attended: boolean
+}
+
+export interface TodayDiaryResponseItem {
+  id: string;
+  userDiaryId: string;
+  diaryPlanId: string;
+  activityName: string;
+  activityDescription: string | null;
+  planName: string;
+  schedule: DiarySchedule[];
+}
+
+export interface TodayDiaryItem extends TodayDiaryResponseItem {
+  attended?: boolean
+  userDiaryId: string
+}
+
+export interface DiaryAttendanceParams {
+  diaryId: string
+  userDiaryId: string
+  facilityId: string
+  attended: boolean
+  dayOfWeek: DayOfWeek
+  dayAvailableId: string
+}
