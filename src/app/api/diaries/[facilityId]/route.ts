@@ -95,6 +95,7 @@ export async function GET(
       observations: diary.observations,
       facilityId: diary.facilityId,
       daysAvailable: diary.daysAvailable.map((day) => ({
+        dayOfWeek: day.dayOfWeek || 0, 
         available: day.available,
         timeStart: day.timeStart,
         timeEnd: day.timeEnd,

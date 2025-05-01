@@ -35,6 +35,7 @@ export interface ScheduleWithActivity {
 
 export interface Schedule {
   id?: string
+  dayOfWeek: number
   available: boolean
   timeStart: string
   timeEnd: string
@@ -129,15 +130,13 @@ export const hoursOfDays = [
 ]
 
 export function formatDaysAvailable(
-  daysAvailable: { available: boolean; timeStart: string; timeEnd: string }[],
+  daysAvailable: Schedule[],
 ): string {
   return daysAvailable
-    .map((day, index) =>
-      day.available
-        ? `${daysOfWeekFull[index]} (${day.timeStart}hs - ${day.timeEnd}hs)`
-        : "",
+    .filter(day => day.available)
+    .map(day => 
+      `${daysOfWeekFull[day.dayOfWeek]} (${day.timeStart}hs - ${day.timeEnd}hs)`
     )
-    .filter(Boolean)
     .join(" - ")
 }
 

@@ -283,6 +283,7 @@ export type PlanValues = z.infer<typeof planSchema>
 // Diary
 
 const dayAvailableSchema = z.object({
+  dayOfWeek: z.number().int().min(0).max(6),
   available: z.boolean(),
   timeStart: z
     .string()

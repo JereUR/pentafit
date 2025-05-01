@@ -57,6 +57,7 @@ export const getDiaryById = cache(
         worksHolidays: diary.worksHolidays,
         observations: diary.observations,
         daysAvailable: diary.daysAvailable.map((day) => ({
+          dayOfWeek: day.dayOfWeek,
           available: day.available,
           timeStart: day.timeStart,
           timeEnd: day.timeEnd,
@@ -75,12 +76,12 @@ export async function createDiary(values: DiaryValues): Promise<DiaryResult> {
 
   return await prisma.$transaction(async (tx) => {
     try {
-      const sanitizedDaysAvailable =
-        values.daysAvailable?.map((day: Schedule) => ({
-          available: day.available,
-          timeStart: day.timeStart,
-          timeEnd: day.timeEnd,
-        })) ?? []
+      const sanitizedDaysAvailable = values.daysAvailable?.map((day: Schedule, index) => ({
+        dayOfWeek: day.dayOfWeek ?? index, 
+        available: day.available,
+        timeStart: day.timeStart,
+        timeEnd: day.timeEnd,
+      })) ?? []
 
       const sanitizedOfferDays =
         values.offerDays?.map(
@@ -127,8 +128,37 @@ export async function createDiary(values: DiaryValues): Promise<DiaryResult> {
         include: {
           daysAvailable: true,
           offerDays: true,
+          facility: true,
+          activity: true,
         },
       })
+
+      // Map the result to match DiaryData type
+      const formattedDiary: DiaryData = {
+        id: diary.id,
+        name: diary.name,
+        typeSchedule: diary.typeSchedule,
+        dateFrom: diary.dateFrom,
+        dateUntil: diary.dateUntil,
+        repeatFor: diary.repeatFor,
+        offerDays: diary.offerDays.map((day) => ({
+          isOffer: day.isOffer,
+          discountPercentage: day.discountPercentage,
+        })),
+        termDuration: diary.termDuration,
+        amountOfPeople: diary.amountOfPeople,
+        isActive: diary.isActive,
+        genreExclusive: diary.genreExclusive,
+        worksHolidays: diary.worksHolidays,
+        observations: diary.observations,
+        facilityId: diary.facilityId,
+        daysAvailable: diary.daysAvailable.map((day) => ({
+          dayOfWeek: day.dayOfWeek ?? 0, // Provide default value if null
+          available: day.available,
+          timeStart: day.timeStart,
+          timeEnd: day.timeEnd,
+        })),
+      }
 
       await createDiaryTransaction({
         tx,
@@ -152,7 +182,7 @@ export async function createDiary(values: DiaryValues): Promise<DiaryResult> {
       })
 
       revalidatePath(`/agenda`)
-      return { success: true, diary }
+      return { success: true, diary: formattedDiary }
     } catch (error) {
       console.error(error)
       return { success: false, error: "Error al crear la agenda" }
@@ -195,6 +225,7 @@ export async function updateDiary(
           daysAvailable: {
             deleteMany: {},
             create: values.daysAvailable.map((day) => ({
+              dayOfWeek: day.dayOfWeek, // Add this line
               available: day.available,
               timeStart: day.timeStart,
               timeEnd: day.timeEnd,
@@ -208,6 +239,33 @@ export async function updateDiary(
           offerDays: true,
         },
       })
+
+      // Map the result to match DiaryData type
+      const formattedDiary: DiaryData = {
+        id: diary.id,
+        name: diary.name,
+        typeSchedule: diary.typeSchedule,
+        dateFrom: diary.dateFrom,
+        dateUntil: diary.dateUntil,
+        repeatFor: diary.repeatFor,
+        offerDays: diary.offerDays.map((day) => ({
+          isOffer: day.isOffer,
+          discountPercentage: day.discountPercentage,
+        })),
+        termDuration: diary.termDuration,
+        amountOfPeople: diary.amountOfPeople,
+        isActive: diary.isActive,
+        genreExclusive: diary.genreExclusive,
+        worksHolidays: diary.worksHolidays,
+        observations: diary.observations,
+        facilityId: diary.facilityId,
+        daysAvailable: diary.daysAvailable.map((day) => ({
+          dayOfWeek: day.dayOfWeek ?? 0, // Provide default value if null
+          available: day.available,
+          timeStart: day.timeStart,
+          timeEnd: day.timeEnd,
+        })),
+      }
 
       await createDiaryTransaction({
         tx,
@@ -231,7 +289,7 @@ export async function updateDiary(
       })
 
       revalidatePath(`/agenda`)
-      return { success: true, diary }
+      return { success: true, diary: formattedDiary }
     })
     .catch((error) => {
       console.error(error)
