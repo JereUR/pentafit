@@ -9,6 +9,7 @@ import { isRedirectError } from "next/dist/client/components/redirect-error"
 import prisma from "@/lib/prisma"
 import { lucia } from "@/auth"
 import { signUpSchema, SignUpValues } from "@/lib/validation"
+import { Role } from "@prisma/client"
 
 export async function signUp(
   credentials: SignUpValues,
@@ -42,6 +43,7 @@ export async function signUp(
     await prisma.user.create({
       data: {
         id: userId,
+        role:Role.ADMIN,
         firstName,
         lastName,
         gender,
