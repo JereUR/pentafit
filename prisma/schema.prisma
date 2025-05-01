@@ -37,7 +37,7 @@ model User {
   email                  String?               @unique
   birthday               String
   gender                 String
-  role                   Role                  @default(CLIENT)
+  role                   Role                  @default(ADMIN)
   passwordHash           String?
   googleId               String?               @unique
   avatarUrl              String?
