@@ -327,9 +327,10 @@ export const diarySchema = z
     observations: z.string().nullable(),
     daysAvailable: z
       .array(dayAvailableSchema)
-      .length(
-        7,
-        "Debe proporcionar disponibilidad para los 7 días de la semana",
+      .length(7, "Debe proporcionar disponibilidad para los 7 días de la semana")
+      .refine(
+        (days) => days.every((day, index) => day.dayOfWeek === index),
+        "El día de la semana no coincide con la posición en el array"
       ),
   })
   .refine((data) => data.daysAvailable.some((day) => day.available), {

@@ -1,7 +1,6 @@
 "use client"
 
-import { type Control, useWatch } from "react-hook-form"
-
+import { type Control, useFormContext, useWatch } from "react-hook-form"
 import { FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -18,10 +17,21 @@ interface ScheduleTabDiaryFormProps {
 }
 
 export function ScheduleTabDiaryForm({ control }: ScheduleTabDiaryFormProps) {
+  const { setValue } = useFormContext<DiaryValues>()
   const daysAvailable = useWatch({
     control,
     name: "daysAvailable",
   })
+
+  const handleAvailabilityChange = (index: number, isAvailable: boolean) => {
+    const currentDays = [...daysAvailable]
+    currentDays[index] = {
+      ...currentDays[index],
+      dayOfWeek: index,
+      available: isAvailable
+    }
+    setValue("daysAvailable", currentDays)
+  }
 
   return (
     <Card className="w-full">
@@ -138,7 +148,12 @@ export function ScheduleTabDiaryForm({ control }: ScheduleTabDiaryFormProps) {
                             <FormControl>
                               <Checkbox
                                 checked={field.value}
-                                onCheckedChange={field.onChange}
+                                onCheckedChange={(checked) => {
+                                  if (typeof checked === 'boolean') {
+                                    field.onChange(checked)
+                                    handleAvailabilityChange(index, checked)
+                                  }
+                                }}
                                 className="h-4 w-4 sm:h-6 sm:w-6"
                               />
                             </FormControl>
@@ -159,7 +174,7 @@ export function ScheduleTabDiaryForm({ control }: ScheduleTabDiaryFormProps) {
           <h3 className="text-lg font-medium">Horarios por día</h3>
           {daysAvailable.map(
             (day, index) =>
-              day.available && (
+              day?.available && (
                 <Card key={index} className="border-primary/20">
                   <CardContent className="p-4">
                     <h4 className="font-medium mb-3">{daysOfWeekFull[index]}</h4>
@@ -170,7 +185,10 @@ export function ScheduleTabDiaryForm({ control }: ScheduleTabDiaryFormProps) {
                         render={({ field }) => (
                           <FormItem className="flex-1">
                             <FormLabel className="text-sm">Hora de inicio</FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value}>
+                            <Select
+                              onValueChange={field.onChange}
+                              value={field.value}
+                            >
                               <FormControl>
                                 <SelectTrigger>
                                   <SelectValue placeholder="Selecciona hora de inicio" />
@@ -193,7 +211,10 @@ export function ScheduleTabDiaryForm({ control }: ScheduleTabDiaryFormProps) {
                         render={({ field }) => (
                           <FormItem className="flex-1">
                             <FormLabel className="text-sm">Hora de fin</FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value}>
+                            <Select
+                              onValueChange={field.onChange}
+                              value={field.value}
+                            >
                               <FormControl>
                                 <SelectTrigger>
                                   <SelectValue placeholder="Selecciona hora de fin" />
@@ -220,4 +241,3 @@ export function ScheduleTabDiaryForm({ control }: ScheduleTabDiaryFormProps) {
     </Card>
   )
 }
-

@@ -67,11 +67,12 @@ function DiaryForm({ userId, diaryData }: DiaryFormProps) {
       genreExclusive: genreExclusive.NO,
       worksHolidays: false,
       observations: "",
-      daysAvailable: Array(7).fill({
+      daysAvailable: Array(7).fill(null).map((_, index) => ({
+        dayOfWeek: index,
         available: false,
         timeStart: "08:00",
         timeEnd: "09:00"
-      })
+      }))
     },
   })
 
