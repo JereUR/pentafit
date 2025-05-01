@@ -22,47 +22,50 @@ async function fetchNutritionData(
   return result.data || null
 }
 
-async function fetchDiaryData(
-  facilityId: string,
-): Promise<TodayDiaryItem[] | null> {
+async function fetchDiaryData(facilityId: string): Promise<TodayDiaryItem[] | null> {
   try {
-    const diaryResponse = await fetch(`/api/user/today-diary/${facilityId}`);
-    if (!diaryResponse.ok) throw new Error("Failed to fetch diary data");
+    const diaryResponse = await fetch(`/api/user/today-diary/${facilityId}`)
+    if (!diaryResponse.ok) throw new Error("Failed to fetch diary data")
     
-    const diaryResult = await diaryResponse.json();
-    const diaries: TodayDiaryResponseItem[] = diaryResult.data || [];
+    const diaryResult = await diaryResponse.json()
+    const diaries: TodayDiaryResponseItem[] = diaryResult.data || []
     
     if (diaries.length === 0) {
-      return null;
+      return null
     }
 
     const scheduleIds = diaries.flatMap(diary => 
       diary.schedule.map(schedule => schedule.id)
-    );
+    )
 
-    const attendanceResponse = await fetch(`/api/user/today-attendances/${facilityId}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ scheduleIds })
-    });
+    const queryParams = new URLSearchParams()
+    scheduleIds.forEach(id => queryParams.append('dayAvailableIds', id))
     
-    if (!attendanceResponse.ok) throw new Error("Failed to fetch attendance data");
+    const attendanceResponse = await fetch(
+      `/api/user/today-attendances/${facilityId}?${queryParams.toString()}`, 
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      }
+    )
     
-    const attendanceResult = await attendanceResponse.json();
-    const attendances: DiaryAttendanceResponse[] = attendanceResult.data || [];
+    if (!attendanceResponse.ok) throw new Error("Failed to fetch attendance data")
+    
+    const attendanceResult = await attendanceResponse.json()
+    const attendances: DiaryAttendanceResponse[] = attendanceResult.data || []
 
     return diaries.map(diary => ({
       ...diary,
       schedule: diary.schedule.map(schedule => ({
         ...schedule,
-        attended: attendances.some(a => a.diaryId === diary.id)
+        attended: attendances.some(a => a.attended)
       }))
-    }));
+    }))
   } catch (error) {
-    console.error("Error fetching diary data:", error);
-    return null;
+    console.error("Error fetching diary data:", error)
+    return null
   }
 }
 

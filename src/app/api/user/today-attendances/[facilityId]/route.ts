@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server'
-
 import prisma from '@/lib/prisma'
 import { validateRequest } from '@/auth'
 
@@ -8,7 +7,9 @@ export async function GET(
   { params }: { params: Promise<{ facilityId: string }> }
 ) {
   try {
-    const { dayAvailableIds } = await request.json()
+    const { searchParams } = new URL(request.url)
+    const dayAvailableIds = searchParams.getAll('dayAvailableIds')
+    
     const { user } = await validateRequest()
 
     if (!user) {
