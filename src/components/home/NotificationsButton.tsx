@@ -49,7 +49,7 @@ export default function NotificationsButton({ initialState, primaryColor }: Noti
           </div>
           {!!data.unreadCount && (
             <span
-              className="absolute -right-2 -top-2 flex min-w-[1.25rem] min-h-[1.25rem] items-center justify-center rounded-full px-1 text-xs font-medium text-primary-foreground"
+              className="absolute -right-2 -top-2 flex min-w-[1.25rem] bg-primary min-h-[1.25rem] items-center justify-center rounded-full px-1 text-xs font-medium text-primary-foreground"
               style={primaryColor ? { backgroundColor: primaryColor } : {}}
             >
               {formatCount(data.unreadCount)}
