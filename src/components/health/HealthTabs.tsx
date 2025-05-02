@@ -18,10 +18,10 @@ interface HealthTabsProps {
 export function HealthTabs({ healthInfo, activeTab, setActiveTab, primaryColor }: HealthTabsProps) {
   return (
     <Tabs defaultValue="overview" className="w-full" onValueChange={(value) => setActiveTab(value)}>
-      <TabsList className="mb-4">
+      <TabsList className="mb-4 h-full overflow-y-hidden flex overflow-x-auto p-2">
         <TabsTrigger
           value="overview"
-          className="text-sm"
+          className="text-sm whitespace-nowrap"
           style={{
             backgroundColor: activeTab === "overview" ? primaryColor : "transparent",
             color: activeTab === "overview" ? "#ffffff" : "inherit",
@@ -32,7 +32,7 @@ export function HealthTabs({ healthInfo, activeTab, setActiveTab, primaryColor }
         {healthInfo.hasChronicConditions && (
           <TabsTrigger
             value="conditions"
-            className="text-sm"
+            className="text-sm whitespace-nowrap"
             style={{
               backgroundColor: activeTab === "conditions" ? primaryColor : "transparent",
               color: activeTab === "conditions" ? "#ffffff" : "inherit",
@@ -44,7 +44,7 @@ export function HealthTabs({ healthInfo, activeTab, setActiveTab, primaryColor }
         {healthInfo.takingMedication && (
           <TabsTrigger
             value="medications"
-            className="text-sm"
+            className="text-sm whitespace-nowrap"
             style={{
               backgroundColor: activeTab === "medications" ? primaryColor : "transparent",
               color: activeTab === "medications" ? "#ffffff" : "inherit",
@@ -56,7 +56,7 @@ export function HealthTabs({ healthInfo, activeTab, setActiveTab, primaryColor }
         {healthInfo.hasInjuries && (
           <TabsTrigger
             value="injuries"
-            className="text-sm"
+            className="text-sm whitespace-nowrap"
             style={{
               backgroundColor: activeTab === "injuries" ? primaryColor : "transparent",
               color: activeTab === "injuries" ? "#ffffff" : "inherit",
@@ -68,7 +68,7 @@ export function HealthTabs({ healthInfo, activeTab, setActiveTab, primaryColor }
         {healthInfo.hasAllergies && (
           <TabsTrigger
             value="allergies"
-            className="text-sm"
+            className="text-sm whitespace-nowrap"
             style={{
               backgroundColor: activeTab === "allergies" ? primaryColor : "transparent",
               color: activeTab === "allergies" ? "#ffffff" : "inherit",

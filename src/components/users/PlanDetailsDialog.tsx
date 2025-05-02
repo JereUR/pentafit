@@ -22,7 +22,7 @@ export function PlanDetailsDialog({ plan, primaryColor }: PlanDetailsDialogProps
           <InfoIcon className="h-4 w-4" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[625px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-[400px] px-2 lg:px-0 lg:max-w-[625px] max-h-[80vh] lg:max-h-[90vh] overflow-y-auto scrollbar-thin rounded-md">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold" style={{ color: primaryColor }}>
             Detalles del Plan: {plan.name}

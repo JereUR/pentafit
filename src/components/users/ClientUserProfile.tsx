@@ -28,7 +28,7 @@ export function ClientUserProfile({ user, loggedUserId, primaryColor, isOwnProfi
   const activePlan = user.plan.find((up) => up.plan)?.plan
 
   return (
-    <div className="container mx-auto p-4 relative">
+    <div className="container mx-2 lg:mx-auto p-2 lg:p-4 relative">
       <Card className="w-full max-w-2xl mx-auto shadow-md">
         <CardHeader className="pb-2">
           <CardTitle className="text-2xl font-bold">Mi Perfil</CardTitle>

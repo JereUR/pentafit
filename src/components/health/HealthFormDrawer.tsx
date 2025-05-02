@@ -30,16 +30,18 @@ export function HealthFormDrawer({
           animate={{ x: 0 }}
           exit={{ x: "-100%" }}
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
-          className="fixed inset-y-0 left-0 w-full max-w-md bg-background shadow-lg z-50"
-          style={{ top: 0, maxHeight: "100vh" }}
+          className="fixed inset-0 w-full max-w-md bg-background shadow-lg z-50 flex flex-col"
+          style={{ maxHeight: "100vh" }}
         >
-          <HealthInfoForm
-            healthInfo={healthInfo}
-            userId={userId}
-            facilityId={facilityId}
-            onClose={() => setShowHealthForm(false)}
-            primaryColor={primaryColor}
-          />
+          <div className="flex-1 overflow-y-auto scrollbar-thin">
+            <HealthInfoForm
+              healthInfo={healthInfo}
+              userId={userId}
+              facilityId={facilityId}
+              onClose={() => setShowHealthForm(false)}
+              primaryColor={primaryColor}
+            />
+          </div>
         </motion.div>
       )}
     </AnimatePresence>
