@@ -69,7 +69,7 @@ export default function ClientLayout({ children, userRole }: ClientLayoutProps) 
             userRole={userRole}
           />
         )}
-        <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 max-w-full scrollbar-thin pb-20 lg:pb-4">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden p-2 lg:p-4 max-w-full scrollbar-thin pb-20 lg:pb-4">
           {children}
         </main>
       </div>
