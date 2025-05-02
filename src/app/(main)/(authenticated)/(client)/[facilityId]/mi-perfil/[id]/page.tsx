@@ -155,7 +155,7 @@ export default async function UserPage({ params }: UserPageProps) {
   const isOwnProfile = loggedUser.id === id
 
   return (
-    <main className="flex container gap-5 p-5">
+    <main className="flex container gap-2 lg:gap-5 p-2 lg:p-5">
       <UserProfileContent
         userId={id}
         facilityId={facilityId}
@@ -178,5 +178,5 @@ async function UserProfileContent({
   loggedUserId: string
 }) {
   const { user } = await getUser(userId, facilityId, isOwnProfile)
-  return <ProfileClient user={user} userId={loggedUserId} isOwnProfile={isOwnProfile} facilityId={facilityId}/>
+  return <ProfileClient user={user} userId={loggedUserId} isOwnProfile={isOwnProfile} facilityId={facilityId} />
 }
