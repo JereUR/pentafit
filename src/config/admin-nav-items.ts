@@ -5,9 +5,8 @@ import {
   Calendar,
   ClipboardList,
   Receipt,
-  LineChart,
   Dumbbell,
-  MessageSquare,
+  CalendarCheck,
 } from "lucide-react"
 
 import type { NavItem } from "@/types/sidebar"
@@ -47,6 +46,12 @@ export const adminNavItems: NavItem[] = [
     roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.STAFF],
   },
   {
+    title: "Actividades asignadas",
+    icon: CalendarCheck,
+    href: "/actividades-asignadas",
+    roles: [Role.STAFF],
+  },
+  {
     title: "Facturación",
     icon: Receipt,
     roles: [Role.SUPER_ADMIN, Role.ADMIN],
@@ -54,8 +59,8 @@ export const adminNavItems: NavItem[] = [
       { title: "Facturas", href: "/facturacion/facturas" },
       { title: "Pagos", href: "/facturacion/pagos" },
     ],
-  },
-  { title: "Seguimiento", icon: LineChart, href: "/seguimiento" },
+  },/* 
+  { title: "Seguimiento", icon: LineChart, href: "/seguimiento" }, */
   {
     title: "Entrenamiento",
     icon: Dumbbell,
@@ -75,7 +80,7 @@ export const adminNavItems: NavItem[] = [
       },
     ],
     roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.STAFF],
-  },
+  },/* 
   {
     title: "Comunicación",
     icon: MessageSquare,
@@ -83,5 +88,5 @@ export const adminNavItems: NavItem[] = [
       { title: "Mensajes", href: "/comunicacion/mensajes" },
       { title: "Notificaciones", href: "/comunicacion/notificaciones" },
     ],
-  },
+  }, */
 ]
