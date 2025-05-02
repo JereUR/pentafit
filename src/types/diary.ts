@@ -89,6 +89,41 @@ export type DiaryExportData = {
   daysAvailable: string
 }
 
+export interface StaffDiaryData {
+  id: string
+  name: string
+  activity: {
+    id: string
+    name: string
+    description?: string
+    activityType: string
+  }
+  facility: {
+    id: string
+    name: string
+  }
+  typeSchedule: typeSchedule
+  dateFrom: Date
+  dateUntil: Date
+  termDuration: number
+  amountOfPeople: number
+  genreExclusive: genreExclusive
+  worksHolidays: boolean
+  observations?: string
+  daysAvailable: {
+    id: string
+    dayOfWeek: number
+    available: boolean
+    timeStart: string
+    timeEnd: string
+  }[]
+  offerDays: {
+    id: string
+    isOffer: boolean
+    discountPercentage?: number
+  }[]
+}
+
 export const hoursOfDays = [
   "06:00",
   "06:30",
