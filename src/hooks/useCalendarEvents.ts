@@ -1,4 +1,4 @@
-"use client"
+'use client'
 
 import { useMemo } from "react"
 
@@ -20,28 +20,32 @@ export function useCalendarEvents(
     }))
 
     userDiaries.forEach((userDiary) => {
-      if (!userDiary.selectedDays) return
+      const daysToUse = userDiary.selectedDays && userDiary.selectedDays.length > 0 
+        ? userDiary.selectedDays 
+        : userDiary.diary.daysAvailable.filter(d => d.available)
 
-      userDiary.selectedDays.forEach((day) => {
-        const dayOfWeek = userDiary.diary.daysAvailable.findIndex(
-          (d) => d.id === day.id,
-        )
-        if (dayOfWeek >= 0) {
+      daysToUse.forEach((day) => {
+        const dayAvailable = userDiary.diary.daysAvailable.find(d => d.id === day.id)
+        
+        if (dayAvailable) {
+          const attended = 'attended' in day ? day.attended : false
+          
           const event: CalendarEvent = {
-            id: `${userDiary.id}-${day.id}`,
+            id: `${userDiary.id}-${dayAvailable.id}`,
             title: userDiary.diary.activity.name,
-            time: `${day.timeStart} - ${day.timeEnd}`,
+            time: `${dayAvailable.timeStart} - ${dayAvailable.timeEnd}`,
             diaryName: userDiary.diary.name,
             activityName: userDiary.diary.activity.name,
             diaryId: userDiary.diary.id,
             userDiaryId: userDiary.id,
-            dayAvailableId: day.id,
-            attended: day.attended 
+            dayAvailableId: dayAvailable.id,
+            attended
           }
 
           const targetDay = daysWithEvents.find(
-            (d) => d.date.getDay() === dayOfWeek,
+            (d) => d.date.getDay() === dayAvailable.dayOfWeek
           )
+          
           if (targetDay) {
             targetDay.events.push(event)
           }
