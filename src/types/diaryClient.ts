@@ -90,3 +90,10 @@ export interface DiaryAttendanceParams {
   dayOfWeek: DayOfWeek
   dayAvailableId: string
 }
+
+export interface CalendarDay {
+  dayName: string
+  dayNumber: number
+  date: Date
+  events: CalendarEvent[]
+}
