@@ -18,8 +18,17 @@ export async function subscribeToDiary({
   selectedDayIds?: string[]
 }) {
   try {
-    const { user } = await validateRequest()
+    if (!diaryId || typeof diaryId !== "string") {
+      throw new Error("Invalid diaryId")
+    }
+    if (!facilityId || typeof facilityId !== "string") {
+      throw new Error("Invalid facilityId")
+    }
+    if (selectedDayIds && !Array.isArray(selectedDayIds)) {
+      throw new Error("selectedDayIds must be an array")
+    }
 
+    const { user } = await validateRequest()
     if (!user) {
       throw new Error("No autorizado.")
     }
@@ -35,7 +44,6 @@ export async function subscribeToDiary({
           daysAvailable: true,
         },
       })
-
       if (!diary) {
         throw new Error("Agenda no encontrada o inactiva")
       }
@@ -44,14 +52,11 @@ export async function subscribeToDiary({
         where: {
           activity: {
             diaries: {
-              some: {
-                id: diaryId,
-              },
+              some: { id: diaryId },
             },
           },
         },
       })
-
       if (!diaryPlan) {
         throw new Error("Plan de agenda no encontrado")
       }
@@ -69,18 +74,16 @@ export async function subscribeToDiary({
           },
           select: {
             id: true,
-            dayOfWeek: true
-          }
+            dayOfWeek: true,
+          },
         })
-
         if (validDays.length !== selectedDayIds.length) {
           throw new Error("Algunos días seleccionados no son válidos")
         }
 
         const invalidPlanDays = validDays.some(
-          day => !diaryPlan.daysOfWeek[day.dayOfWeek as number]
+          (day) => !diaryPlan.daysOfWeek[day.dayOfWeek]
         )
-        
         if (invalidPlanDays) {
           throw new Error("Algunos días seleccionados no están permitidos en tu plan")
         }
@@ -93,7 +96,6 @@ export async function subscribeToDiary({
           isActive: true,
         },
       })
-
       if (existingUserDiary) {
         throw new Error("Ya estás suscrito a esta actividad")
       }
@@ -107,22 +109,16 @@ export async function subscribeToDiary({
       })
 
       let userDiary
-
       if (inactiveUserDiary) {
         userDiary = await tx.userDiary.update({
-          where: {
-            id: inactiveUserDiary.id,
-          },
+          where: { id: inactiveUserDiary.id },
           data: {
             isActive: true,
             endDate: null,
           },
         })
-
         await tx.userDiaryAttachment.deleteMany({
-          where: {
-            userDiaryId: userDiary.id,
-          },
+          where: { userDiaryId: userDiary.id },
         })
       } else {
         userDiary = await tx.userDiary.create({
@@ -136,22 +132,16 @@ export async function subscribeToDiary({
       }
 
       await tx.diaryPlan.update({
-        where: {
-          id: diaryPlan.id,
-        },
-        data: {
-          vacancies: {
-            decrement: 1,
-          },
-        },
+        where: { id: diaryPlan.id },
+        data: { vacancies: { decrement: 1 } },
       })
 
       if (selectedDayIds && selectedDayIds.length > 0) {
         await tx.userDiaryAttachment.createMany({
-          data: selectedDayIds.map(dayId => ({
+          data: selectedDayIds.map((dayId) => ({
             userDiaryId: userDiary.id,
-            dayAvailableId: dayId
-          }))
+            dayAvailableId: dayId,
+          })),
         })
       }
 
@@ -159,12 +149,12 @@ export async function subscribeToDiary({
       return { success: true, userDiary }
     })
   } catch (error) {
-    console.error("Error subscribing to diary:", error)
-    throw new Error(
-      error instanceof Error
-        ? error.message
-        : "Error al suscribirse a la agenda",
-    )
+    let errorMessage = "Error al suscribirse a la agenda"
+    if (error instanceof Error) {
+      errorMessage = error.message
+      console.error("Error subscribing to diary:", error)
+    }
+    return { success: false, error: errorMessage }
   }
 }
 
@@ -490,24 +480,24 @@ export async function calculateGlobalAttendanceProgress(
   facilityId: string,
   date: Date = new Date()
 ): Promise<number> {
-  const { userDiaries } = await getUserDiaries(facilityId);
+  const { userDiaries } = await getUserDiaries(facilityId)
 
-  if (userDiaries.length === 0) return 0;
+  if (userDiaries.length === 0) return 0
 
   const totalSelectedDays = userDiaries.reduce(
     (sum, diary) => sum + (diary.selectedDays?diary.selectedDays.length:0),
     0
-  );
+  )
 
-  if (totalSelectedDays === 0) return 0;
+  if (totalSelectedDays === 0) return 0
 
-  const startOfWeek = new Date(date);
-  startOfWeek.setDate(startOfWeek.getDate() - (startOfWeek.getDay() || 7) + 1);
-  startOfWeek.setHours(0, 0, 0, 0);
+  const startOfWeek = new Date(date)
+  startOfWeek.setDate(startOfWeek.getDate() - (startOfWeek.getDay() || 7) + 1)
+  startOfWeek.setHours(0, 0, 0, 0)
 
-  const endOfWeek = new Date(startOfWeek);
-  endOfWeek.setDate(endOfWeek.getDate() + 6);
-  endOfWeek.setHours(23, 59, 59, 999);
+  const endOfWeek = new Date(startOfWeek)
+  endOfWeek.setDate(endOfWeek.getDate() + 6)
+  endOfWeek.setHours(23, 59, 59, 999)
 
   const attendances = await prisma.diaryAttendance.findMany({
     where: {
@@ -517,11 +507,11 @@ export async function calculateGlobalAttendanceProgress(
       attended: true,
     },
     select: { dayAvailableId: true },
-  });
+  })
 
-  const uniqueAttendedDays = new Set(attendances.map(a => a.dayAvailableId)).size;
+  const uniqueAttendedDays = new Set(attendances.map(a => a.dayAvailableId)).size
 
-  return (uniqueAttendedDays / totalSelectedDays) * 100;
+  return (uniqueAttendedDays / totalSelectedDays) * 100
 }
 
 export async function recordDiaryAttendance({
