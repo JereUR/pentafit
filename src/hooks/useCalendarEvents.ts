@@ -33,6 +33,10 @@ export function useCalendarEvents(
             time: `${day.timeStart} - ${day.timeEnd}`,
             diaryName: userDiary.diary.name,
             activityName: userDiary.diary.activity.name,
+            diaryId: userDiary.diary.id,
+            userDiaryId: userDiary.id,
+            dayAvailableId: day.id,
+            attended: day.attended 
           }
 
           const targetDay = daysWithEvents.find(

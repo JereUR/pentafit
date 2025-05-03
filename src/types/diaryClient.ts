@@ -30,6 +30,10 @@ export interface CalendarEvent {
   time: string
   diaryName: string
   activityName: string
+  diaryId: string
+  userDiaryId: string
+  dayAvailableId: string
+  attended?: boolean
 }
 
 export interface DayEvents {
