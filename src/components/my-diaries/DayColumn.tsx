@@ -22,7 +22,7 @@ export const DayColumn = ({ day, primaryColor, currentDayBorderStyle, onAttendan
 
   return (
     <div
-      className="border rounded-md p-1 h-[200px] overflow-y-auto"
+      className="border rounded-md p-1 h-[200px] overflow-y-auto scrollbar-thin"
       style={isToday ? currentDayBorderStyle : {}}
     >
       {day.events.length === 0 ? (
