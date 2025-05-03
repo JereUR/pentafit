@@ -485,6 +485,45 @@ export async function getDiaryPlans(
   }
 }
 
+export async function calculateGlobalAttendanceProgress(
+  userId: string,
+  facilityId: string,
+  date: Date = new Date()
+): Promise<number> {
+  const { userDiaries } = await getUserDiaries(facilityId);
+
+  if (userDiaries.length === 0) return 0;
+
+  const totalSelectedDays = userDiaries.reduce(
+    (sum, diary) => sum + (diary.selectedDays?diary.selectedDays.length:0),
+    0
+  );
+
+  if (totalSelectedDays === 0) return 0;
+
+  const startOfWeek = new Date(date);
+  startOfWeek.setDate(startOfWeek.getDate() - (startOfWeek.getDay() || 7) + 1);
+  startOfWeek.setHours(0, 0, 0, 0);
+
+  const endOfWeek = new Date(startOfWeek);
+  endOfWeek.setDate(endOfWeek.getDate() + 6);
+  endOfWeek.setHours(23, 59, 59, 999);
+
+  const attendances = await prisma.diaryAttendance.findMany({
+    where: {
+      userId,
+      facilityId,
+      date: { gte: startOfWeek, lte: endOfWeek },
+      attended: true,
+    },
+    select: { dayAvailableId: true },
+  });
+
+  const uniqueAttendedDays = new Set(attendances.map(a => a.dayAvailableId)).size;
+
+  return (uniqueAttendedDays / totalSelectedDays) * 100;
+}
+
 export async function recordDiaryAttendance({
   diaryId,
   userDiaryId,

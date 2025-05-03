@@ -91,41 +91,36 @@ export function useUnsubscribeFromDiaryMutation() {
 export function useDiaryAttendanceMutation() {
   const queryClient = useQueryClient()
   const { toast } = useToast()
-  const router = useRouter()
 
   return useMutation({
     mutationFn: async (params: DiaryAttendanceParams) => {
       const result = await recordDiaryAttendance(params)
-      if (!result.success) {
-        throw new Error(result.error)
-      }
+      if (!result.success) throw new Error(result.error)
       return result
     },
     onSuccess: (result, variables) => {
-      toast({
-        title: variables.attended ? "Asistencia registrada" : "Inasistencia registrada",
-        description: variables.attended 
-          ? `La asistencia ha sido registrada correctamente para el día ${variables.dayOfWeek}`
-          : `La inasistencia ha sido registrada para el día ${variables.dayOfWeek}`,
-      })
-      
       queryClient.invalidateQueries({
         queryKey: ["userDiaries", variables.facilityId],
       })
+      queryClient.invalidateQueries({
+        queryKey: ["userProgress", result.userId, variables.facilityId],
+      })
+      queryClient.invalidateQueries({
+        queryKey: ["todayDiary", variables.facilityId],
+      })
       
-      if (result.userId) {
-        queryClient.invalidateQueries({
-          queryKey: ["userProgress", result.userId, variables.facilityId],
-        })
-      }
-      
-      router.refresh()
+      toast({
+        title: variables.attended ? "Asistencia registrada" : "Inasistencia registrada",
+        description: variables.attended 
+          ? `Asistencia registrada para ${variables.dayOfWeek}`
+          : `Inasistencia registrada para ${variables.dayOfWeek}`,
+      })
     },
     onError: (error) => {
       toast({
         variant: "destructive",
         title: "Error al registrar asistencia",
-        description: error instanceof Error ? error.message : "Error al registrar la asistencia",
+        description: error instanceof Error ? error.message : "Error desconocido",
       })
     },
   })

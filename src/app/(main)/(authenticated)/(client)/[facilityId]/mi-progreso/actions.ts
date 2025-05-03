@@ -8,6 +8,7 @@ import { MeasurementFormValues } from "@/lib/validation"
 import {MeasurementResult, ProgressData, ProgressDataPoint} from "@/types/progress"
 import { DayOfWeek } from "@prisma/client"
 import { calculateAverage } from "@/lib/utils"
+import { calculateGlobalAttendanceProgress } from "../mi-agenda/actions"
 
 export async function recordMeasurement(
   values: MeasurementFormValues & { facilityId: string },
@@ -484,16 +485,12 @@ export async function calculateDailyClassAttendanceProgress(
   const userDiary = await prisma.userDiary.findUnique({
     where: { id: userDiaryId },
     include: {
-      diaryPlan: {
-        select: {
-          sessionsPerWeek: true
-        }
-      },
       attachments: {
         include: {
           dayAvailable: true
         }
-      }
+      },
+      diaryPlan: true
     }
   })
 
@@ -502,11 +499,11 @@ export async function calculateDailyClassAttendanceProgress(
   }
 
   const startOfWeek = new Date(date)
-  startOfWeek.setDate(startOfWeek.getDate() - (startOfWeek.getDay() || 7) + 1) 
+  startOfWeek.setDate(startOfWeek.getDate() - (startOfWeek.getDay() || 7) + 1)
   startOfWeek.setHours(0, 0, 0, 0)
 
   const endOfWeek = new Date(startOfWeek)
-  endOfWeek.setDate(endOfWeek.getDate() + 6) 
+  endOfWeek.setDate(endOfWeek.getDate() + 6)
   endOfWeek.setHours(23, 59, 59, 999)
 
   const attendances = await prisma.diaryAttendance.findMany({
@@ -524,27 +521,47 @@ export async function calculateDailyClassAttendanceProgress(
     }
   })
 
+  const selectedDaysCount = userDiary.attachments.length
+  
   const uniqueAttendedDays = new Set(
     attendances.map(a => a.dayAvailableId)
   ).size
 
-  const progress = (uniqueAttendedDays / userDiary.diaryPlan.sessionsPerWeek) * 100
+  const progress = selectedDaysCount > 0 
+    ? (uniqueAttendedDays / selectedDaysCount) * 100 
+    : 0
 
-  return Math.min(progress, 100) 
+  return Math.min(progress, 100)
 }
 
 export async function updateDailyClassAttendanceProgress(
   userId: string,
   facilityId: string,
   userDiaryId: string,
-  date = new Date(),
+  date: Date = new Date()
 ): Promise<void> {
-  const progressValue = await calculateDailyClassAttendanceProgress(userId, facilityId, userDiaryId, date)
+  const globalProgress = await calculateGlobalAttendanceProgress(userId, facilityId, date)
+
+  const userDiary = await prisma.userDiary.findUnique({
+    where: { id: userDiaryId },
+    include: {
+      diaryPlan: { 
+        include: { 
+          activity: { 
+            include: { 
+              diaries: true 
+            } 
+          } 
+        }
+      }
+    }
+  })
+  const diaryId = userDiary?.diaryPlan.activity.diaries[0]?.id
 
   const startOfDay = new Date(date)
   startOfDay.setHours(0, 0, 0, 0)
 
-  const existingProgress = await prisma.userProgress.findUnique({
+  await prisma.userProgress.upsert({
     where: {
       userId_facilityId_type_date: {
         userId,
@@ -553,29 +570,17 @@ export async function updateDailyClassAttendanceProgress(
         date: startOfDay,
       },
     },
+    update: { 
+      value: globalProgress,
+      diaryId, 
+    },
+    create: {
+      userId,
+      facilityId,
+      type: "CLASS_ATTENDANCE",
+      date: startOfDay,
+      value: globalProgress,
+      diaryId, 
+    },
   })
-
-  if (existingProgress) {
-    await prisma.userProgress.update({
-      where: {
-        id: existingProgress.id,
-      },
-      data: {
-        value: progressValue,
-        diaryId: userDiaryId,
-        updatedAt: new Date(),
-      },
-    })
-  } else {
-    await prisma.userProgress.create({
-      data: {
-        userId,
-        facilityId,
-        type: "CLASS_ATTENDANCE",
-        date: startOfDay,
-        value: progressValue,
-        diaryId: userDiaryId,
-      },
-    })
-  }
 }
