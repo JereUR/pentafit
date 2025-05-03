@@ -55,11 +55,20 @@ export function DiaryPlanCard({ diaryPlan, facilityId, primaryColor }: DiaryPlan
   }
 
   const handleSubscribe = (diaryId: string, selectedDayIds: string[]) => {
+    console.log("Subscribing with:", { diaryId, facilityId, selectedDayIds })
     const selectedDaysCount = selectedDayIds.length
     if (selectedDaysCount > diaryPlan.sessionsPerWeek) {
       toast({
         title: "Límite excedido",
         description: `Solo puedes seleccionar ${diaryPlan.sessionsPerWeek} días`,
+        variant: "destructive",
+      })
+      return
+    }
+    if (!diaryId || !facilityId || !Array.isArray(selectedDayIds)) {
+      toast({
+        title: "Error",
+        description: "Datos inválidos para la inscripción",
         variant: "destructive",
       })
       return
@@ -85,27 +94,29 @@ export function DiaryPlanCard({ diaryPlan, facilityId, primaryColor }: DiaryPlan
             variant: "destructive",
           })
         },
-      },
+      }
     )
   }
 
   const getFilteredDaysAvailable = (
-    diary: SimpleDiaryData | undefined,
+    diary: SimpleDiaryData | undefined
   ): Array<FilteredDayAvailable & { dayOfWeek: number }> => {
     if (!diary) return []
-
+  
     return diary.daysAvailable
-      .filter(day => day.available && day.dayOfWeek !== null)
-      .map((day) => {
-        const dayOfWeek = day.dayOfWeek ?? 0
-        return {
-          ...day,
-          available: dayOfWeek < diaryPlan.daysOfWeek.length
-            ? diaryPlan.daysOfWeek[dayOfWeek]
-            : false,
-          dayOfWeek: dayOfWeek
+      .filter((day) => {
+        if (day.dayOfWeek === null || day.dayOfWeek < 0 || day.dayOfWeek > 6) {
+          return false
         }
+        return (
+          day.available &&
+          diaryPlan.daysOfWeek[day.dayOfWeek] === true
+        )
       })
+      .map((day) => ({
+        ...day,
+        dayOfWeek: day.dayOfWeek ?? 0,
+      }))
   }
 
   const getSelectedDiary = (): SimpleDiaryData | undefined => {

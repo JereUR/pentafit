@@ -82,33 +82,45 @@ export function DiaryDaySelector({
       return
     }
 
-    const selectedDays = availableDaysWithInfo.filter(day =>
-      selectedDayIds.includes(day.id)
-    )
+    const invalidDays = selectedDayIds.some(dayId => {
+      const day = availableDaysWithInfo.find(d => d.id === dayId)
+      return !day || !diaryPlanDaysOfWeek[day.dayOfWeek]
+    })
 
-    onSubscribe(diaryId, selectedDays.map(day => day.id))
+    if (invalidDays) {
+      toast({
+        title: "Días no permitidos",
+        description: "Algunos días seleccionados no están permitidos en este plan",
+        variant: "destructive",
+      })
+      return
+    }
+
+    onSubscribe(diaryId, selectedDayIds)
   }
 
   const getAvailableDaysWithInfo = (): DayWithInfo[] => {
-    return daysAvailable
-      .filter(day => {
+    const filteredDays = daysAvailable
+      .filter((day) => {
         if (day.dayOfWeek === null || day.dayOfWeek < 0 || day.dayOfWeek > 6) {
-          return false;
+          return false
         }
-
         return (
           day.available &&
-          diaryPlanDaysOfWeek[day.dayOfWeek]
-        );
+          diaryPlanDaysOfWeek[day.dayOfWeek] === true &&
+          day.timeStart &&
+          day.timeEnd
+        )
       })
-      .map(day => ({
+      .map((day) => ({
         id: day.id,
         timeStart: day.timeStart,
         timeEnd: day.timeEnd,
-        dayOfWeek: day.dayOfWeek as number,
+        dayOfWeek: day.dayOfWeek,
         dayName: daysOfWeekFull[day.dayOfWeek] || `Día ${day.dayOfWeek + 1}`,
-        available: day.available
-      }));
+        available: true,
+      }))
+    return filteredDays
   }
 
   const availableDaysWithInfo = getAvailableDaysWithInfo()
