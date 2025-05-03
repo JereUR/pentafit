@@ -56,6 +56,7 @@ export const EventItem = ({
           <div style={{ display: 'flex', gap: '0.25rem' }}>
             <LoadingButton
               size="sm"
+              className="text-xs p-1"
               loading={isPending}
               variant={isAttended ? "default" : "outline"}
               style={{
@@ -74,6 +75,7 @@ export const EventItem = ({
 
             <LoadingButton
               size="sm"
+              className="text-xs p-1"
               loading={isPending}
               variant={!isAttended ? "default" : "outline"}
               style={{
