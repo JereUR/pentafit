@@ -128,6 +128,7 @@ export function WeeklyCalendarView({ facilityId, primaryColor }: WeeklyCalendarV
               currentDayName={currentDayName}
               onAttendanceChange={handleAttendance}
               localAttendances={localAttendances}
+              isPending={isPending}
             />
           ))}
         </Tabs>

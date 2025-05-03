@@ -17,9 +17,10 @@ interface DayTabContentProps {
   currentDayName: string
   onAttendanceChange: (diaryId: string, userDiaryId: string, dayAvailableId: string, attended: boolean) => void
   localAttendances: Record<string, boolean>
+  isPending: boolean
 }
 
-export const DayTabContent = ({ day, primaryColor, currentDayName, onAttendanceChange, localAttendances }: DayTabContentProps) => {
+export const DayTabContent = ({ day, primaryColor, currentDayName, onAttendanceChange, localAttendances, isPending }: DayTabContentProps) => {
   const isToday = day.dayName === currentDayName
   const dayOfWeekValue = Object.keys(DAY_DISPLAY_NAMES).find(
     key => DAY_DISPLAY_NAMES[key as DayOfWeek].startsWith(day.dayName)
@@ -65,6 +66,7 @@ export const DayTabContent = ({ day, primaryColor, currentDayName, onAttendanceC
                   onAttendanceChange={onAttendanceChange}
                   localAttendances={localAttendances}
                   isMobile={true}
+                  isPending={isPending}
                 />
               ))}
             </div>
