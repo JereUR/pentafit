@@ -3,7 +3,7 @@ import {
   Calendar,
   Dumbbell,
   LineChart,
-  MessageSquare,
+  /* MessageSquare, */
   FileText,
   Utensils,
   Info,
@@ -22,13 +22,13 @@ export const clientNavItems: NavItem[] = [
   },
   { title: "Pagos", icon: FileText, href: "/mis-pagos" },
   { title: "Mi Progreso", icon: LineChart, href: "/mi-progreso" },
-  {
+  /* {
     title: "Comunicación",
     icon: MessageSquare,
     items: [
       { title: "Mensajes", href: "/comunicacion/mensajes" },
       { title: "Notificaciones", href: "/comunicacion/notificaciones" },
     ],
-  },
+  }, */
   { title: "Información", icon: Info, href: "/informacion" },
 ]
