@@ -20,7 +20,7 @@ interface WeeklyCalendarViewProps {
 
 export function WeeklyCalendarView({ facilityId, primaryColor }: WeeklyCalendarViewProps) {
   const { data, isLoading } = useUserDiaries(facilityId)
-  const { mutate: recordAttendance } = useDiaryAttendanceMutation()
+  const { mutate: recordAttendance, isPending } = useDiaryAttendanceMutation()
   const [localAttendances, setLocalAttendances] = useState<Record<string, boolean>>({})
 
   const currentDayEnum = getCurrentDayOfWeek()
@@ -156,6 +156,7 @@ export function WeeklyCalendarView({ facilityId, primaryColor }: WeeklyCalendarV
               currentDayBorderStyle={currentDayBorderStyle}
               onAttendanceChange={handleAttendance}
               localAttendances={localAttendances}
+              isPending={isPending}
             />
           ))}
         </div>

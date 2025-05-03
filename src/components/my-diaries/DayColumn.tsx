@@ -9,9 +9,10 @@ interface DayColumnProps {
   currentDayBorderStyle: React.CSSProperties
   onAttendanceChange: (diaryId: string, userDiaryId: string, dayAvailableId: string, attended: boolean) => void
   localAttendances: Record<string, boolean>
+  isPending: boolean
 }
 
-export const DayColumn = ({ day, primaryColor, currentDayBorderStyle, onAttendanceChange, localAttendances }: DayColumnProps) => {
+export const DayColumn = ({ day, primaryColor, currentDayBorderStyle, onAttendanceChange, localAttendances, isPending }: DayColumnProps) => {
   const isToday = day.dayName === DAY_DISPLAY_NAMES[getCurrentDayOfWeek()].slice(0, 3)
   const dayOfWeekValue = Object.keys(DAY_DISPLAY_NAMES).find(
     key => DAY_DISPLAY_NAMES[key as DayOfWeek].startsWith(day.dayName)
@@ -38,6 +39,7 @@ export const DayColumn = ({ day, primaryColor, currentDayBorderStyle, onAttendan
               canMarkAttendance={canMarkAttendance}
               onAttendanceChange={onAttendanceChange}
               localAttendances={localAttendances}
+              isPending={isPending}
             />
           ))}
         </div>

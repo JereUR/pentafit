@@ -11,6 +11,7 @@ interface EventItemProps {
   onAttendanceChange: (diaryId: string, userDiaryId: string, dayAvailableId: string, attended: boolean) => void
   localAttendances: Record<string, boolean>
   isMobile?: boolean
+  isPending: boolean
 }
 
 export const EventItem = ({
@@ -19,7 +20,8 @@ export const EventItem = ({
   canMarkAttendance,
   onAttendanceChange,
   localAttendances,
-  isMobile = false
+  isMobile = false,
+  isPending
 }: EventItemProps) => {
   const key = `${event.diaryId}-${event.dayAvailableId}`
   const isAttended = localAttendances[key] ?? event.attended
@@ -54,7 +56,7 @@ export const EventItem = ({
           <div style={{ display: 'flex', gap: '0.25rem' }}>
             <LoadingButton
               size="sm"
-              loading={isAttended === true}
+              loading={isPending}
               variant={isAttended ? "default" : "outline"}
               style={{
                 backgroundColor: isAttended ? primaryColor : undefined,
@@ -72,7 +74,7 @@ export const EventItem = ({
 
             <LoadingButton
               size="sm"
-              loading={isAttended === false}
+              loading={isPending}
               variant={!isAttended ? "default" : "outline"}
               style={{
                 backgroundColor: !isAttended ? "#ef4444" : undefined,
