@@ -1,10 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server"
-
 import { validateRequest } from "@/auth"
-import type { UserDiaryData } from "@/types/user"
-import { getUserDiaries } from "@/app/(main)/(authenticated)/(client)/[facilityId]/mi-agenda/actions"
 import { getCurrentDayOfWeek } from "@/lib/utils"
 import { DayOfWeek } from "@prisma/client"
+import prisma from "@/lib/prisma"
 
 export async function GET(
   request: NextRequest,
@@ -17,7 +15,7 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const facilityId = (await params).facilityId
+    const {facilityId} = (await params)
 
     if (!facilityId) {
       return NextResponse.json(
@@ -27,9 +25,6 @@ export async function GET(
     }
 
     const currentDayOfWeek = getCurrentDayOfWeek()
-
-    const { userDiaries } = await getUserDiaries(facilityId)
-
     const dayOfWeekToIndex = {
       [DayOfWeek.SUNDAY]: 0,
       [DayOfWeek.MONDAY]: 1,
@@ -39,67 +34,118 @@ export async function GET(
       [DayOfWeek.FRIDAY]: 5,
       [DayOfWeek.SATURDAY]: 6,
     }
-
     const currentDayIndex = dayOfWeekToIndex[currentDayOfWeek]
 
-    const todayDiaries = userDiaries.filter((userDiary: UserDiaryData) => {
-      if (!userDiary.diary?.daysAvailable || !userDiary.selectedDays) {
-        return false
-      }
-    
-      return userDiary.selectedDays.some((selectedDay) => {
-        const dayAvailable = userDiary.diary.daysAvailable.find(
-          (day) => day.id === selectedDay.id,
-        )
-    
-        if (!dayAvailable) return false
-    
-        const dayIndex = userDiary.diary.daysAvailable.findIndex(
-          d => d.id === selectedDay.id
-        )
-        return dayIndex === currentDayIndex
-      })
+    console.log(`Current day: ${currentDayOfWeek}, Index: ${currentDayIndex}`)
+
+    // Obtener todos los diaries activos del usuario
+    const userDiaries = await prisma.userDiary.findMany({
+      where: {
+        userId: user.id,
+        isActive: true,
+        diaryPlan: {
+          plan: {
+            facilityId: facilityId,
+          },
+        },
+      },
+      include: {
+        diaryPlan: {
+          include: {
+            plan: true,
+            activity: {
+              include: {
+                diaries: {
+                  where: {
+                    facilityId: facilityId,
+                    isActive: true,
+                  },
+                  include: {
+                    activity: {
+                      select: {
+                        id: true,
+                        name: true,
+                        description: true
+                      }
+                    },
+                    daysAvailable: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+        attachments: {
+          include: {
+            dayAvailable: true,
+          },
+        },
+      },
     })
 
-    const data = todayDiaries.map((diary: UserDiaryData) => {
-      const todaySchedule = (diary.selectedDays || [])
-        .filter((day) => {
-          const dayAvailable = diary.diary.daysAvailable.find(
-            (d) => d.id === day.id,
-          )
-          if (dayAvailable) {
-            const dayIndex = diary.diary.daysAvailable.indexOf(dayAvailable)
-            return dayIndex === currentDayIndex
-          }
-          return false
-        })
-        .map((day) => ({
-          id: day.id,
-          timeStart: day.timeStart,
-          timeEnd: day.timeEnd,
-        }))
-        .sort((a, b) => {
+    // Filtrar diaries para el día actual
+    const todayDiaries = userDiaries
+      .filter(userDiary => {
+        const diary = userDiary.diaryPlan?.activity?.diaries?.[0]
+        if (!diary) return false
+
+        // Verificar si hay dayAvailable para hoy
+        const hasDayAvailable = diary.daysAvailable.some(
+          day => day.dayOfWeek === currentDayIndex && day.available
+        )
+
+        return hasDayAvailable
+      })
+      .map(userDiary => {
+        const diary = userDiary.diaryPlan.activity.diaries[0]
+        
+        // Obtener el dayAvailable para hoy
+        const todayDayAvailable = diary.daysAvailable.find(
+          day => day.dayOfWeek === currentDayIndex && day.available
+        )
+
+        // Filtrar attachments para hoy
+        const todayAttachments = userDiary.attachments?.filter(
+          attachment => attachment.dayAvailable.dayOfWeek === currentDayIndex
+        ) || []
+
+        // Crear schedule
+        const todaySchedule = todayAttachments.length > 0
+          ? todayAttachments.map(attachment => ({
+              id: attachment.dayAvailable.id,
+              timeStart: attachment.dayAvailable.timeStart,
+              timeEnd: attachment.dayAvailable.timeEnd,
+            }))
+          : todayDayAvailable
+            ? [{
+                id: todayDayAvailable.id,
+                timeStart: todayDayAvailable.timeStart,
+                timeEnd: todayDayAvailable.timeEnd,
+              }]
+            : []
+
+        // Ordenar por hora
+        todaySchedule.sort((a, b) => {
           const aTime = a.timeStart.split(":").map(Number)
           const bTime = b.timeStart.split(":").map(Number)
           return aTime[0] * 60 + aTime[1] - (bTime[0] * 60 + bTime[1])
         })
 
         return {
-          id: diary.diary?.id || "",
-          userDiaryId: diary.id, 
-          diaryPlanId: diary.diaryPlan?.id || "",
-          activityName: diary.diary?.activity?.name || "",
-          activityDescription: diary.diary?.activity?.description || "",
-          planName: diary.diaryPlan?.name || "",
+          id: diary.id,
+          userDiaryId: userDiary.id,
+          diaryPlanId: userDiary.diaryPlan.id,
+          activityName: diary.activity?.name || '', 
+          activityDescription: diary.activity?.description || '',
+          planName: userDiary.diaryPlan.name,
           schedule: todaySchedule,
         }
-    })
-
-    const filteredData = data.filter((item) => item.schedule.length > 0)
+      })
+      .filter(diary => diary.schedule.length > 0)
 
     return NextResponse.json({
       success: true,
-      data: filteredData,
+      data: todayDiaries,
     })
   } catch (error) {
     console.error("[FACILITY_ID_DIARIES_TODAY_GET]", error)
