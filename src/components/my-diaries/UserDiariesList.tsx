@@ -13,8 +13,6 @@ interface UserDiariesListProps {
 export function UserDiariesList({ facilityId, primaryColor }: UserDiariesListProps) {
   const { data, isLoading, error } = useUserDiaries(facilityId)
 
-  console.log({ data })
-
   if (isLoading) {
     return (
       <div className="space-y-4">

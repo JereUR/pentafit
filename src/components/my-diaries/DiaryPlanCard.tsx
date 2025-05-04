@@ -55,7 +55,6 @@ export function DiaryPlanCard({ diaryPlan, facilityId, primaryColor }: DiaryPlan
   }
 
   const handleSubscribe = (diaryId: string, selectedDayIds: string[]) => {
-    console.log("Subscribing with:", { diaryId, facilityId, selectedDayIds })
     const selectedDaysCount = selectedDayIds.length
     if (selectedDaysCount > diaryPlan.sessionsPerWeek) {
       toast({
@@ -102,7 +101,7 @@ export function DiaryPlanCard({ diaryPlan, facilityId, primaryColor }: DiaryPlan
     diary: SimpleDiaryData | undefined
   ): Array<FilteredDayAvailable & { dayOfWeek: number }> => {
     if (!diary) return []
-  
+
     return diary.daysAvailable
       .filter((day) => {
         if (day.dayOfWeek === null || day.dayOfWeek < 0 || day.dayOfWeek > 6) {

@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
+
 import { validateRequest } from "@/auth"
 import { getCurrentDayOfWeek } from "@/lib/utils"
 import { DayOfWeek } from "@prisma/client"
@@ -36,9 +37,6 @@ export async function GET(
     }
     const currentDayIndex = dayOfWeekToIndex[currentDayOfWeek]
 
-    console.log(`Current day: ${currentDayOfWeek}, Index: ${currentDayIndex}`)
-
-    // Obtener todos los diaries activos del usuario
     const userDiaries = await prisma.userDiary.findMany({
       where: {
         userId: user.id,
@@ -83,13 +81,11 @@ export async function GET(
       },
     })
 
-    // Filtrar diaries para el día actual
     const todayDiaries = userDiaries
       .filter(userDiary => {
         const diary = userDiary.diaryPlan?.activity?.diaries?.[0]
         if (!diary) return false
 
-        // Verificar si hay dayAvailable para hoy
         const hasDayAvailable = diary.daysAvailable.some(
           day => day.dayOfWeek === currentDayIndex && day.available
         )
@@ -99,17 +95,14 @@ export async function GET(
       .map(userDiary => {
         const diary = userDiary.diaryPlan.activity.diaries[0]
         
-        // Obtener el dayAvailable para hoy
         const todayDayAvailable = diary.daysAvailable.find(
           day => day.dayOfWeek === currentDayIndex && day.available
         )
 
-        // Filtrar attachments para hoy
         const todayAttachments = userDiary.attachments?.filter(
           attachment => attachment.dayAvailable.dayOfWeek === currentDayIndex
         ) || []
 
-        // Crear schedule
         const todaySchedule = todayAttachments.length > 0
           ? todayAttachments.map(attachment => ({
               id: attachment.dayAvailable.id,
@@ -124,7 +117,6 @@ export async function GET(
               }]
             : []
 
-        // Ordenar por hora
         todaySchedule.sort((a, b) => {
           const aTime = a.timeStart.split(":").map(Number)
           const bTime = b.timeStart.split(":").map(Number)

@@ -26,9 +26,7 @@ export function useSubscribeToDiaryMutation() {
         facilityId,
         selectedDayIds,
       })
-      if (!result.success) {
-        console.log("Server error:", result)
-      }
+
       return result
     },
     onSuccess: () => {
@@ -42,7 +40,6 @@ export function useSubscribeToDiaryMutation() {
       router.refresh()
     },
     onError: (error: Error) => {
-      console.log("Mutation error:", error.message)
       toast({
         variant: "destructive",
         title: "Error al inscribirse",
