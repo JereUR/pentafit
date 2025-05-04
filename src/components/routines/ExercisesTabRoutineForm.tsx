@@ -331,7 +331,7 @@ export function ExercisesTabRoutineForm({ dailyExercises, setDailyExercises }: E
                           fill
                           className="object-contain p-2"
                           onError={(e) => {
-                            ; (e.target as HTMLImageElement).src = "/placeholder.svg?height=200&width=200"
+                            (e.target as HTMLImageElement).src = "/placeholder.svg?height=200&width=200"
                           }}
                         />
                       </div>
@@ -379,7 +379,7 @@ export function ExercisesTabRoutineForm({ dailyExercises, setDailyExercises }: E
                                 fill
                                 className="object-cover"
                                 onError={(e) => {
-                                  ; (e.target as HTMLImageElement).src = "/placeholder.svg?height=100&width=100"
+                                  (e.target as HTMLImageElement).src = "/placeholder.svg?height=100&width=100"
                                 }}
                               />
                             </div>

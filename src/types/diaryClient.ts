@@ -44,10 +44,10 @@ export interface DayEvents {
 }
 
 export interface DiarySchedule {
-  id: string;
-  timeStart: string;
-  timeEnd: string;
-  attended?: boolean;
+  id: string
+  timeStart: string
+  timeEnd: string
+  attended?: boolean
 }
 
 export interface TodayDiaryItem {
@@ -68,13 +68,13 @@ export interface DiaryAttendanceResponse {
 }
 
 export interface TodayDiaryResponseItem {
-  id: string;
-  userDiaryId: string;
-  diaryPlanId: string;
-  activityName: string;
-  activityDescription: string | null;
-  planName: string;
-  schedule: DiarySchedule[];
+  id: string
+  userDiaryId: string
+  diaryPlanId: string
+  activityName: string
+  activityDescription: string | null
+  planName: string
+  schedule: DiarySchedule[]
 }
 
 export interface TodayDiaryItem extends TodayDiaryResponseItem {

@@ -27,38 +27,38 @@ function ClientNavItemComponent({ item, isExpanded, isOpen, onToggle, onClose }:
   const { primaryColor } = useClientFacility()
 
   const getFullHref = (href: string) => {
-    if (!href) return '';
+    if (!href) return ''
     if (href.startsWith('/')) {
-      return `/${facilityId}${href}`;
+      return `/${facilityId}${href}`
     }
-    return `/${facilityId}/${href}`;
-  };
+    return `/${facilityId}/${href}`
+  }
 
   const isActive = (itemHref: string) => {
-    if (!itemHref) return false;
-    const fullHref = getFullHref(itemHref);
-    return pathname === fullHref;
-  };
+    if (!itemHref) return false
+    const fullHref = getFullHref(itemHref)
+    return pathname === fullHref
+  }
 
   const activeItemStyle: CSSProperties = isActive(item.href || '')
     ? { backgroundColor: primaryColor, color: "white" }
-    : {};
+    : {}
 
   const activeSubItemStyle = (subItemHref: string): CSSProperties =>
     isActive(subItemHref)
       ? { backgroundColor: primaryColor, color: "white" }
-      : {};
+      : {}
 
   const setHoverEffect = (e: React.MouseEvent<HTMLElement>) => {
-    const target = e.currentTarget;
-    target.style.setProperty('--hover-color', primaryColor);
-    target.classList.add('hover-active');
-  };
+    const target = e.currentTarget
+    target.style.setProperty('--hover-color', primaryColor)
+    target.classList.add('hover-active')
+  }
 
   const removeHoverEffect = (e: React.MouseEvent<HTMLElement>) => {
-    const target = e.currentTarget;
-    target.classList.remove('hover-active');
-  };
+    const target = e.currentTarget
+    target.classList.remove('hover-active')
+  }
 
   if (item.items) {
     return (

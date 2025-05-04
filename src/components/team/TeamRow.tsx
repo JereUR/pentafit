@@ -21,18 +21,18 @@ interface TeamRowProps {
   isSelected: boolean
   onToggleRow: (id: string) => void
   deleteMember: UseMutateFunction<{
-    facilityId: string;
-    success: boolean;
-    message: string;
-    deletedCount: number;
+    facilityId: string
+    success: boolean
+    message: string
+    deletedCount: number
   } | {
-    facilityId: string;
-    success: boolean;
-    message: string;
-    deletedCount?: undefined;
+    facilityId: string
+    success: boolean
+    message: string
+    deletedCount?: undefined
   }, Error, {
-    memberIds: string | string[];
-    facilityId: string;
+    memberIds: string | string[]
+    facilityId: string
   }, unknown>
   isDeleting: boolean
 }
